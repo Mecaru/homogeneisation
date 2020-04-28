@@ -19,7 +19,7 @@ class Inclusion():
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
     
-    def __init__(self, type_inclusion, radius, behavior):
+    def __init__(self, type_inclusion, behavior, radius=0.1):
         """
         type_inclusion : (int), 0 pour des inclusions sphériques.
         radius : (float), valeur du rayon des inclusions sphériques. TODO : À remplacer par un paramètre plus général pour des inclusions de types différents. 
@@ -32,6 +32,7 @@ class Inclusion():
     def type_to_str(self):
         """
         Transforme un entier "type_inclusion" en la chaîne de caractères correspondante (exemple : 0 --> "spheres") 
+        TODO : synchroniser cette fonction avec le main à l'aide d'un dictionnaire pour faciliter l'ajout de types d'inclusions
         """
         type_inclusion = self.type_inclusion
         if type_inclusion == 0:
@@ -169,8 +170,8 @@ class Mori_Tanaka:
 list_models = [Mori_Tanaka] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle    
     
 # Tests
-#inclusion1 = Inclusion(0, 1, {"K":300, "G":150})
-#inclusion2 = Inclusion(0, 2, {"K":300, "G":150})
+#inclusion1 = Inclusion(0, {"K":300, "G":150}, 1)
+#inclusion2 = Inclusion(0, {"K":300, "G":150}, 2)
 #microstructure = Microstructure({"K":10, "G":15}, {inclusion1:0.6})
 #model = Mori_Tanaka()
 #print(model.compute_h_behavior(microstructure))
