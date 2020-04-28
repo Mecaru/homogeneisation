@@ -113,6 +113,12 @@ class Mori_Tanaka:
         """
         return "Modèle de Mori-Tanaka"
     
+    def __repr__(self):
+        """
+        Description textuelle du modèle.
+        """
+        return str(self)
+    
     def check_hypothesis(self, microstructure):
         """
         Vérifies si la microstructure vérifie les hypothèses du modèle, renvoie un boolées. 
@@ -160,11 +166,11 @@ class Mori_Tanaka:
         return {'G' : Gh}
         
 
-list_models = [Mori_Tanaka] # Liste des modèles implémentés, penser à l'incrémenter à chaque ajout d'un nouveau modèle    
+list_models = [Mori_Tanaka] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle    
     
 # Tests
-inclusion1 = Inclusion(0, 1, {"K":300, "G":150})
-inclusion2 = Inclusion(0, 2, {"K":300, "G":150})
-microstructure = Microstructure({"K":10, "G":15}, {inclusion1:0.6})
-model = Mori_Tanaka()
+#inclusion1 = Inclusion(0, 1, {"K":300, "G":150})
+#inclusion2 = Inclusion(0, 2, {"K":300, "G":150})
+#microstructure = Microstructure({"K":10, "G":15}, {inclusion1:0.6})
+#model = Mori_Tanaka()
 #print(model.compute_h_behavior(microstructure))
