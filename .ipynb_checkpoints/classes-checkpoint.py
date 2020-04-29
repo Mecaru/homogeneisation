@@ -167,8 +167,9 @@ class Mori_Tanaka:
         return {'G' : Gh}
         
 
-list_models = [Mori_Tanaka] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle    
-    
+list_models = [Mori_Tanaka] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
+dict_behaviors = {'Isotropic' : ['K', 'G'], 'Test' : ['Test']}
+
 # Tests
 #inclusion1 = Inclusion(0, {"K":300, "G":150}, 1)
 #inclusion2 = Inclusion(0, {"K":300, "G":150}, 2)
