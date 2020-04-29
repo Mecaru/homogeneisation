@@ -159,8 +159,90 @@ class Mori_Tanaka:
         Gh = Gm + numerator/denominator
         return {'G' : Gh}
         
+        
+class Solution_Diluée
+         """
+    Hypothèses : 
+    -isotrope
+    -renforts sphériques ou ellipsoïdaux (TO DO : PASSER AUX ELLIPSOÏDES)
+    -faiblements concentrés
+    TODO : 
+    -déterminer précisément les toutes les microstructures admises
+    -déterminer les concentrations maximales admises et les implémenter
+    Modèle des solutions diluées. Contient :
+    - Une fonction qui vérifie si le modèle est appliquable à une microstructure.
+    - Une fonction de description du modèle (TODO : écrire une fonction qui renvoie une description du modèle sous forme de str et qui pourrait être appelée dans le main)
+    - Un fonction qui renvoie le comportement homogénéisé de la microstructure.
+    - Des fonctions qui calculent une caractéristique particulière (fraction volumique d'une inclusion, rayon d'une inclusion, comportement d'une inclusion, etc..) à partir d'un comportement homogénéisé cible (TODO)
+    """
+    
+    def __init__(self):
+        """
+        Définition des hypothèses du modèle.
+        """
+        self.type_inclusion = 0
+        self.behavior_condition = ["K", "G"] # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.f_matrix_min=0.9
+        
+    def __str__(self):
+        """
+        Description textuelle du modèle.
+        """
+        return "Modèle des solutions diluées"
+    
+    def check_hypothesis(self, microstructure):
+        """
+        Vérifies si la microstructure vérifie les hypothèses du modèle, renvoie un booléens. 
+        TODO : Éventuellement généraliser cette fonction en l'incorporant dans une classe mère Model pour qu'elle s'applique à tous les modèles.
+        """
+        dict_inclusions = microstructure.dict_inclusions
+        inclusions = dict_inclusions.keys()
+        n_inclusions = len(inclusions)
+        # vérification du nombre d'inclusions
+        if n_inclusions > self.n_inclusions:
+            # Le modèle ne peut pas traiter de microstructures avec autant d'inclusions de natures différentes
+            return False
+        for inclusion in dict_inclusions.keys():
+            # Vérification du type d'inclusion
+            if inclusion.type_inclusion != self.type_inclusion:
+                return False
+            # vérification du comportement des inclusions
+            behavior = inclusion.behavior
+            if list(behavior.keys()) != self.behavior_condition:
+                return False
+        # Vérification du comportement de la matrice
+        if list(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+            return False
+        # Vérification de la forte dilution des inclusions
+        if f_matrix_min>microstructure.f_matrix:
+            return False
+        # À ce stade, toutes les conditions ont été vérifiées
+        return True
+    
+    def compute_h_behavior(self, microstructure):
+        """
+        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
+        TODO : compléter avec le calcul complet (K et G)
+        """
+        compatible = self.check_hypothesis(microstructure)
+        if not compatible:
+            raise NameError("The microstructure does not match the model hypothesis")
+        Cm = microstructure.matrix_behavior
+        dict_inclusions = microstructure.dict_inclusions
+        inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
+        Cf = inclusion.behavior
+        Gm, Km = Cm['G'], Cm['K']
+        Gf, Kf = Cf['G'], Cf['K']
+        f = dict_inclusions[inclusion]
+        denominator = 1 + (1-f)*(Gf-Gm)/(Gm+Gm*(9*Km+8*Gm)/(6*(Km+2*Gm)))
+        numerator = f*(Gf-Gm)
+        Gh = Gm + numerator/denominator
+        return {'G' : Gh}
+    
+    
 
-list_models = [Mori_Tanaka] # Liste des modèles implémentés, penser à l'incrémenter à chaque ajout d'un nouveau modèle    
+list_models = [Mori_Tanaka,Solution_Diluée] # Liste des modèles implémentés, penser à l'incrémenter à chaque ajout d'un nouveau modèle    
     
 # Tests
 inclusion1 = Inclusion(0, 1, {"K":300, "G":150})
@@ -168,3 +250,4 @@ inclusion2 = Inclusion(0, 2, {"K":300, "G":150})
 microstructure = Microstructure({"K":10, "G":15}, {inclusion1:0.6})
 model = Mori_Tanaka()
 #print(model.compute_h_behavior(microstructure))
+    
