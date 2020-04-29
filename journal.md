@@ -9,3 +9,7 @@
 - Structure générale du code
 - Initialisation des fichiers "journal.md", "classes.py"
 - Fonctionnement des classes
+
+### 29/04/2020
+- Début de l'interface : génération d'une inclusion
+
