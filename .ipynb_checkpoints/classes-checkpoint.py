@@ -19,7 +19,7 @@ class Inclusion():
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
     
-    def __init__(self, type_inclusion, behavior, radius=0.1):
+    def __init__(self, type_inclusion, behavior, radius=0.1, name=None):
         """
         type_inclusion : (int), 0 pour des inclusions sphériques.
         radius : (float), valeur du rayon des inclusions sphériques. TODO : À remplacer par un paramètre plus général pour des inclusions de types différents. 
@@ -28,6 +28,7 @@ class Inclusion():
         self.type_inclusion = type_inclusion
         self.radius = radius
         self.behavior = behavior
+        self.name = name
     
     def type_to_str(self):
         """
@@ -43,7 +44,7 @@ class Inclusion():
         Présentation de l'instance.
         """
         str_type_inclusion = self.type_to_str()
-        return "Inclusion : {}, radius : {}".format(str_type_inclusion, self.radius)
+        return "{}, {}, {}".format(self.name, str_type_inclusion, self.behavior)
 
     def __repr__(self):
         return str(self)
@@ -104,7 +105,7 @@ class Mori_Tanaka:
         """
         Définition des hypothèses du modèle.
         """
-        self.type_inclusion = 0
+        self.type_inclusion = 0 # Sphères
         self.behavior_condition = ["K", "G"] # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         
@@ -168,7 +169,7 @@ class Mori_Tanaka:
         
 
 list_models = [Mori_Tanaka] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
-dict_behaviors = {'Isotropic' : ['K', 'G'], 'Test' : ['Test']}
+dict_behaviors = {'Isotropic' : ['K', 'G']}
 
 # Tests
 #inclusion1 = Inclusion(0, {"K":300, "G":150}, 1)
