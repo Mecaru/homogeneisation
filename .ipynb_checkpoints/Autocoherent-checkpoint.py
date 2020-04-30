@@ -13,51 +13,12 @@ Authors : Karim AÏT AMMAR, Enguerrand LUCAS
 import numpy as np
 from math import *
 
-
-class Inclusion_multiphase():
-    """
-    Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
-    """
-    
-    def __init__(self, type_inclusion, radius, behavior):
-        """
-        type_inclusion : (int), 10 pour des inclusions sphériques multiphases.
-        n_phase : (int) nombre de phase de l'inclusion
-        phases : dict qui contient les différentes phases de l'inclusion : [1 : phase_1,  2 : phase_2] 
-        """
-        self.type_inclusion = type_inclusion
-        self.n_phase=n_phase
-        self.dict_phases = dict_phases
-    
-    def type_to_str(self):
-        """
-        Transforme un entier "type_inclusion" en la chaîne de caractères correspondante (exemple : 0 --> "spheres") 
-        """
-        type_inclusion = self.type_inclusion
-        if type_inclusion == 10:
-            return "spherique multiphase"
-    
-    def __str__(self):
-        """
-        Présentation de l'instance.        
-        """
-        str_type_inclusion = self.type_to_str()
-        s= "Inclusion : {}, Nombre de phases : {}".format(str_type_inclusion, self.n_phase)
-        for phase in self.dict_phases.keys():
-            s+="Phase : {}, Rayon : {}".format(phase.position, phase.radius)
-        return s
-
-    def __repr__(self):
-        return str(self)
-
-    
-    
-class Phase
+class Phase:
     """
     Contient les informations propres à une phase (Geometrie, Rayon, comportement).
     """
     
-    def __init__(self, type_inclusion, radius, behavior):
+    def __init__(self, type_phase, position, radius, behavior):
         """
         type_inclusion : (int), 10 pour des phases sphériques.
         position : (int), précise la position qu'occupe la phase dans l'inclusion, 1 étant la phase centrale
@@ -74,7 +35,7 @@ class Phase
         Transforme un entier "type_inclusion" en la chaîne de caractères correspondante (exemple : 0 --> "spheres") 
         """
         type_inclusion = self.type_phase
-        if type_inclusion == 0:
+        if type_inclusion == 10:
             return "spherique"
     
     def __str__(self):
@@ -82,12 +43,83 @@ class Phase
         Présentation de l'instance.
         """
         str_type_inclusion = self.type_to_str()
-        return "Phase : {}, Rayon : {}".format(self.type_to_str(), self.radius)
+        return "Phase : {}, Position : {}, Rayon : {},".format(self.type_to_str(), self.position, self.radius)
+    
+    def __repr__(self):
+        return str(self)
+    
+
+class Inclusion_multiphase:
+    """
+    Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
+    """
+    
+    def __init__(self, type_inclusion, n_phases, list_phases,behavior_condition):
+        """
+        type_inclusion : (int), 10 pour des inclusions sphériques multiphases.
+        n_phases : (int) nombre de phase de l'inclusion
+        phases : dict qui contient les différentes phases de l'inclusion : [1 : phase_1,  2 : phase_2] 
+        """
+        self.type_inclusion = type_inclusion
+        self.n_phases=n_phases
+        self.list_phases = list_phases
+        self.behavior_condition=behavior_condition
+    
+    def type_to_str(self):
+        """
+        Transforme un entier "type_inclusion" en la chaîne de caractères correspondante (exemple : 0 --> "spheres") 
+        """
+        type_inclusion = self.type_inclusion
+        if type_inclusion == 10:
+            return "spherique multiphase"
+    
+    def __str__(self):
+        """
+        Présentation de l'instance.        
+        """
+        str_type_inclusion = self.type_to_str()
+        s= "Inclusion : {}, Nombre de phases : {} \n".format(str_type_inclusion, str(self.n_phases))
+        for i in range(self.n_phases):
+            phase=self.list_phases[i]
+            s+="Phase : {}, Rayon : {} \n".format(phase.position, phase.radius)
+        return s
 
     def __repr__(self):
         return str(self)
     
-class Microstructure():
+    def check_phases_inclusion(self):
+        # vérification du nombre de phase
+        if self.n_phases != len(self.list_phases):
+            raise NameError("Error on phase number")
+            return False
+        last_position = 0
+        last_radius = 0
+        for i in range(self.n_phases):
+            phase=self.list_phases[i]
+            # vérification du type de phase (géométrie)
+            if self.type_inclusion!=phase.type_phase:
+                raise NameError("Phases and inclusion have different geometry")
+                return False
+            # vérification du comportement des phases
+            behavior = phase.behavior
+            if list(behavior.keys()) != self.behavior_condition:
+                raise NameError("Phases and inclusion have different behavior type")
+                return False
+        # vérification des positions et rayons des phases
+            if phase.position != last_position+1  :
+                raise NameError("Error on position of phases")
+                return False
+            if phase.radius<last_radius :
+                raise NameError("Error on radius of phases")
+                return False
+            else :
+                last_position = phase.position
+                last_radius = phase.radius
+        return True
+
+
+    
+class Microstructure:
     """
     Contient des informations sur la microstructure (comportement de la matrice, inclusions, etc..). TODO : à modifier pour prendre en compte la présence ou non d'une interphase, et d'autres paramètres de modèles plus avancés.
     """
@@ -130,8 +162,8 @@ class Microstructure():
 
 
         
-class Autocohérent
-         """
+class Autocohérent:
+    """
     Hypothèses : 
     -isotrope
     -renforts sphériques (TO DO : PASSER AUX ELLIPSOÏDES)
@@ -144,7 +176,6 @@ class Autocohérent
     - Un fonction qui renvoie le comportement homogénéisé de la microstructure.
     - Des fonctions qui calculent une caractéristique particulière (fraction volumique d'une inclusion, rayon d'une inclusion, comportement d'une inclusion, etc..) à partir d'un comportement homogénéisé cible (TODO)
     """
-    
     def __init__(self):
         """
         Définition des hypothèses du modèle.
@@ -177,23 +208,11 @@ class Autocohérent
             # Vérification du type d'inclusion
             if inclusion.type_inclusion != self.type_inclusion:
                 return False
-            #vérification du nombre de phase
-            if inclusion.n_phase != self.n_phase :
+            #vérification du nombre de phase de l'inclusion
+            if inclusion.n_phases != self.n_phases :
                 return False
-            
-            position = 1
-            radius = 0
-            for phase in inclusion.dict_phases:
-                # vérification du comportement des phases
-                behavior = phase.behavior
-                if list(behavior.keys()) != self.behavior_condition:
-                    return False
-                # vérification des positions et rayons des phases
-                if position-phase.position != 0 and phase.radius-radius>0:
-                    return False
-                else :
-                    position = phase.position
-                    radius = phase.radius
+            if not inclusion.check_phases_inclusion():
+                return False
         
         # Vérification du comportement de la matrice
         if list(microstructure.matrix_behavior.keys()) != self.behavior_condition:
@@ -220,14 +239,22 @@ class Autocohérent
     
     
 
-list_models = [Autocoherent] # Liste des modèles implémentés, penser à l'incrémenter à chaque ajout d'un nouveau modèle    
+#list_models = [Autocoherent()] # Liste des modèles implémentés, penser à l'incrémenter à chaque ajout d'un nouveau modèle    
     
 # Tests
-phase1=Phase(0,1,5,{"K":300, "G":150})
-phase2=Phase(0,2,10,{"K":300, "G":150})
-phase3=Phase(1,2,10,{"K":300, "G":150})
+phase1=Phase(10,1,5,{"K":300, "G":150})
+phase2=Phase(10,2,10,{"K":300, "G":150})
+phase3=Phase(10,3,11,{"K":300, "G":150})
 
-print(phase1)
+inclusion1=Inclusion_multiphase(10,2,[phase1, phase3],['G', 'K'])
+inclusion2=Inclusion_multiphase(10,2,[phase2, phase1, phase3],['G', 'K'])
+inclusion3=Inclusion_multiphase(10,2,[phase1, phase3, phase2],['G', 'K'])
+
+print(inclusion1.check_phases_inclusion())
+#print(inclusion2.check_phases_inclusion())
+#print(inclusion3.check_phases_inclusion())
+
+
 #inclusion1 = Inclusion(10, 2, [5,10], [{"K":300, "G":150},{"K":300, "G":150}])
 #inclusion2 = Inclusion(0, 2, {"K":300, "G":150})
 #microstructure = Microstructure({"K":10, "G":15}, {inclusion1:0.6})
