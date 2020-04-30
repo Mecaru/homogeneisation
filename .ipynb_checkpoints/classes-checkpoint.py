@@ -57,7 +57,7 @@ class Microstructure():
     
     def __init__(self, matrix_behavior, dict_inclusions=dict()):
         """
-        list_inclusions : (dict), sous la forme [inclusion: f_i] avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion.
+        list_inclusions : (dict), sous la forme {inclusion: f_i} avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion.
         matrix_behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
         """
         self.dict_inclusions = dict_inclusions
@@ -85,7 +85,7 @@ class Microstructure():
             fi = dict_inclusions[inclusion]
             total_fi += fi
         if total_fi >= 1:
-            raise NameError("Inconsistent list of volumic fractions")
+            raise NameError("InconsistentVolumicFractions")
         else :
             f_m = 1 - total_fi
             return f_m
