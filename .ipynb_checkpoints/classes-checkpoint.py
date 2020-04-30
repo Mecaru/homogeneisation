@@ -66,7 +66,7 @@ class Microstructure():
         self.f_matrix = self.compute_fm()
         
     def __str__(self):
-        string = "Microstructure\nf_m = {:.2f}, matrix".format(self.f_matrix)
+        string = "Microstructure\nf_m = {:.2f}, matrix, {}".format(self.f_matrix, self.matrix_behavior)
         dict_inclusions = self.dict_inclusions
         # Présentation de toutes les inclusions contenues dans la microstructure
         for inclusion in dict_inclusions.keys():
@@ -108,6 +108,7 @@ class Mori_Tanaka:
         self.type_inclusion = 0 # Sphères
         self.behavior_condition = ["K", "G"] # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.name = "Mori-Tanaka"
         
     def __str__(self):
         """
