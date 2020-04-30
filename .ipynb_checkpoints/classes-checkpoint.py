@@ -19,7 +19,7 @@ class Inclusion():
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
     
-    def __init__(self, type_inclusion, radius, behavior):
+    def __init__(self, type_inclusion, behavior, radius=0.1, name=None):
         """
         type_inclusion : (int), 0 pour des inclusions sphériques.
         radius : (float), valeur du rayon des inclusions sphériques. TODO : À remplacer par un paramètre plus général pour des inclusions de types différents. 
@@ -28,10 +28,12 @@ class Inclusion():
         self.type_inclusion = type_inclusion
         self.radius = radius
         self.behavior = behavior
+        self.name = name
     
     def type_to_str(self):
         """
         Transforme un entier "type_inclusion" en la chaîne de caractères correspondante (exemple : 0 --> "spheres") 
+        TODO : synchroniser cette fonction avec le main à l'aide d'un dictionnaire pour faciliter l'ajout de types d'inclusions
         """
         type_inclusion = self.type_inclusion
         if type_inclusion == 0:
@@ -42,7 +44,7 @@ class Inclusion():
         Présentation de l'instance.
         """
         str_type_inclusion = self.type_to_str()
-        return "Inclusion : {}, radius : {}".format(str_type_inclusion, self.radius)
+        return "{}, {}, {}".format(self.name, str_type_inclusion, self.behavior)
 
     def __repr__(self):
         return str(self)
@@ -55,7 +57,7 @@ class Microstructure():
     
     def __init__(self, matrix_behavior, dict_inclusions=dict()):
         """
-        list_inclusions : (dict), sous la forme [inclusion: f_i] avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion.
+        list_inclusions : (dict), sous la forme {inclusion: f_i} avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion.
         matrix_behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
         """
         self.dict_inclusions = dict_inclusions
@@ -64,7 +66,7 @@ class Microstructure():
         self.f_matrix = self.compute_fm()
         
     def __str__(self):
-        string = "Microstructure\nf_m = {:.2f}, matrix".format(self.f_matrix)
+        string = "Microstructure\nf_m = {:.2f}, matrix, {}".format(self.f_matrix, self.matrix_behavior)
         dict_inclusions = self.dict_inclusions
         # Présentation de toutes les inclusions contenues dans la microstructure
         for inclusion in dict_inclusions.keys():
@@ -83,7 +85,7 @@ class Microstructure():
             fi = dict_inclusions[inclusion]
             total_fi += fi
         if total_fi >= 1:
-            raise NameError("Inconsistent list of volumic fractions")
+            raise NameError("The total volumic fractions of the inclusions exceed 1")
         else :
             f_m = 1 - total_fi
             return f_m
@@ -103,15 +105,22 @@ class Mori_Tanaka:
         """
         Définition des hypothèses du modèle.
         """
-        self.type_inclusion = 0
+        self.type_inclusion = 0 # Sphères
         self.behavior_condition = ["K", "G"] # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.name = "Mori-Tanaka"
         
     def __str__(self):
         """
         Description textuelle du modèle.
         """
         return "Modèle de Mori-Tanaka"
+    
+    def __repr__(self):
+        """
+        Description textuelle du modèle.
+        """
+        return str(self)
     
     def check_hypothesis(self, microstructure):
         """
@@ -160,11 +169,12 @@ class Mori_Tanaka:
         return {'G' : Gh}
         
 
-list_models = [Mori_Tanaka] # Liste des modèles implémentés, penser à l'incrémenter à chaque ajout d'un nouveau modèle    
-    
+list_models = [Mori_Tanaka] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
+dict_behaviors = {'Isotropic' : ['K', 'G']}
+
 # Tests
-inclusion1 = Inclusion(0, 1, {"K":300, "G":150})
-inclusion2 = Inclusion(0, 2, {"K":300, "G":150})
-microstructure = Microstructure({"K":10, "G":15}, {inclusion1:0.6})
-model = Mori_Tanaka()
+#inclusion1 = Inclusion(0, {"K":300, "G":150}, 1)
+#inclusion2 = Inclusion(0, {"K":300, "G":150}, 2)
+#microstructure = Microstructure({"K":10, "G":15}, {inclusion1:0.6})
+#model = Mori_Tanaka()
 #print(model.compute_h_behavior(microstructure))
