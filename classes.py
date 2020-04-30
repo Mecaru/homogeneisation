@@ -85,7 +85,7 @@ class Microstructure():
             fi = dict_inclusions[inclusion]
             total_fi += fi
         if total_fi >= 1:
-            raise NameError("InconsistentVolumicFractions")
+            raise NameError("The total volumic fractions of the inclusions exceed 1")
         else :
             f_m = 1 - total_fi
             return f_m
