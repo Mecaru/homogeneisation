@@ -2,6 +2,10 @@
 ----
 ## ToDo List :
 - Coder l'interface (notebook avec explications, interface user-friendly, "homogeneisation_main.ipynb")
+    - Possibilité de faire des essais automatiques
+    - Description des modèles avec équations
+    - Réfléchir à l'implémentation de la bdd
+    - Réfléchir à l'implémentation des modèles inverses
 - Ajouter des modèles
 ---
 ## Suivi
