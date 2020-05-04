@@ -11,7 +11,7 @@ Authors : Karim AÏT AMMAR, Enguerrand LUCAS
 """
 
 import numpy as np
-from math import *
+import numpy.polynomial.polynomial as nppol
 
 class Phase:
     """
@@ -42,7 +42,6 @@ class Phase:
         """
         Présentation de l'instance.
         """
-        str_type_inclusion = self.type_to_str()
         return "Phase : {}, Position : {}, Rayon : {},".format(self.type_to_str(), self.position, self.radius)
     
     def __repr__(self):
@@ -92,6 +91,8 @@ class Inclusion_multiphase:
         if self.n_phases != len(self.list_phases):
             raise NameError("Error on phase number")
             return False
+        if self.n_phases <= 1 : 
+            raise NameError("There is less")
         last_position = 0
         last_radius = 0
         for i in range(self.n_phases):
@@ -116,49 +117,6 @@ class Inclusion_multiphase:
                 last_position = phase.position
                 last_radius = phase.radius
         return True
-
-
-    
-#class Microstructure:
-#    """
-#    Contient des informations sur la microstructure (comportement de la matrice, inclusions, etc..). TODO : à modifier pour prendre en compte la présence ou non d'une interphase, et d'autres paramètres de modèles plus avancés.
-#    """
-#    
-#    def __init__(self, matrix_behavior, dict_inclusions=dict()):
-#        """
-#        list_inclusions : (dict), sous la forme [inclusion: f_i] avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion.
-#        matrix_behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
-#        """
-#        self.dict_inclusions = dict_inclusions
-#        self.matrix_behavior = matrix_behavior
-#        # Calcul de la fraction volumique de matrice f_m
-#        self.f_matrix = self.compute_fm()
-#        
-#    def __str__(self):
-#        string = "Microstructure\nf_m = {:.2f}, matrix".format(self.f_matrix)
-#        dict_inclusions = self.dict_inclusions
-#        # Présentation de toutes les inclusions contenues dans la microstructure
-#        for inclusion in dict_inclusions.keys():
-#            fi = dict_inclusions[inclusion]
-#            string += "\nf_i = {}, ".format(fi) + str(inclusion)
-#        return string
-#
-#    def compute_fm(self):
-#        """
-#        1/ Vérifie si la liste des inclusions donnée est cohérente (i.e : la somme des fractions volumiques des inclusions est inférieure à 1). Si ce n'est pas le cas, génère une erreur.
-#        2/ Si aucune erreur n'est générée, calcule la fraction volumique de matrice.
-#        """
-#        total_fi = 0 # Total des fractions volumiques d'inclusions
-#        dict_inclusions = self.dict_inclusions
-#        for inclusion in dict_inclusions.keys():
-#            fi = dict_inclusions[inclusion]
-#            total_fi += fi
-#        if total_fi >= 1:
-#            raise NameError("Inconsistent list of volumic fractions")
-#        else :
-#            f_m = 1 - total_fi
-#            return f_m
-
 
 
         
@@ -215,7 +173,7 @@ class Autocohérent:
 
 ######## FONCTIONS UTILISEES POUR LE CALCUL DE Kh ################
 
-    def J(k,r,phase):
+    def J(r,phase):
         k=phase.behavior["K"]
         g=phase.behavior["G"]
         J=np.matrix([[r,1/r**2],[3*k,-4*g/(r**4)]])
@@ -223,7 +181,8 @@ class Autocohérent:
     
     def N(k,inclusion):
         list_phases=inclusion.list_phases
-        return np.matmul(Autocohérent.J(k+1,list_phases[k].radius,list_phases[k+1]).I,Autocohérent.J(k,list_phases[k].radius,list_phases[k]))
+        Rk=list_phases[k].radius
+        return np.matmul(Autocohérent.J(Rk,list_phases[k+1]).I,Autocohérent.J(Rk,list_phases[k]))
     
     def Q(k,inclusion):
         Q=Autocohérent.N(0,inclusion)
@@ -234,9 +193,9 @@ class Autocohérent:
     def compute_Kh(self):
         n_phases=self.n_phases
         inclusion=self.inclusion
-        Qi=Autocohérent.Q(n_phases-1, inclusion)
-        a=Qi[0,0]
-        b=Qi[1,0]
+        Q=Autocohérent.Q(n_phases-1, inclusion)
+        a=Q[0,0]
+        b=Q[1,0]
         last_phase=inclusion.list_phases[n_phases-1]
         kn=last_phase.behavior["K"]
         gn=last_phase.behavior["G"]
@@ -244,9 +203,91 @@ class Autocohérent:
         numerator = 3*kn*rn**3*a-4*gn*b
         denominator = 3*(rn**3*a+b)
         return numerator/denominator
+
+
+######## FONCTIONS UTILISEES POUR LE CALCUL DE Gh ################  
+
+    def L(r,phase):
+        k=phase.behavior["K"]
+        g=phase.behavior["G"]
+        mu=(3*k-2*g)/(6*k+2*g)
+        Line1=[r , -6*mu*r**3/(1-2*mu), 3/r**4, (5-4*g)/(r**2*(1-2*mu))]
+        Line2=[r , (4*mu-7)*r**3/(1-2*mu) , -2/r**4 , 2/r**2]
+        Line3=[g , 3*mu*g*r**2/(1-2*mu) , -12*g/r**5 , 2*(mu-5)*g/((1-2*mu)*r**3)]
+        Line4=[g , -(7+2*mu)*g*r**2/(1-2*mu) , 8*g/r**5 , 2*(1+mu)*g/((1-2*mu)*r**3)]
+        L=np.matrix([Line1,Line2,Line3,Line4])
+        return L
     
+    def M(k,inclusion):
+        list_phases=inclusion.list_phases
+        Rk=list_phases[k].radius
+        return np.matmul(Autocohérent.L(Rk,list_phases[k+1]).I,Autocohérent.L(Rk,list_phases[k]))
     
+    def P(k,inclusion):
+        P=Autocohérent.M(0,inclusion)
+        for i in range(1,k):
+            P=np.matmul(P,Autocohérent.P(i,inclusion))
+        return P
     
+    def Z(a,b,inclusion):
+        n_phases=inclusion.n_phases
+        P1=Autocohérent.P(n_phases-1,inclusion)
+        return P1[a,1]*P1[b,2]-P1[b,1]*P1[a,2]
+    
+    def A(inclusion):
+        n_phases=inclusion.n_phases
+        last_phase=inclusion.list_phases[n_phases-1]
+        k=last_phase.behavior["K"]
+        g=last_phase.behavior["G"]
+        mu=(3*k-2*g)/(6*k+2*g)
+        r=last_phase.radius
+        terme1=4*r**10*(1-2*mu)*(7-10*mu)*Z(1,2,inclusion)
+        terme2=20*r**7*(7-12*mu+8*mu**2)*Z(4,2,inclusion)
+        terme3=12*r**5(1-2*mu)*(Z(1,4,inclusion)-7*Z(2,3,inclusion))
+        terme4=20*r**3*(1-2*mu)**2*Z(1,3,inclusion)
+        terme5=16*(4-5*mu)*(1-2*mu)*Z(4,3,inclusion)
+        return terme1+terme2+terme3+terme4+terme5
+    
+    def B(inclusion):
+        n_phases=inclusion.n_phases
+        last_phase=inclusion.list_phases[n_phases-1]
+        k=last_phase.behavior["K"]
+        g=last_phase.behavior["G"]
+        mu=(3*k-2*g)/(6*k+2*g)
+        r=last_phase.radius
+        terme1=3*r**10*(1-2*mu)*(15*mu-7)*Z(1,2,inclusion)
+        terme2=60*r**7*mu*(mu-3)*Z(4,2,inclusion)
+        terme3=-24*r**5(1-2*mu)*(Z(1,4,inclusion)-7*Z(2,3,inclusion))
+        terme4=-40*r**3*(1-2*mu)**2*Z(1,3,inclusion)
+        terme5=-8*(4-5*mu)*(1-2*mu)*Z(4,3,inclusion)
+        return terme1+terme2+terme3+terme4+terme5
+    
+    def C(inclusion):
+        n_phases=inclusion.n_phases
+        last_phase=inclusion.list_phases[n_phases-1]
+        k=last_phase.behavior["K"]
+        g=last_phase.behavior["G"]
+        mu=(3*k-2*g)/(6*k+2*g)
+        r=last_phase.radius
+        terme1=-r**10*(1-2*mu)*(5*mu+7)*Z(1,2,inclusion)
+        terme2=10*r**7*(7-mu**2)*Z(4,2,inclusion)
+        terme3=12*r**5(1-2*mu)*(Z(1,4,inclusion)-7*Z(2,3,inclusion))
+        terme4=20*r**3*(1-2*mu)**2*Z(1,3,inclusion)
+        terme5=-8*(7-5*mu)*(1-2*mu)*Z(4,3,inclusion)
+        return terme1+terme2+terme3+terme4+terme5
+
+
+    def compute_Gh(self):
+        n_phases=self.n_phases
+        inclusion=self.inclusion
+        Pi=Autocohérent.P(n_phases-1, inclusion)
+        A=Autocohérent.A(inclusion)
+        B=Autocohérent.B(inclusion)
+        C=Autocohérent.C(inclusion)
+        last_phase=inclusion.list_phases[n_phases-1]
+        gn=last_phase.behavior["G"]
+        return gn*nppol.polyroots([C, B, A])
+  
     def compute_h_behavior(self):
         """
         Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
