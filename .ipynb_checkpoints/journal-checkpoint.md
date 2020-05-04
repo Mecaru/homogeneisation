@@ -2,6 +2,9 @@
 ----
 ## ToDo List :
 - Coder l'interface (notebook avec explications, interface user-friendly, "homogeneisation_main.ipynb")
+    - Description des modèles avec équations
+    - Réfléchir à l'implémentation de la bdd
+    - Réfléchir à l'implémentation des modèles inverses
 - Ajouter des modèles
 ---
 ## Suivi
@@ -16,3 +19,6 @@
 ### 30/04/2020
 - Génération d'une microstructure
 - Calcul de comportement homogénéisé avec modèles compatibles
+
+### 04/05/2020
+- Calcul automatisé depuis un fichier texte - 1ere version
