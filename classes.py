@@ -167,8 +167,8 @@ class Mori_Tanaka:
         numerator = f*(Gf-Gm)
         Gh = Gm + numerator/denominator
         return {'G' : Gh}
-        
 
+    
 list_models = [Mori_Tanaka] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
 dict_behaviors = {'Isotropic' : ['K', 'G']}
 
