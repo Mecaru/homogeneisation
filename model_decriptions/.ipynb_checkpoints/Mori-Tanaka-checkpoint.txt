@@ -1,3 +1,0 @@
-Bonjour
-Ceci est un test
-$\int_0^2x=3$

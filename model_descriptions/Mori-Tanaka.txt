@@ -1,0 +1,4 @@
+# Modèle de Mori-Tanaka 
+## (Description incomplète, phase de test de l'interface)
+Équation du modèle :
+$G_{h}=G_{m}+f\left(G_{f}-G_{m}\right) \frac{1}{1+(1-f) \frac{G_{f}-G_{m}}{G_{m}+\frac{G_{m}\left(9 K_{m}+8 G_{m}\right)}{6\left(K_{m}+2 G_{m}\right)}}}$
