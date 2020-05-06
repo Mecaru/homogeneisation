@@ -19,7 +19,7 @@ class Inclusion():
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
     
-    def __init__(self, type_inclusion, radius, behavior):
+    def __init__(self, type_inclusion, behavior, radius=0.1):
         """
         type_inclusion : (int), 0 pour des inclusions sphériques.
         radius : (float), valeur du rayon des inclusions sphériques. TODO : À remplacer par un paramètre plus général pour des inclusions de types différents. 
@@ -32,6 +32,7 @@ class Inclusion():
     def type_to_str(self):
         """
         Transforme un entier "type_inclusion" en la chaîne de caractères correspondante (exemple : 0 --> "spheres") 
+        TODO : synchroniser cette fonction avec le main à l'aide d'un dictionnaire pour faciliter l'ajout de types d'inclusions
         """
         type_inclusion = self.type_inclusion
         if type_inclusion == 0:
@@ -87,6 +88,8 @@ class Microstructure():
         else :
             f_m = 1 - total_fi
             return f_m
+        
+   
 
 
 class Mori_Tanaka:
@@ -104,7 +107,7 @@ class Mori_Tanaka:
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0
-        self.behavior_condition = ["K", "G"] # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = ["G", "K"] # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         
     def __str__(self):
@@ -112,6 +115,12 @@ class Mori_Tanaka:
         Description textuelle du modèle.
         """
         return "Modèle de Mori-Tanaka"
+    
+    def __repr__(self):
+        """
+        Description textuelle du modèle.
+        """
+        return str(self)
     
     def check_hypothesis(self, microstructure):
         """
@@ -124,17 +133,22 @@ class Mori_Tanaka:
         # vérification du nombre d'inclusions
         if n_inclusions > self.n_inclusions:
             # Le modèle ne peut pas traiter de microstructures avec autant d'inclusions de natures différentes
-            return False
+             raise NameError("Wrong number of inclusion")
+             return False
         for inclusion in dict_inclusions.keys():
             # Vérification du type d'inclusion
             if inclusion.type_inclusion != self.type_inclusion:
+                raise NameError("Wrong type of inclusion or microstructure")
                 return False
             # vérification du comportement des inclusions
             behavior = inclusion.behavior
             if list(behavior.keys()) != self.behavior_condition:
+                print (list(behavior.keys()) , self.behavior_condition)
+                raise NameError("Inclusion and microstructure behavior incompatible")
                 return False
         # Vérification su comportement de la matrice
         if list(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+            raise NameError("Inclusion and microstructure behavior incompatible")
             return False
         # À ce stade, toutes les conditions ont été vérifiées
         return True
@@ -157,15 +171,74 @@ class Mori_Tanaka:
         denominator = 1 + (1-f)*(Gf-Gm)/(Gm+Gm*(9*Km+8*Gm)/(6*(Km+2*Gm)))
         numerator = f*(Gf-Gm)
         Gh = Gm + numerator/denominator
-        return {'G' : Gh}    
+        return {'G' : Gh}
+    
+    def Hashin_bounds(microstructure):
+        """
+        Donne les bornes de Hashin-Shtrikman pour 1 seule phase, isotrope
+        TODO : ajouter le cas des inclusion multiples
+        """
+        fm=microstructure.f_matrix
+        f=1-fm
+        km=microstructure.matrix_behavior["K"]
+        gm=microstructure.matrix_behavior["G"]
+        mum=(3*km-2*gm)/(6*km+2*gm)
+        
+        for inclusion in microstructure.dict_inclusions.keys():
+            kf=inclusion.behavior["K"]
+            gf=inclusion.behavior["G"]
+            muf=(3*kf-2*gf)/(6*kf+2*gf)
+            
+        af =(3+4*muf)/(8*(1-muf))
+        am =(3+4*mum)/(8*(1-mum))
+        bf = (3-4*muf)/(4*(1-muf))
+        bm = (3-4*mum)/(4*(1-mum))
+        
+        numerator = f*kf + fm*km/(1+af*((km-kf)/kf))
+        denominator = f + fm/(1+af*((km-kf)/kf))
+        ksup=numerator/denominator
+        
+        numerator = fm*km + f*kf/(1+am*((kf-km)/km))
+        denominator = fm + f/(1+am*((kf-km)/km))
+        kinf=numerator/denominator
+        
+        numerator = f*gf + fm*gm/(1+bf*((gm-gf)/gf))
+        denominator = f + fm/(1+bf*((gm-gf)/gf))
+        gsup=numerator/denominator
+        
+        numerator = fm*gm + f*gf/(1+bm*((gf-gm)/gm))
+        denominator = fm + f/(1+am*((gf-gm)/gm))
+        ginf=numerator/denominator
+        
+        return {'Gsup' : gsup, 'Ginf' : ginf, 'Ksup' : ksup, 'Kinf' : kinf}
+
+    
+    def check_bounds(self,microstructure):
+        Behavior_h=self.compute_h_behavior(self,microstructure)
+        Gh = Behavior_h['G']
+        Kh = Behavior_h['K']
+        Bounds=Hashin_bounds(microstructure)
+        Gsup = Bounds['Gsup']
+        Ginf = Bounds['Ginf']
+        Ksup = Bounds['Ksup']
+        Kinf = Bounds['Kinf']
+        if Gh < Ginf or Gh > Gsup : 
+            raise NameError("G out of Hashin-Shtrikman bounds")
+            return False
+        if Kh < Kinf or Kh > Ksup :
+            raise NameError("K out of Hashin-Shtrikman bounds")
+            return False
+        return True
     
 
-list_models = [Mori_Tanaka] # Liste des modèles implémentés, penser à l'incrémenter à chaque ajout d'un nouveau modèle    
-    
-# Tests
-inclusion1 = Inclusion(0, 1, {"K":300, "G":150})
-inclusion2 = Inclusion(0, 2, {"K":300, "G":150})
+        
+     
+#list_models = [Mori_Tanaka] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
+#dict_behaviors = {'Isotropic' : ['K', 'G'], 'Test' : ['Test']}
+
+##Tests
+inclusion1 = Inclusion(0, {"K":300, "G":150}, 1)
+inclusion2 = Inclusion(0, {"K":300, "G":150}, 2)
 microstructure = Microstructure({"K":10, "G":15}, {inclusion1:0.6})
 model = Mori_Tanaka()
-#print(model.compute_h_behavior(microstructure))
-    
+print(model.compute_h_behavior(microstructure), Mori_Tanaka.Hashin_bounds(microstructure))
