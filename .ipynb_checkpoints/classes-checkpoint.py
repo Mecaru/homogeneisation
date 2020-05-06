@@ -89,6 +89,39 @@ class Microstructure():
             f_m = 1 - total_fi
             return f_m
         
+     ####### CALCUL DES BORNES DE HASHIN-SHTRICKMAN ##########  
+    
+    def khs(k1, g1, c1, k2, g2, c2):
+        numerator = c2*(k2-k1)
+        denominator = 1+3*c1*(k2-k1)/(4*g1+3*k1)
+        return k1+numerator/denominator
+    
+    def ghs(k1, g1, c1, k2, g2, c2):
+        numerator = c2*(g2-g1)
+        denominator = 1+6*c1*(g2-g1)*(k1+2*g1)/((15*k1+20*g1)*g1)
+        return g1+numerator/denominator
+        
+    def Hashin_bounds(self):
+        """
+        Donne les bornes de Hashin-Shtrikman pour 1 seule phase, isotrope
+        TODO : ajouter le cas des inclusion multiples
+        """
+        fm=self.f_matrix
+        f=1-fm
+        km=self.matrix_behavior["K"]
+        gm=self.matrix_behavior["G"]
+        
+        for inclusion in self.dict_inclusions.keys():
+            kf=inclusion.behavior["K"]
+            gf=inclusion.behavior["G"]
+        
+        ksup=max(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
+        kinf=min(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
+        gsup=max(Microstructure.ghs(km,gm,fm,kf,gf,f),Microstructure.ghs(kf,gf,f,km,gm,fm))
+        ginf=min(Microstructure.ghs(km,gm,fm,kf,gf,f),Microstructure.ghs(kf,gf,f,km,gm,fm))
+            
+        
+        return { 'Ginf' : ginf, 'Gsup' : gsup, 'Kinf' : kinf, 'Ksup' : ksup }
    
 
 
@@ -107,7 +140,7 @@ class Mori_Tanaka:
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0
-        self.behavior_condition = ["G", "K"] # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = ["K", "G"] # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         
     def __str__(self):
@@ -173,61 +206,24 @@ class Mori_Tanaka:
         Gh = Gm + numerator/denominator
         return {'G' : Gh}
     
-    def Hashin_bounds(microstructure):
-        """
-        Donne les bornes de Hashin-Shtrikman pour 1 seule phase, isotrope
-        TODO : ajouter le cas des inclusion multiples
-        """
-        fm=microstructure.f_matrix
-        f=1-fm
-        km=microstructure.matrix_behavior["K"]
-        gm=microstructure.matrix_behavior["G"]
-        mum=(3*km-2*gm)/(6*km+2*gm)
-        
-        for inclusion in microstructure.dict_inclusions.keys():
-            kf=inclusion.behavior["K"]
-            gf=inclusion.behavior["G"]
-            muf=(3*kf-2*gf)/(6*kf+2*gf)
-            
-        af =(3+4*muf)/(8*(1-muf))
-        am =(3+4*mum)/(8*(1-mum))
-        bf = (3-4*muf)/(4*(1-muf))
-        bm = (3-4*mum)/(4*(1-mum))
-        
-        numerator = f*kf + fm*km/(1+af*((km-kf)/kf))
-        denominator = f + fm/(1+af*((km-kf)/kf))
-        ksup=numerator/denominator
-        
-        numerator = fm*km + f*kf/(1+am*((kf-km)/km))
-        denominator = fm + f/(1+am*((kf-km)/km))
-        kinf=numerator/denominator
-        
-        numerator = f*gf + fm*gm/(1+bf*((gm-gf)/gf))
-        denominator = f + fm/(1+bf*((gm-gf)/gf))
-        gsup=numerator/denominator
-        
-        numerator = fm*gm + f*gf/(1+bm*((gf-gm)/gm))
-        denominator = fm + f/(1+am*((gf-gm)/gm))
-        ginf=numerator/denominator
-        
-        return {'Gsup' : gsup, 'Ginf' : ginf, 'Ksup' : ksup, 'Kinf' : kinf}
 
     
     def check_bounds(self,microstructure):
-        Behavior_h=self.compute_h_behavior(self,microstructure)
+        Behavior_h=self.compute_h_behavior(microstructure)
+        print(Behavior_h)
         Gh = Behavior_h['G']
-        Kh = Behavior_h['K']
-        Bounds=Hashin_bounds(microstructure)
+        #Kh = Behavior_h['K']
+        Bounds=microstructure.Hashin_bounds()
         Gsup = Bounds['Gsup']
         Ginf = Bounds['Ginf']
-        Ksup = Bounds['Ksup']
-        Kinf = Bounds['Kinf']
+        #Ksup = Bounds['Ksup']
+        #Kinf = Bounds['Kinf']
         if Gh < Ginf or Gh > Gsup : 
             raise NameError("G out of Hashin-Shtrikman bounds")
             return False
-        if Kh < Kinf or Kh > Ksup :
-            raise NameError("K out of Hashin-Shtrikman bounds")
-            return False
+        #if Kh < Kinf or Kh > Ksup :
+            #raise NameError("K out of Hashin-Shtrikman bounds")
+            #return False
         return True
     
 
@@ -241,4 +237,4 @@ inclusion1 = Inclusion(0, {"K":300, "G":150}, 1)
 inclusion2 = Inclusion(0, {"K":300, "G":150}, 2)
 microstructure = Microstructure({"K":10, "G":15}, {inclusion1:0.6})
 model = Mori_Tanaka()
-print(model.compute_h_behavior(microstructure), Mori_Tanaka.Hashin_bounds(microstructure))
+print(model.compute_h_behavior(microstructure), microstructure.Hashin_bounds(), model.check_bounds(microstructure))
