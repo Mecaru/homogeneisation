@@ -8,6 +8,7 @@
     - Compléter le modèle de Mori-Tanaka
     - Modèles des bornes sup et inf
     - Réfléchir à l'itnégration des modèles auto-cohérents avec phases
+    - Réfléchir à l'importation des scripts de calcul des tenseurs d'Eshelby (contacter l'auteur pour l'implémentation sur JupyterLab)
 ---
 ## Suivi
 ### 27/04/2020
