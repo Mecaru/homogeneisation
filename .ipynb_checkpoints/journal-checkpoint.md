@@ -33,3 +33,6 @@
 
 ### 05/05/2020
 - Description des modèles avec équations
+
+### 07/05/2020
+- Ajout de la description des modèles en Markdown
