@@ -12,9 +12,10 @@ Authors : Karim AÏT AMMAR, Enguerrand LUCAS
 
 import numpy as np
 from math import *
+import matplotlib.pyplot as plt
 
 
-class Inclusion():
+class Inclusion:
     """
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
@@ -50,7 +51,7 @@ class Inclusion():
         return str(self)
 
     
-class Microstructure():
+class Microstructure:
     """
     Contient des informations sur la microstructure (comportement de la matrice, inclusions, etc..). TODO : à modifier pour prendre en compte la présence ou non d'une interphase, et d'autres paramètres de modèles plus avancés.
     """
@@ -89,6 +90,26 @@ class Microstructure():
         else :
             f_m = 1 - total_fi
             return f_m
+        
+    def draw(self):
+        """
+        Méthode qui permet de dessiner la microstructure. Pour le moment, fonctionne uniquement avec une seule inclusion sphérique.
+        """
+        inclusions = list(self.dict_inclusions.keys())
+        if len(inclusions) == 1 and inclusions[0].type_inclusion == 0:
+            inclusion = inclusions[0]
+            fi = self.dict_inclusions[inclusion]
+            # Calcul du rayon pour un VER de taille 10X10
+            r = sqrt(100*fi/pi)
+            x, y = [], []
+            for theta in np.linspace(0,2*pi,200):
+                x.append(r*cos(theta))
+                y.append(r*sin(theta))
+            fig, ax = plt.subplots()
+            ax.axis('equal')
+            plt.plot([-5,5,5,-5,-5], [-5,-5,5,5,-5])
+            plt.plot(x, y)
+            plt.show()
 
 
 class Mori_Tanaka:
@@ -178,3 +199,5 @@ dict_behaviors = {'Isotropic' : ['K', 'G']}
 #microstructure = Microstructure({"K":10, "G":15}, {inclusion1:0.6})
 #model = Mori_Tanaka()
 #print(model.compute_h_behavior(microstructure))
+#print(microstructure)
+#microstructure.draw()

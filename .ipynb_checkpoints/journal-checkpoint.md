@@ -9,6 +9,7 @@
     - Comparaison de modèles
     - Ajout de données de comparaison via fichier .txt
     - Cas matériaux poreux
+    - Réfléchir à la représentation graphique de plus d'une inclusion
 - Ajouter des modèles
     - Compléter le modèle de Mori-Tanaka
     - Modèles des bornes sup et inf
