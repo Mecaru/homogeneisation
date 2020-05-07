@@ -37,3 +37,4 @@
 
 ### 07/05/2020
 - Ajout de la description des modèles en Markdown
+- Méthode 'draw' permettant de dessiner les microstructures
