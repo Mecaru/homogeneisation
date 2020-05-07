@@ -4,6 +4,11 @@
 - Coder l'interface (notebook avec explications, interface user-friendly, "homogeneisation_main.ipynb")
     - Réfléchir à l'implémentation de la bdd
     - Réfléchir à l'implémentation des modèles inverses
+    - Réfléchir à l'intégration de modèles auto-cohérents à l'interfaces
+    - Inclure les bornes de Hashin des modèles
+    - Comparaison de modèles
+    - Ajout de données de comparaison via fichier .txt
+    - Cas matériaux poreux
 - Ajouter des modèles
     - Compléter le modèle de Mori-Tanaka
     - Modèles des bornes sup et inf
