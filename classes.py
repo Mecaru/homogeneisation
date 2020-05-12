@@ -28,7 +28,7 @@ class Inclusion:
         """
         self.type_inclusion = type_inclusion
         self.radius = radius
-        self.behavior = behavior
+        self.behavior = complete_behavior(behavior)
         self.name = name
     
     def type_to_str(self):
@@ -45,7 +45,10 @@ class Inclusion:
         Présentation de l'instance.
         """
         str_type_inclusion = self.type_to_str()
-        return "{}, {}, {}".format(self.name, str_type_inclusion, self.behavior)
+        string = "{}, {}".format(self.name, str_type_inclusion)
+        for parameter, value in self.behavior.items():
+            string += ", {}: {:.2f}".format(parameter, value)
+        return string
 
     def __repr__(self):
         return str(self)
@@ -62,12 +65,14 @@ class Microstructure:
         matrix_behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
         """
         self.dict_inclusions = dict_inclusions
-        self.matrix_behavior = matrix_behavior
+        self.matrix_behavior = complete_behavior(matrix_behavior)
         # Calcul de la fraction volumique de matrice f_m
         self.f_matrix = self.compute_fm()
         
     def __str__(self):
-        string = "Microstructure\nf_m = {:.2f}, matrix, {}".format(self.f_matrix, self.matrix_behavior)
+        string = "Microstructure\nf_m = {:.2f}, matrix".format(self.f_matrix, self.matrix_behavior)
+        for parameter, value in self.matrix_behavior.items():
+            string += ", {}: {:.2f}".format(parameter, value) # TODO : transformer cette ligne en fonction print_behavior et l'appeler lors de l'affichage du comportement homogénéisé et des bornes de hashin
         dict_inclusions = self.dict_inclusions
         # Présentation de toutes les inclusions contenues dans la microstructure
         for inclusion in dict_inclusions.keys():
@@ -157,7 +162,7 @@ class Mori_Tanaka:
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = ["K", "G"] # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Mori-Tanaka"
         
@@ -191,10 +196,10 @@ class Mori_Tanaka:
                 return False
             # vérification du comportement des inclusions
             behavior = inclusion.behavior
-            if list(behavior.keys()) != self.behavior_condition:
+            if set(behavior.keys()) != self.behavior_condition:
                 return False
         # Vérification su comportement de la matrice
-        if list(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
             return False
         # À ce stade, toutes les conditions ont été vérifiées
         return True
@@ -217,17 +222,54 @@ class Mori_Tanaka:
         denominator = 1 + (1-f)*(Gf-Gm)/(Gm+Gm*(9*Km+8*Gm)/(6*(Km+2*Gm)))
         numerator = f*(Gf-Gm)
         Gh = Gm + numerator/denominator
+        result = {'G' : Gh}
+        # TODO : une fois le modèle complet, convertir le résultat en E et nu si les comportements en entrée sont en E et nu
         return {'G' : Gh}
 
+def bulk_to_young(K, G):
+    """
+    Transforme des modules K et G en modules E et nu.
+    """
+    E = 9*K*G/(3*K+G)
+    nu = (3*K-2*G)/(2*(3*K+G))
+    return E, nu
+   
+def young_to_bulk(E, nu):
+    """
+    Transforme des modules E et nu en modules K et G
+    """
+    K = E/(3*(1-2*nu))
+    G = E/(2*(1+nu))
+    return K, G
+    
+def complete_behavior(behavior):
+    """
+    Si le comportement en entrée est isotrope, le complète avec E et nu ou K et G. Sinon, le renvoie tel quel.
+    """
+    parameters = list(behavior.keys())
+    result = behavior
+    if parameters == ['K', 'G']:
+        K, G = behavior['K'], behavior['G']
+        E, nu = bulk_to_young(K, G)
+        result['E'], result['nu'] = E, nu
+    elif parameters == ['E', 'nu']:
+        E, nu = behavior['E'], behavior['nu']
+        K, G = young_to_bulk(E, nu)
+        result['K'], result['G'] = K, G
+    return result
     
 list_models = [Mori_Tanaka] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
-dict_behaviors = {'Isotropic' : ['K', 'G']}
+dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', 'nu']}
 
 # Tests
-#inclusion1 = Inclusion(0, {"K":300, "G":150}, 1)
-#inclusion2 = Inclusion(0, {"K":300, "G":150}, 2)
-#microstructure = Microstructure({"K":10, "G":15}, {inclusion1:0.6})
+#inclusion1 = Inclusion(0, {"E":300, "nu":0.3})
+#inclusion1 = Inclusion(0, {"K":300, "G":0.3})
+#print(inclusion1)
+#inclusion2 = Inclusion(0, {"K":300, "G":150})
+#microstructure = Microstructure({"E":10, "nu":0.1}, {inclusion1:0.6})
 #model = Mori_Tanaka()
+#print(microstructure)
+#print(model.check_hypothesis(microstructure))
 #print(model.compute_h_behavior(microstructure))
 #print(microstructure)
 #microstructure.draw()

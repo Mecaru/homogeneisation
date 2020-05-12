@@ -5,7 +5,6 @@
     - Réfléchir à l'implémentation de la bdd
     - Réfléchir à l'implémentation des modèles inverses
     - Réfléchir à l'intégration de modèles auto-cohérents à l'interfaces
-    - Inclure les bornes de Hashin des modèles
     - Cas matériaux poreux
     - Réfléchir à la représentation graphique de plus d'une inclusion
 - Ajouter des modèles
@@ -41,3 +40,5 @@
 ### 12/05/2020 
 - Comparaison de modèles entre eux
 - Comparaison de modèles avec des données de fichiers .txt
+- Ajout du calcul des bornes de Hashin lors du calcul du comportement homogénéisé
+- Implémentation des variables E et nu en plus de K et G dans le cas isotrope
