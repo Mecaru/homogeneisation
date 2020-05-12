@@ -43,3 +43,4 @@
 - Ajout du calcul des bornes de Hashin lors du calcul du comportement homogénéisé
 - Implémentation des variables E et nu en plus de K et G dans le cas isotrope
 - Changement automatique du nom de l'inclusion par défaut
+- Lecture des noms des modèles des fichiers input d'automatisation des simulations rendue insensible à la casse 
