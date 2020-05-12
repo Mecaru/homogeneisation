@@ -6,3 +6,4 @@
 - "journal.md": sums up the advances made through the project
 - "inputs", "outputs": folders containing .txt data to automate the computations 
 - "model_descriptions": folder containing the descriptions of the models 
+- "model_comparison": folder containing text files with data to be compared with models
