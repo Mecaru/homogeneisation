@@ -110,7 +110,37 @@ class Microstructure:
             plt.plot([-5,5,5,-5,-5], [-5,-5,5,5,-5])
             plt.plot(x, y)
             plt.show()
-
+     ## CALCUL DES BORNES DE HASHIN-SHTRICKMAN ##########  
+    
+    def khs(k1, g1, c1, k2, g2, c2):
+        numerator = c2*(k2-k1)
+        denominator = 1+3*c1*(k2-k1)/(4*g1+3*k1)
+        return k1+numerator/denominator
+    
+    def ghs(k1, g1, c1, k2, g2, c2):
+        numerator = c2*(g2-g1)
+        denominator = 1+6*c1*(g2-g1)*(k1+2*g1)/((3*k1+4*g1)*5*g1)
+        return g1+numerator/denominator
+        
+    def Hashin_bounds(self):
+        """
+        Donne les bornes de Hashin-Shtrikman pour 1 seule phase, isotrope
+        TODO : ajouter le cas des inclusion multiples
+        """
+        fm=self.f_matrix
+        f=1-fm
+        km,gm=self.matrix_behavior["K"],self.matrix_behavior["G"]
+        
+        for inclusion in self.dict_inclusions.keys():
+            kf,gf=inclusion.behavior["K"],inclusion.behavior["G"]
+        
+        ksup=max(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
+        kinf=min(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
+        gsup=max(Microstructure.ghs(km,gm,fm,kf,gf,f),Microstructure.ghs(kf,gf,f,km,gm,fm))
+        ginf=min(Microstructure.ghs(km,gm,fm,kf,gf,f),Microstructure.ghs(kf,gf,f,km,gm,fm))
+            
+        
+        return { 'Ginf' : ginf, 'Gsup' : gsup, 'Kinf' : kinf, 'Ksup' : ksup }
 
 class Mori_Tanaka:
     """
