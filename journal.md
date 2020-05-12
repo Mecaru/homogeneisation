@@ -42,3 +42,4 @@
 - Comparaison de modèles avec des données de fichiers .txt
 - Ajout du calcul des bornes de Hashin lors du calcul du comportement homogénéisé
 - Implémentation des variables E et nu en plus de K et G dans le cas isotrope
+- Changement automatique du nom de l'inclusion par défaut
