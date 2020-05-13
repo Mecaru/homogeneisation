@@ -44,3 +44,6 @@
 - Implémentation des variables E et nu en plus de K et G dans le cas isotrope
 - Changement automatique du nom de l'inclusion par défaut
 - Lecture des noms des modèles des fichiers input d'automatisation des simulations rendue insensible à la casse 
+
+### 13/05/2020
+- Ajout d'inclusions ellipsoïdales et choix du rapport de forme

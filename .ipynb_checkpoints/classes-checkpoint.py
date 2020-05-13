@@ -20,14 +20,15 @@ class Inclusion:
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
     
-    def __init__(self, type_inclusion, behavior, radius=0.1, name=None):
+    def __init__(self, type_inclusion, behavior, aspect_ratio=1, name=None):
         """
-        type_inclusion : (int), 0 pour des inclusions sphériques.
+        TODO : Prise en compte de l'orientation
+        type_inclusion : (int), 0 pour des inclusions sphériques. Voir la liste list_types (en bas du fichier) pour les autres types.
         radius : (float), valeur du rayon des inclusions sphériques. TODO : À remplacer par un paramètre plus général pour des inclusions de types différents. 
         behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
         """
         self.type_inclusion = type_inclusion
-        self.radius = radius
+        self.aspect_ratio = aspect_ratio
         self.behavior = complete_behavior(behavior)
         self.name = name
     
@@ -37,8 +38,12 @@ class Inclusion:
         TODO : synchroniser cette fonction avec le main à l'aide d'un dictionnaire pour faciliter l'ajout de types d'inclusions
         """
         type_inclusion = self.type_inclusion
-        if type_inclusion == 0:
-            return "spheres"
+        try:
+            result = dict_types[type_inclusion]
+        except KeyError:
+            # Le type spécifié n'est pas répertorié dans le dictionnaire
+            result = None
+        return result
     
     def __str__(self):
         """
@@ -46,6 +51,8 @@ class Inclusion:
         """
         str_type_inclusion = self.type_to_str()
         string = "{}, {}".format(self.name, str_type_inclusion)
+        if self.type_inclusion != 0:
+            string += " (c={})".format(self.aspect_ratio)
         for parameter, value in self.behavior.items():
             string += ", {}: {:.2f}".format(parameter, value)
         return string
@@ -260,9 +267,11 @@ def complete_behavior(behavior):
     
 list_models = [Mori_Tanaka] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
 dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', 'nu']}
+dict_types = {0: 'Spheres', 1: 'Oblate', 2: 'Prolate'} # Types de géométries admissibles et leur identifiant
 
 # Tests
-#inclusion1 = Inclusion(0, {"E":300, "nu":0.3})
+#inclusion1 = Inclusion(1, {"E":300, "nu":0.3})
+#print(inclusion1)
 #inclusion1 = Inclusion(0, {"K":300, "G":0.3})
 #print(inclusion1)
 #inclusion2 = Inclusion(0, {"K":300, "G":150})
