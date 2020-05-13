@@ -524,4 +524,4 @@ for i in range(1):
     Ch=model.compute_h_behavior(microstructure)
     #print("Comportement homogénéisé : ", model.compute_h_behavior(microstructure))
     #print ("Dans les bornes de Hashin : ", model.check_bounds(microstructure))
- #print(inclusion.behavior['K'],inclusion.behavior['G'],inclusion.radius,f,microstructure.matrix_behavior['K'],microstructure.matrix_behavior['G'],microstructure.Hashin_bounds()['Kinf'],microstructure.Hashin_bounds()['Ksup'],microstructure.Hashin_bounds()['Ginf'],microstructure.Hashin_bounds()['Gsup'],Ch['K'],1,Ch['G'])
+    print(inclusion.behavior['K'],inclusion.behavior['G'],inclusion.radius,f,microstructure.matrix_behavior['K'],microstructure.matrix_behavior['G'],microstructure.Hashin_bounds()['Kinf'],microstructure.Hashin_bounds()['Ksup'],microstructure.Hashin_bounds()['Ginf'],microstructure.Hashin_bounds()['Gsup'],Ch['K'],1,Ch['G'])
