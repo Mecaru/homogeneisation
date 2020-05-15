@@ -1,0 +1,17 @@
+# Differential scheme
+
+[Christensen, R.M., 1990. A critical evaluation for a class of micromechanics models. J. Mech. Phys. Solids, 38, 379-404]
+
+The idea is to add progressively an infinitesimal amount of the reinforcing phase (the inclusion) until reaching the desired volume fraction $f$.
+
+The differential equation to solve are:
+
+$$\frac{d\bar{G}}{df}+\frac{15(1-\bar{\nu})(\bar{G}-G_f)}{(1-f)(7-5\bar{\nu}+2(4-5\bar{\nu})\frac{G_f}{\bar{G}})}=0$$
+
+$$\frac{d\bar{K}}{df}+\frac{(\bar{K}-K_f)}{(1-f)(1+\frac{K_f-\bar{K}}{\bar{K}+\frac{4}{3}\bar{G}})}=0$$
+
+with $\bar{\nu}=\frac{3\bar{K}-2\bar{G}}{2(3\bar{K}+\bar{G})}$ and limit conditions: 
+
+for $c=0$ $\bar{G}=G_m$ and $\bar{K}=K_m$
+
+for $c=1$ $\bar{G}=G_f$ and $\bar{K}=K_f$
