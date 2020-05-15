@@ -152,10 +152,7 @@ class Microstructure:
         
         return { 'Ginf' : ginf, 'Gsup' : gsup, 'Kinf' : kinf, 'Ksup' : ksup }
 
-   
-
-
-
+    
 class Mori_Tanaka:
     """
     TODO : vérifier si le modèle s'applique aussi à d'autres types d'inclusion, pour le moment seules des inclusions sphériques isotropes sont prises en compte pour tester le code.
@@ -196,23 +193,23 @@ class Mori_Tanaka:
         inclusions = dict_inclusions.keys()
         n_inclusions = len(inclusions)
         # vérification du nombre d'inclusions
-        if n_inclusions > self.n_inclusions:
+        if n_inclusions != self.n_inclusions:
             # Le modèle ne peut pas traiter de microstructures avec autant d'inclusions de natures différentes
-             raise NameError("Wrong number of inclusion")
+             #raise NameError("Wrong number of inclusion")
              return False
         for inclusion in dict_inclusions.keys():
             # Vérification du type d'inclusion
             if inclusion.type_inclusion != self.type_inclusion:
-                raise NameError("Wrong type of inclusion or microstructure")
+                #raise NameError("Wrong type of inclusion or microstructure")
                 return False
             # vérification du comportement des inclusions
             behavior = inclusion.behavior
-            if list(behavior.keys()) != self.behavior_condition:
-                print (list(behavior.keys()) , self.behavior_condition)
-                raise NameError("Inclusion and microstructure behavior incompatible")
+            if set(behavior.keys()) != self.behavior_condition:
+                #print (list(behavior.keys()) , self.behavior_condition)
+                #raise NameError("Inclusion and microstructure behavior incompatible")
                 return False
         # Vérification su comportement de la matrice
-        if list(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
             raise NameError("Inclusion and microstructure behavior incompatible")
             return False
         # À ce stade, toutes les conditions ont été vérifiées
@@ -241,7 +238,7 @@ class Mori_Tanaka:
         denominator = 3*Kf+4*Gm+3*(1-f)*(Kf-Km)
         numerator = f*(Kf-Km)*(3*Km+4*Gm)
         Kh = Km + numerator/denominator
-        return {'K' : Kh, 'G' : Gh}
+        return {'K' : Kh, 'G' : Gh} # TODO : Ajouter E et nu
     
 
     
@@ -278,14 +275,15 @@ class Eshelby_Approximation:
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0
-        self.behavior_condition = ["K", "G"] # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = set(['K', 'G','E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.name = "Eshelby"
         
     def __str__(self):
         """
         Description textuelle du modèle.
         """
-        return "Modèle de Mori-Tanaka"
+        return "Modèle d'Eshelby'"
     
     def __repr__(self):
         """
@@ -302,14 +300,14 @@ class Eshelby_Approximation:
         inclusions = dict_inclusions.keys()
         n_inclusions = len(inclusions)
         # vérification du nombre d'inclusions
-        if n_inclusions > self.n_inclusions:
+        if n_inclusions != self.n_inclusions:
             # Le modèle ne peut pas traiter de microstructures avec autant d'inclusions de natures différentes
-             raise NameError("Wrong number of inclusion")
+             #raise NameError("Wrong number of inclusion")
              return False
         for inclusion in dict_inclusions.keys():
             # Vérification du type d'inclusion
             if inclusion.type_inclusion != self.type_inclusion:
-                raise NameError("Wrong type of inclusion or microstructure")
+                #raise NameError("Wrong type of inclusion or microstructure")
                 return False
             # vérification du comportement des inclusions
             behavior = inclusion.behavior
@@ -347,7 +345,7 @@ class Eshelby_Approximation:
         numerator = f*(Kf-Km)*(3*Km+4*Gm)
         Kh = Km + numerator/denominator
         
-        return {'K' : Kh, 'G' : Gh}
+        return {'K' : Kh, 'G' : Gh} # TODO : ajouter E et nu
     
 
     
@@ -386,14 +384,15 @@ class Differential_Scheme:
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0
-        self.behavior_condition = ["K", "G"] # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = set(['K', 'G','E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.name = "Differential"
         
     def __str__(self):
         """
         Description textuelle du modèle.
         """
-        return "Modèle de Mori-Tanaka"
+        return "Modèle différentiel"
     
     def __repr__(self):
         """
@@ -410,24 +409,24 @@ class Differential_Scheme:
         inclusions = dict_inclusions.keys()
         n_inclusions = len(inclusions)
         # vérification du nombre d'inclusions
-        if n_inclusions > self.n_inclusions:
+        if n_inclusions != self.n_inclusions:
             # Le modèle ne peut pas traiter de microstructures avec autant d'inclusions de natures différentes
-             raise NameError("Wrong number of inclusion")
+             #raise NameError("Wrong number of inclusion")
              return False
         for inclusion in dict_inclusions.keys():
             # Vérification du type d'inclusion
             if inclusion.type_inclusion != self.type_inclusion:
-                raise NameError("Wrong type of inclusion or microstructure")
+                #raise NameError("Wrong type of inclusion or microstructure")
                 return False
             # vérification du comportement des inclusions
             behavior = inclusion.behavior
-            if list(behavior.keys()) != self.behavior_condition:
+            if set(behavior.keys()) != self.behavior_condition:
                 print (list(behavior.keys()) , self.behavior_condition)
-                raise NameError("Inclusion and microstructure behavior incompatible")
+                #raise NameError("Inclusion and microstructure behavior incompatible")
                 return False
         # Vérification su comportement de la matrice
-        if list(microstructure.matrix_behavior.keys()) != self.behavior_condition:
-            raise NameError("Inclusion and microstructure behavior incompatible")
+        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+            #raise NameError("Inclusion and microstructure behavior incompatible")
             return False
         # À ce stade, toutes les conditions ont été vérifiées
         return True
@@ -491,27 +490,27 @@ class Differential_Scheme:
         GSUP=Ghs(Kf,Gf,f,Km,Gm,1-f)
         ## affichage des graphes pour K et G
         
-        plt.subplot(211)
-        plt.plot(f,Module[:,0],label="Kh")        
-        plt.plot(f,Module[:,2],label="Kf")
-        plt.plot(f,KSUP,label="Ksup")
-        plt.plot(f,KINF,label="Kinf")
-        plt.title("Kh en fonction de f ")
-        plt.legend()
-        plt.xlabel("fraction volumique")
-        plt.ylabel("Modules")
+        #plt.subplot(211)
+        #plt.plot(f,Module[:,0],label="Kh")        
+        #plt.plot(f,Module[:,2],label="Kf")
+        #plt.plot(f,KSUP,label="Ksup")
+        #plt.plot(f,KINF,label="Kinf")
+        #plt.title("Kh en fonction de f ")
+        #plt.legend()
+        #plt.xlabel("fraction volumique")
+        #plt.ylabel("Modules")
         
-        plt.subplot(212)
-        plt.title("Gh en fonction de f ")
-        plt.plot(f,Module[:,1],label="Gh")
-        plt.plot(f,Module[:,3],label="Gf")
-        plt.plot(f,GSUP,label="Gsup")
-        plt.plot(f,GINF,label="Ginf")
-        plt.legend()
-        plt.xlabel("fraction volumique")
-        plt.ylabel("Modules")
-        plt.show()
-        return {'K' : Kh, 'G' : Gh}
+        #plt.subplot(212)
+        #plt.title("Gh en fonction de f ")
+        #plt.plot(f,Module[:,1],label="Gh")
+        #plt.plot(f,Module[:,3],label="Gf")
+        #plt.plot(f,GSUP,label="Gsup")
+        #plt.plot(f,GINF,label="Ginf")
+        #plt.legend()
+        #plt.xlabel("fraction volumique")
+        #plt.ylabel("Modules")
+        #plt.show()
+        return {'K' : Kh, 'G' : Gh} # TODO : ajouter E et nu
     
 
     
@@ -531,28 +530,25 @@ class Differential_Scheme:
             raise NameError("K out of Hashin-Shtrikman bounds")
             return False
         return True
-        
-#list_models = [Mori_Tanaka] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
-#dict_behaviors = {'Isotropic' : ['K', 'G'], 'Test' : ['Test']}
 
 ################ Tests 
 
-inclusion1 = Inclusion(0, {"K":30, "G":150}, 1)
-inclusion2 = Inclusion(0, {"K":90, "G":150}, 1)
-inclusion3 = Inclusion(0, {"K":150, "G":150}, 1)
-inclusion4 = Inclusion(0, {"K":230, "G":150}, 1)
-inclusion5 = Inclusion(0, {"K":300, "G":150}, 1)
-Incl=[inclusion1,inclusion2,inclusion3,inclusion4,inclusion5]
-for i in range(1):
-    inclusion=inclusion5
-    f=0.999
-    microstructure = Microstructure({"K":30, "G":15}, {inclusion:f})
-    #print("Hashin Bounds : ", microstructure.Hashin_bounds())
-    model = Differential_Scheme()
-    Ch=model.compute_h_behavior(microstructure)
+#inclusion1 = Inclusion(0, {"K":30, "G":150}, 1)
+#inclusion2 = Inclusion(0, {"K":90, "G":150}, 1)
+#inclusion3 = Inclusion(0, {"K":150, "G":150}, 1)
+#inclusion4 = Inclusion(0, {"K":230, "G":150}, 1)
+#inclusion5 = Inclusion(0, {"K":300, "G":150}, 1)
+#Incl=[inclusion1,inclusion2,inclusion3,inclusion4,inclusion5]
+#for i in range(1):
+#    inclusion=inclusion5
+#    f=0.999
+#    microstructure = Microstructure({"K":30, "G":15}, {inclusion:f})
+#    #print("Hashin Bounds : ", microstructure.Hashin_bounds())
+#    model = Differential_Scheme()
+#    Ch=model.compute_h_behavior(microstructure)
     #print("Comportement homogénéisé : ", model.compute_h_behavior(microstructure))
     #print ("Dans les bornes de Hashin : ", model.check_bounds(microstructure))
-    print(inclusion.behavior['K'],inclusion.behavior['G'],inclusion.radius,f,microstructure.matrix_behavior['K'],microstructure.matrix_behavior['G'],microstructure.Hashin_bounds()['Kinf'],microstructure.Hashin_bounds()['Ksup'],microstructure.Hashin_bounds()['Ginf'],microstructure.Hashin_bounds()['Gsup'],Ch['K'],1,Ch['G'])
+#    print(inclusion.behavior['K'],inclusion.behavior['G'],inclusion.radius,f,microstructure.matrix_behavior['K'],microstructure.matrix_behavior['G'],microstructure.Hashin_bounds()['Kinf'],microstructure.Hashin_bounds()['Ksup'],microstructure.Hashin_bounds()['Ginf'],microstructure.Hashin_bounds()['Gsup'],Ch['K'],1,Ch['G'])
 
 
 def bulk_to_young(K, G):
@@ -587,7 +583,7 @@ def complete_behavior(behavior):
         result['K'], result['G'] = K, G
     return result
     
-list_models = [Mori_Tanaka] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
+list_models = [Mori_Tanaka, Eshelby_Approximation, Differential_Scheme] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
 dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', 'nu']}
 
 # Tests
