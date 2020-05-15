@@ -17,6 +17,8 @@
 - Calcul des tenseurs d'Eshelby
 - Validation des modèles
 - Modèles inverses
+- Bornes de Hashin sur le graphe
+- Sauvegarde de la figure
 ---
 ## Suivi
 ### 27/04/2020
@@ -55,3 +57,5 @@
 
 ### 15/05/2020
 - Dessin des ellipsoïdes lors de la génération d'une microstructure avec une seule inclusion
+- Ajout des modèles d'Eshelby et différentiel au master + Test 
+- Tracé de plusieurs paramètres différents lors de la comparaison de modèles
