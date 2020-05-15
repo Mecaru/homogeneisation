@@ -15,15 +15,14 @@ from scipy import *
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 from math import *
-import matplotlib.pyplot as plt
 
 
-class Inclusion:
+class Inclusion():
     """
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
     
-    def __init__(self, type_inclusion, behavior, radius=0.1, name=None):
+    def __init__(self, type_inclusion, behavior, radius=0.1):
         """
         type_inclusion : (int), 0 pour des inclusions sphériques.
         radius : (float), valeur du rayon des inclusions sphériques. TODO : À remplacer par un paramètre plus général pour des inclusions de types différents. 
@@ -31,8 +30,7 @@ class Inclusion:
         """
         self.type_inclusion = type_inclusion
         self.radius = radius
-        self.behavior = complete_behavior(behavior)
-        self.name = name
+        self.behavior = behavior
     
     def type_to_str(self):
         """
@@ -48,16 +46,13 @@ class Inclusion:
         Présentation de l'instance.
         """
         str_type_inclusion = self.type_to_str()
-        string = "{}, {}".format(self.name, str_type_inclusion)
-        for parameter, value in self.behavior.items():
-            string += ", {}: {:.2f}".format(parameter, value)
-        return string
+        return "Inclusion : {}, radius : {}".format(str_type_inclusion, self.radius)
 
     def __repr__(self):
         return str(self)
 
     
-class Microstructure:
+class Microstructure():
     """
     Contient des informations sur la microstructure (comportement de la matrice, inclusions, etc..). TODO : à modifier pour prendre en compte la présence ou non d'une interphase, et d'autres paramètres de modèles plus avancés.
     Contient une fonction qui renvoie les bornes de Hashin-Shtrickman pour la microstructure en question 
@@ -66,18 +61,16 @@ class Microstructure:
     
     def __init__(self, matrix_behavior, dict_inclusions=dict()):
         """
-        list_inclusions : (dict), sous la forme {inclusion: f_i} avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion.
+        list_inclusions : (dict), sous la forme [inclusion: f_i] avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion.
         matrix_behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
         """
         self.dict_inclusions = dict_inclusions
-        self.matrix_behavior = complete_behavior(matrix_behavior)
+        self.matrix_behavior = matrix_behavior
         # Calcul de la fraction volumique de matrice f_m
         self.f_matrix = self.compute_fm()
         
     def __str__(self):
-        string = "Microstructure\nf_m = {:.2f}, matrix".format(self.f_matrix, self.matrix_behavior)
-        for parameter, value in self.matrix_behavior.items():
-            string += ", {}: {:.2f}".format(parameter, value) # TODO : transformer cette ligne en fonction print_behavior et l'appeler lors de l'affichage du comportement homogénéisé et des bornes de hashin
+        string = "Microstructure\nf_m = {:.2f}, matrix".format(self.f_matrix)
         dict_inclusions = self.dict_inclusions
         # Présentation de toutes les inclusions contenues dans la microstructure
         for inclusion in dict_inclusions.keys():
@@ -96,30 +89,11 @@ class Microstructure:
             fi = dict_inclusions[inclusion]
             total_fi += fi
         if total_fi >= 1:
-            raise NameError("The total volumic fractions of the inclusions exceed 1")
+            raise NameError("Inconsistent list of volumic fractions")
         else :
             f_m = 1 - total_fi
             return f_m
         
-    def draw(self):
-        """
-        Méthode qui permet de dessiner la microstructure. Pour le moment, fonctionne uniquement avec une seule inclusion sphérique.
-        """
-        inclusions = list(self.dict_inclusions.keys())
-        if len(inclusions) == 1 and inclusions[0].type_inclusion == 0:
-            inclusion = inclusions[0]
-            fi = self.dict_inclusions[inclusion]
-            # Calcul du rayon pour un VER de taille 10X10
-            r = sqrt(100*fi/pi)
-            x, y = [], []
-            for theta in np.linspace(0,2*pi,200):
-                x.append(r*cos(theta))
-                y.append(r*sin(theta))
-            fig, ax = plt.subplots()
-            ax.axis('equal')
-            plt.plot([-5,5,5,-5,-5], [-5,-5,5,5,-5])
-            plt.plot(x, y)
-            plt.show()
      ## CALCUL DES BORNES DE HASHIN-SHTRICKMAN ##########  
     
     def khs(k1, g1, c1, k2, g2, c2):
@@ -151,9 +125,7 @@ class Microstructure:
             
         
         return { 'Ginf' : ginf, 'Gsup' : gsup, 'Kinf' : kinf, 'Ksup' : ksup }
-
    
-
 
 
 class Mori_Tanaka:
@@ -170,10 +142,9 @@ class Mori_Tanaka:
         """
         Définition des hypothèses du modèle.
         """
-        self.type_inclusion = 0 # Sphères
-        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.type_inclusion = 0
+        self.behavior_condition = ["K", "G"] # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
-        self.name = "Mori-Tanaka"
         
     def __str__(self):
         """
@@ -313,11 +284,13 @@ class Eshelby_Approximation:
                 return False
             # vérification du comportement des inclusions
             behavior = inclusion.behavior
-
-            if set(behavior.keys()) != self.behavior_condition:
+            if list(behavior.keys()) != self.behavior_condition:
+                print (list(behavior.keys()) , self.behavior_condition)
+                raise NameError("Inclusion and microstructure behavior incompatible")
                 return False
         # Vérification su comportement de la matrice
-        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+        if list(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+            raise NameError("Inclusion and microstructure behavior incompatible")
             return False
         # À ce stade, toutes les conditions ont été vérifiées
         return True
@@ -341,7 +314,6 @@ class Eshelby_Approximation:
         denominator = 3*Km*(3*Gm+2*Gf) + 4*Gm*(2*Gm+3*Gf)
         numerator = 5*f*Gm*(Gf-Gm)*(3*Km+4*Gm)
         Gh = Gm + numerator/denominator
-
         
         denominator = 3*Kf+4*Gm
         numerator = f*(Kf-Km)*(3*Km+4*Gm)
@@ -553,52 +525,3 @@ for i in range(1):
     #print("Comportement homogénéisé : ", model.compute_h_behavior(microstructure))
     #print ("Dans les bornes de Hashin : ", model.check_bounds(microstructure))
     print(inclusion.behavior['K'],inclusion.behavior['G'],inclusion.radius,f,microstructure.matrix_behavior['K'],microstructure.matrix_behavior['G'],microstructure.Hashin_bounds()['Kinf'],microstructure.Hashin_bounds()['Ksup'],microstructure.Hashin_bounds()['Ginf'],microstructure.Hashin_bounds()['Gsup'],Ch['K'],1,Ch['G'])
-
-
-def bulk_to_young(K, G):
-    """
-    Transforme des modules K et G en modules E et nu.
-    """
-    E = 9*K*G/(3*K+G)
-    nu = (3*K-2*G)/(2*(3*K+G))
-    return E, nu
-   
-def young_to_bulk(E, nu):
-    """
-    Transforme des modules E et nu en modules K et G
-    """
-    K = E/(3*(1-2*nu))
-    G = E/(2*(1+nu))
-    return K, G
-    
-def complete_behavior(behavior):
-    """
-    Si le comportement en entrée est isotrope, le complète avec E et nu ou K et G. Sinon, le renvoie tel quel.
-    """
-    parameters = list(behavior.keys())
-    result = behavior
-    if parameters == ['K', 'G']:
-        K, G = behavior['K'], behavior['G']
-        E, nu = bulk_to_young(K, G)
-        result['E'], result['nu'] = E, nu
-    elif parameters == ['E', 'nu']:
-        E, nu = behavior['E'], behavior['nu']
-        K, G = young_to_bulk(E, nu)
-        result['K'], result['G'] = K, G
-    return result
-    
-list_models = [Mori_Tanaka] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
-dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', 'nu']}
-
-# Tests
-#inclusion1 = Inclusion(0, {"E":300, "nu":0.3})
-#inclusion1 = Inclusion(0, {"K":300, "G":0.3})
-#print(inclusion1)
-#inclusion2 = Inclusion(0, {"K":300, "G":150})
-#microstructure = Microstructure({"E":10, "nu":0.1}, {inclusion1:0.6})
-#model = Mori_Tanaka()
-#print(microstructure)
-#print(model.check_hypothesis(microstructure))
-#print(model.compute_h_behavior(microstructure))
-#print(microstructure)
-#microstructure.draw()

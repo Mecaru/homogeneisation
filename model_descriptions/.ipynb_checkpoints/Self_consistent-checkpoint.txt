@@ -1,8 +1,0 @@
-# Self-consistent model
-[Hill, R., 1965. A Self-Consistent Mechanics of Composite Materials. J.
-Mech. Phys. Solids, 13, 213–222.]
-
-Interactions between inclusions are taken into account assuming that one inclusion is placed in the homogeneous medium
-
-$$\bar{K}=K_1+\frac{f(K_f-K_m)(3\bar{K}+4\bar{G})}{3K_f+4\bar{G}}$$
-$$\bar{G}=G_m+\frac{5f\bar{G}(G_f-G_m)(3\bar{K}+4\bar{G})}{3\bar{K}(3\bar{G}+2G_f)+4\bar{G}(3G_f+2\bar{G})}$$
