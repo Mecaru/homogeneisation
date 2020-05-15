@@ -16,6 +16,7 @@ from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 from math import *
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 class Inclusion:
@@ -23,14 +24,15 @@ class Inclusion:
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
     
-    def __init__(self, type_inclusion, behavior, radius=0.1, name=None):
+    def __init__(self, type_inclusion, behavior, aspect_ratio=1, name=None):
         """
-        type_inclusion : (int), 0 pour des inclusions sphériques.
+        TODO : Prise en compte de l'orientation
+        type_inclusion : (int), 0 pour des inclusions sphériques. Voir la liste list_types (en bas du fichier) pour les autres types.
         radius : (float), valeur du rayon des inclusions sphériques. TODO : À remplacer par un paramètre plus général pour des inclusions de types différents. 
         behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
         """
         self.type_inclusion = type_inclusion
-        self.radius = radius
+        self.aspect_ratio = aspect_ratio
         self.behavior = complete_behavior(behavior)
         self.name = name
     
@@ -40,8 +42,12 @@ class Inclusion:
         TODO : synchroniser cette fonction avec le main à l'aide d'un dictionnaire pour faciliter l'ajout de types d'inclusions
         """
         type_inclusion = self.type_inclusion
-        if type_inclusion == 0:
-            return "spheres"
+        try:
+            result = dict_types[type_inclusion]
+        except KeyError:
+            # Le type spécifié n'est pas répertorié dans le dictionnaire
+            result = None
+        return result
     
     def __str__(self):
         """
@@ -49,6 +55,8 @@ class Inclusion:
         """
         str_type_inclusion = self.type_to_str()
         string = "{}, {}".format(self.name, str_type_inclusion)
+        if self.type_inclusion != 0:
+            string += " (c={})".format(self.aspect_ratio)
         for parameter, value in self.behavior.items():
             string += ", {}: {:.2f}".format(parameter, value)
         return string
@@ -103,23 +111,64 @@ class Microstructure:
         
     def draw(self):
         """
-        Méthode qui permet de dessiner la microstructure. Pour le moment, fonctionne uniquement avec une seule inclusion sphérique.
+        Méthode qui permet de dessiner la microstructure. Pour le moment, fonctionne uniquement avec une seule inclusion, sphérique, oblate ou prolate.
         """
         inclusions = list(self.dict_inclusions.keys())
-        if len(inclusions) == 1 and inclusions[0].type_inclusion == 0:
+        if len(inclusions) == 1:
             inclusion = inclusions[0]
             fi = self.dict_inclusions[inclusion]
-            # Calcul du rayon pour un VER de taille 10X10
-            r = sqrt(100*fi/pi)
-            x, y = [], []
-            for theta in np.linspace(0,2*pi,200):
-                x.append(r*cos(theta))
-                y.append(r*sin(theta))
-            fig, ax = plt.subplots()
-            ax.axis('equal')
-            plt.plot([-5,5,5,-5,-5], [-5,-5,5,5,-5])
-            plt.plot(x, y)
+            # Calcul du rayon pour un VER de taille 10X10X10
+            ratio = inclusion.aspect_ratio
+            a = (1000*fi/(4/3*pi*ratio))**(1/3)
+            b = ratio*a
+            
+            fig = plt.figure(figsize=plt.figaspect(1))  # Square figure
+            ax = fig.add_subplot(111, projection='3d')
+
+            # Radii:
+            rx, ry, rz = np.array([b, a, a])
+
+            # Set of all spherical angles:
+            u = np.linspace(0, 2 * np.pi, 100)
+            v = np.linspace(0, np.pi, 100)
+
+            # Cartesian coordinates that correspond to the spherical angles:
+            # (this is the equation of an ellipsoid):
+            x = rx * np.outer(np.cos(u), np.sin(v))
+            y = ry * np.outer(np.sin(u), np.sin(v))
+            z = rz * np.outer(np.ones_like(u), np.cos(v))
+
+            # Plot:
+            ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='b')
+
+            # Adjustment of the axes, so that they all have the same span:
+            max_radius = 5
+            for axis in 'xyz':
+                getattr(ax, 'set_{}lim'.format(axis))((-max_radius, max_radius))
+
+            # Cube 
+            points = 5*np.array([[-1, -1, -1],
+                                  [1, -1, -1 ],
+                                  [1, 1, -1],
+                                  [-1, 1, -1],
+                                  [-1, -1, 1],
+                                  [1, -1, 1 ],
+                                  [1, 1, 1],
+                                  [-1, 1, 1]])
+
+            r = [-5,5]
+            X, Y = np.meshgrid(r, r)
+            one = 5*np.ones(4).reshape(2, 2)
+            ax.plot_wireframe(X,Y,one, alpha=0.5)
+            ax.plot_wireframe(X,Y,-one, alpha=0.5)
+            ax.plot_wireframe(X,-one,Y, alpha=0.5)
+            ax.plot_wireframe(X,one,Y, alpha=0.5)
+            ax.plot_wireframe(one,X,Y, alpha=0.5)
+            ax.plot_wireframe(-one,X,Y, alpha=0.5)
+            ax.scatter3D(points[:, 0], points[:, 1], points[:, 2])
+
             plt.show()
+            
      ## CALCUL DES BORNES DE HASHIN-SHTRICKMAN ##########  
     
     def khs(k1, g1, c1, k2, g2, c2):
@@ -585,9 +634,11 @@ def complete_behavior(behavior):
     
 list_models = [Mori_Tanaka, Eshelby_Approximation, Differential_Scheme] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
 dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', 'nu']}
+dict_types = {0: 'Spheres', 1: 'Oblate', 2: 'Prolate'} # Types de géométries admissibles et leur identifiant
 
 # Tests
-#inclusion1 = Inclusion(0, {"E":300, "nu":0.3})
+#inclusion1 = Inclusion(1, {"E":300, "nu":0.3})
+#print(inclusion1)
 #inclusion1 = Inclusion(0, {"K":300, "G":0.3})
 #print(inclusion1)
 #inclusion2 = Inclusion(0, {"K":300, "G":150})
