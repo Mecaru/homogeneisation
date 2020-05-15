@@ -12,6 +12,11 @@
     - Modèles des bornes sup et inf
     - Réfléchir à l'intégration des modèles auto-cohérents avec phases
     - Réfléchir à l'importation des scripts de calcul des tenseurs d'Eshelby (contacter l'auteur pour l'implémentation sur JupyterLab)
+- Ajouter tous les modèles simples
+- Distribution des ellipsoïdes
+- Calcul des tenseurs d'Eshelby
+- Validation des modèles
+- Modèles inverses
 ---
 ## Suivi
 ### 27/04/2020
@@ -47,3 +52,6 @@
 
 ### 13/05/2020
 - Ajout d'inclusions ellipsoïdales et choix du rapport de forme
+
+### 15/05/2020
+- Dessin des ellipsoïdes lors de la génération d'une microstructure avec une seule inclusion
