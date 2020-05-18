@@ -284,7 +284,7 @@ class Mori_Tanaka:
         numerator = 5*f*Gm*(Gf-Gm)*(3*Km+4*Gm)
         Gh = Gm + numerator/denominator
         
-        denominator = 3*Kf+4*Gm+3*(1-f)*(Kf-Km)
+        denominator = 3*Km+4*Gm+3*(1-f)*(Kf-Km)
         numerator = f*(Kf-Km)*(3*Km+4*Gm)
         Kh = Km + numerator/denominator
         return {'K' : Kh, 'G' : Gh} # TODO : Ajouter E et nu
@@ -580,24 +580,6 @@ class Differential_Scheme:
             return False
         return True
 
-################ Tests 
-
-#inclusion1 = Inclusion(0, {"K":30, "G":150}, 1)
-#inclusion2 = Inclusion(0, {"K":90, "G":150}, 1)
-#inclusion3 = Inclusion(0, {"K":150, "G":150}, 1)
-#inclusion4 = Inclusion(0, {"K":230, "G":150}, 1)
-#inclusion5 = Inclusion(0, {"K":300, "G":150}, 1)
-#Incl=[inclusion1,inclusion2,inclusion3,inclusion4,inclusion5]
-#for i in range(1):
-#    inclusion=inclusion5
-#    f=0.999
-#    microstructure = Microstructure({"K":30, "G":15}, {inclusion:f})
-#    #print("Hashin Bounds : ", microstructure.Hashin_bounds())
-#    model = Differential_Scheme()
-#    Ch=model.compute_h_behavior(microstructure)
-    #print("Comportement homogénéisé : ", model.compute_h_behavior(microstructure))
-    #print ("Dans les bornes de Hashin : ", model.check_bounds(microstructure))
-#    print(inclusion.behavior['K'],inclusion.behavior['G'],inclusion.radius,f,microstructure.matrix_behavior['K'],microstructure.matrix_behavior['G'],microstructure.Hashin_bounds()['Kinf'],microstructure.Hashin_bounds()['Ksup'],microstructure.Hashin_bounds()['Ginf'],microstructure.Hashin_bounds()['Gsup'],Ch['K'],1,Ch['G'])
 
 
 def bulk_to_young(K, G):
@@ -649,3 +631,248 @@ dict_types = {0: 'Spheres', 1: 'Oblate', 2: 'Prolate'} # Types de géométries a
 #print(model.compute_h_behavior(microstructure))
 #print(microstructure)
 #microstructure.draw()
+
+################ Tests de validation des modèles #####################
+### Schéma Différentiel
+
+##inclusion parfaitement rigide
+#npoints=100
+#F=[0.1,0.2,0.3,0.4,0.5,0.55,0.6,0.65,0.7,0.75,0.8]
+#Km,Gm,Kf,Gf=10,10,10**12,10**12
+#KH,GH,KT,GT=[],[],[],[]
+#def Suivant(k,g,c,dc):
+#    nextk=k+dc*(k+4*g/3)/(1-c)
+#    nextg=g+dc*5*g*(3*k+4*g)/(6*(k+2*g)*(1-c))
+#    return nextk,nextg,c+dc
+#
+#for i in range(len(F)):
+#    f=F[i]
+#    dc=f/npoints
+#    k,K,g,G=10,10,10,10
+#    c=0
+#    for i in range (npoints):
+#        dK,dG,dKf,dGf=Differential_Scheme.deriv([K,G,Kf,Gf],c)
+#        K,G=K+dc*dK,G+dc*dG
+#        k,g,c=Suivant(k,g,c,dc)
+#    print("k : ",k," g : ",g," c : ",c)
+#    print("K : ",K," G : ",G," c : ",c)
+#    #
+#    inclusion=Inclusion(0, {"K":Kf, "G":Gf}, 1)
+#    microstructure = Microstructure({"K":Km, "G":Gm}, {inclusion:f})
+#    model = Differential_Scheme()
+#    Ch=model.compute_h_behavior(microstructure)
+#    KH.append(Ch['K'])
+#    GH.append(Ch['G'])
+#    KT.append(K)
+#    GT.append(G)    
+#
+#plt.plot(F,KH)
+#plt.plot(F,KT)
+#plt.plot(F,GH)
+#plt.plot(F,GT)
+#plt.show()
+
+##inclusion rigide et matrice incompressible
+
+#F=np.linspace(0.1,0.9,100)
+#LK=[]
+#LKT=[]
+#LG=[]
+#LGT=[]
+#for i in range(len(F)):
+#    f=F[i]
+#    Em=300
+#    mum=0.499
+#    Km=Em/(3-6*mum)
+#    Gm=Em/(2+2*mum)
+#    K=2*10**9
+#    G=3*10**9
+#    inclusion=Inclusion(0, {"K":K, "G":G}, 1)
+#    microstructure = Microstructure({"K":Km, "G":Gm}, {inclusion:f})
+#    model = Differential_Scheme()
+#    Ch=model.compute_h_behavior(microstructure)
+#    LK.append(Ch['K'])
+#    LG.append(Ch['G'])
+#    LGT.append(Gm/(1-f)**(5/2))
+#    LKT.append(Km/(1-f))
+#
+#plt.subplot(2,1,1) 
+#plt.plot(F,LG)
+#plt.plot(F,LGT)
+#plt.subplot(2,1,2) 
+#plt.plot(F,LK)
+#plt.plot(F,LKT)
+#plt.show()
+
+#Cas particulier : mu=1/5, inclusion rigide
+
+#F=np.linspace(0.1,0.9,100)
+#LK=[]
+#LKT=[]
+#LG=[]
+#LGT=[]
+#for i in range(len(F)):
+#    f=F[i]
+#    Em=300
+#    mum=0.2
+#    Km=Em/(3-6*mum)
+#    Gm=Em/(2+2*mum)
+#    K=2*10**5
+#    G=3*10**5
+#    inclusion=Inclusion(0, {"K":K, "G":G}, 1)
+#    microstructure = Microstructure({"K":Km, "G":Gm}, {inclusion:f})
+#    model = Differential_Scheme()
+#    Ch=model.compute_h_behavior(microstructure)
+#    LK.append(Ch['K'])
+#    LG.append(Ch['G'])
+#    LGT.append(Gm/(1-f)**2)
+#    LKT.append(Km/(1-f)**2)
+#
+#plt.subplot(2,1,1) 
+#plt.plot(F,LG)
+#plt.plot(F,LGT)
+#plt.subplot(2,1,2) 
+#plt.plot(F,LK)
+#plt.plot(F,LKT)
+#plt.show()
+
+
+## Haute concentration et matrice incompressible inclusion parfaitement rigide
+#
+#F=np.linspace(0.7,0.9,100)
+#LK=[]
+#LKT=[]
+#LG=[]
+#LGT=[]
+#for i in range(len(F)):
+#    f=F[i]
+#    Em=300
+#    mum=0.499
+#    Km=Em/(3-6*mum)
+#    Gm=Em/(2+2*mum)
+#    K=10**6
+#    G=10**6
+#    inclusion=Inclusion(0, {"K":K, "G":G}, 1)
+#    microstructure = Microstructure({"K":Km, "G":Gm}, {inclusion:f})
+#    model = Differential_Scheme()
+#    Ch=model.compute_h_behavior(microstructure)
+#    LG.append(Ch['G'])
+#    LGT.append(Gm/(1-f)**(5/2))
+#print(K/Km,G/Gm)
+#plt.plot(F,LG)
+#plt.plot(F,LGT)
+#plt.show()
+
+## Haute concentration et inclusion parfaitement rigide
+#
+#Mu=[0,0.1,0.2,0.3,0.4]
+#Fraction=[]
+#for i in range(len(Mu)):
+#    f=0.99
+#    Em=300
+#    mum=Mu[i]
+#    Km=Em/(3-6*mum)
+#    Gm=Em/(2+2*mum)
+#    K=10**3
+#    G=20**3
+#    inclusion=Inclusion(0, {"K":K, "G":G}, 1)
+#    microstructure = Microstructure({"K":Km, "G":Gm}, {inclusion:f})
+#    model = Differential_Scheme()
+#    Ch=model.compute_h_behavior(microstructure)
+#    print(Ch)
+#    Fraction.append(Ch['K']/Ch['G'])
+#print(Fraction)
+#plt.plot(Mu,Fraction)
+#plt.show()
+
+
+### Schéma de Mori-Tanaka
+## inclusion rigide
+#F=np.linspace(0.1,0.99,99)
+#LK=[]
+#LKT=[]
+#LG=[]
+#LGT=[]
+#for i in range(1,100):
+#    f=i/100
+#    Em=200
+#    mum=0.3
+#    Km=Em/(3-6*mum)
+#    Gm=Em/(2+2*mum)
+#    K=2*10**6
+#    G=3*10**6
+#    inclusion=Inclusion(0, {"K":K, "G":G}, 1)
+#    microstructure = Microstructure({"K":Km, "G":Gm}, {inclusion:f})
+#    model = Mori_Tanaka()
+#    Ch=model.compute_h_behavior(microstructure)
+#    LK.append(Ch['K'])
+#    LG.append(Ch['G'])
+#    LGT.append(Gm*(1+f/(1-f)*(1+(9*Km+8*Gm)/(6*Km+12*Gm))))
+#    LKT.append(Km*(1+f/(1-f)*(1+4*Gm/(3*Km))))
+#    
+#plt.subplot(2,1,1) 
+#plt.plot(F,LG)
+#plt.plot(F,LGT)
+#plt.subplot(2,1,2) 
+#plt.plot(F,LK)
+#plt.plot(F,LKT)
+#plt.show()
+
+##inclusion rigide et matrice incompressible
+
+#F=np.linspace(0.1,0.99,99)
+#LK=[]
+#LKT=[]
+#LG=[]
+#LGT=[]
+#for i in range(1,100):
+#    f=i/100
+#    Em=300
+#    mum=0.45
+#    Km=Em/(3-6*mum)
+#    Gm=Em/(2+2*mum)
+#    K=2*10**6
+#    G=3*10**6
+#    inclusion=Inclusion(0, {"K":K, "G":G}, 1)
+#    microstructure = Microstructure({"K":Km, "G":Gm}, {inclusion:f})
+#    model = Mori_Tanaka()
+#    Ch=model.compute_h_behavior(microstructure)
+#    LK.append(Ch['K'])
+#    LG.append(Ch['G'])
+#    LGT.append(Gm*(1+3*f/2)/(1-f))
+#    LKT.append(Km/(1-f))
+#    
+#plt.subplot(2,1,1) 
+#plt.plot(F,LG)
+#plt.plot(F,LGT)
+#plt.subplot(2,1,2) 
+#plt.plot(F,LK)
+#plt.plot(F,LKT)
+#plt.show()
+
+##concentration élévées (f->1) et matrice compressible
+
+#Mu=[0,1/4,1/3,0.45,0.4999]
+#Alpha=[1.87,2.05,2.14,2.36,2.5]
+#LG=[]
+#LGT=[]
+#
+#for i in range(len(Mu)):
+#    f=0.999
+#    Em=300
+#    mum=Mu[i]
+#    Km=Em/(3-6*mum)
+#    Gm=Em/(2+2*mum)
+#    K=2*10**9
+#    G=3*10**9
+#    inclusion=Inclusion(0, {"K":K, "G":G}, 1)
+#    microstructure = Microstructure({"K":Km, "G":Gm}, {inclusion:f})
+#    model = Mori_Tanaka()
+#    Ch=model.compute_h_behavior(microstructure)
+#    LG.append(Ch['G'])
+#    LGT.append(Gm*Alpha[i]/(1-f))
+#    
+#plt.subplot(2,1,1) 
+#plt.plot(Mu,LG)
+#plt.plot(Mu,LGT)
+#plt.show()
