@@ -13,8 +13,10 @@
 - Calcul des tenseurs d'Eshelby
 - Validation des modèles
 - Modèles inverses
-- Bornes de Hashin sur le graphe
 - Sauvegarde de la figure
+- data depuis .txt
+- Revoir le calcul de K de Mori-Tanaka
+- Eshelby en dehors des bornes
 ---
 ## Suivi
 ### 27/04/2020
