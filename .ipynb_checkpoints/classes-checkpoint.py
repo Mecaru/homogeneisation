@@ -287,7 +287,7 @@ class Mori_Tanaka:
         denominator = 3*Kf+4*Gm+3*(1-f)*(Kf-Km)
         numerator = f*(Kf-Km)*(3*Km+4*Gm)
         Kh = Km + numerator/denominator
-        return {'K' : Kh, 'G' : Gh} # TODO : Ajouter E et nu
+        return complete_behavior({'K' : Kh, 'G' : Gh}) 
     
 
     
@@ -394,7 +394,7 @@ class Eshelby_Approximation:
         numerator = f*(Kf-Km)*(3*Km+4*Gm)
         Kh = Km + numerator/denominator
         
-        return {'K' : Kh, 'G' : Gh} # TODO : ajouter E et nu
+        return complete_behavior({'K' : Kh, 'G' : Gh}) 
     
 
     
@@ -559,7 +559,7 @@ class Differential_Scheme:
         #plt.xlabel("fraction volumique")
         #plt.ylabel("Modules")
         #plt.show()
-        return {'K' : Kh, 'G' : Gh} # TODO : ajouter E et nu
+        return complete_behavior({'K' : Kh, 'G' : Gh}) 
     
 
     

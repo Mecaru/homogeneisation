@@ -3,20 +3,19 @@
 ## ToDo List
 - Coder l'interface (notebook avec explications, interface user-friendly, "homogeneisation_main.ipynb")
     - Réfléchir à l'implémentation de la bdd
-    - Réfléchir à l'implémentation des modèles inverses
-    - Réfléchir à l'intégration de modèles auto-cohérents à l'interfaces
+    - Réfléchir à l'intégration de modèles auto-cohérents à l'interface
     - Cas matériaux poreux
     - Réfléchir à la représentation graphique de plus d'une inclusion
 - Ajouter des modèles
-    - Compléter le modèle de Mori-Tanaka
-    - Modèles des bornes sup et inf
     - Réfléchir à l'intégration des modèles auto-cohérents avec phases
-    - Réfléchir à l'importation des scripts de calcul des tenseurs d'Eshelby (contacter l'auteur pour l'implémentation sur JupyterLab)
 - Ajouter tous les modèles simples
 - Distribution des ellipsoïdes
 - Calcul des tenseurs d'Eshelby
 - Validation des modèles
 - Modèles inverses
+- Corriger les modèles
+    - Revoir le calcul de K de Mori-Tanaka
+    - Eshelby en dehors des bornes
 ---
 ## Suivi
 ### 27/04/2020
@@ -55,3 +54,13 @@
 
 ### 15/05/2020
 - Dessin des ellipsoïdes lors de la génération d'une microstructure avec une seule inclusion
+- Ajout des modèles d'Eshelby et différentiel au master + Test 
+- Tracé de plusieurs paramètres différents lors de la comparaison de modèles
+
+### 18/05/2020
+- Modification de la structure de la comparaison de modèles
+- Début de la sauvegarde des figures
+
+### 19/05/2020
+- Sauvegarde des figures dans le dossier outputs
+- Ajout de données depuis un fichier texte avec plusieurs paramètres
