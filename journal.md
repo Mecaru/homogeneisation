@@ -13,9 +13,9 @@
 - Calcul des tenseurs d'Eshelby
 - Validation des modèles
 - Modèles inverses
-- data depuis .txt
-- Revoir le calcul de K de Mori-Tanaka
-- Eshelby en dehors des bornes
+- Corriger les modèles
+    - Revoir le calcul de K de Mori-Tanaka
+    - Eshelby en dehors des bornes
 ---
 ## Suivi
 ### 27/04/2020
