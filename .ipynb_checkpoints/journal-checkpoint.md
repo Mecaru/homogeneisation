@@ -13,7 +13,6 @@
 - Calcul des tenseurs d'Eshelby
 - Validation des modèles
 - Modèles inverses
-- Sauvegarde de la figure
 - data depuis .txt
 - Revoir le calcul de K de Mori-Tanaka
 - Eshelby en dehors des bornes
@@ -64,3 +63,4 @@
 
 ### 19/05/2020
 - Sauvegarde des figures dans le dossier outputs
+- Ajout de données depuis un fichier texte avec plusieurs paramètres
