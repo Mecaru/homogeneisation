@@ -60,3 +60,7 @@
 
 ### 18/05/2020
 - Modification de la structure de la comparaison de modèles
+- Début de la sauvegarde des figures
+
+### 19/05/2020
+- Sauvegarde des figures dans le dossier outputs
