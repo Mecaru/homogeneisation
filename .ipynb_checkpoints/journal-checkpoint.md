@@ -13,9 +13,17 @@
 - Calcul des tenseurs d'Eshelby
 - Validation des modèles
 - Modèles inverses
+- Comportements non isotropes avec fichier texte
 - Corriger les modèles
     - Revoir le calcul de K de Mori-Tanaka
     - Eshelby en dehors des bornes
+- Exporter les graphes en .txt
+- Enlever la grid sur les plots
+- fixer l'axe f entre 0 et 1
+- Comportements anisotropes
+- Comportements visco-élastiques "T" (ou "fréquence"), "K'", "K''", "G'", "G''" et K constant
+- Patterns isotropes
+
 ---
 ## Suivi
 ### 27/04/2020
@@ -64,3 +72,5 @@
 ### 19/05/2020
 - Sauvegarde des figures dans le dossier outputs
 - Ajout de données depuis un fichier texte avec plusieurs paramètres
+- Idée de la structure de données pour la section modèles inverses
+
