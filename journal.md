@@ -12,11 +12,12 @@
 - Distribution des ellipsoïdes
 - Calcul des tenseurs d'Eshelby
 - Validation des modèles
-- Modèles inverses
 - Comportements non isotropes avec fichier texte
 - Corriger les modèles
     - Revoir le calcul de K de Mori-Tanaka
     - Eshelby en dehors des bornes
+### Programme de la semaine
+- Terminer l'interface des modèles inverses
 - Exporter les graphes en .txt
 - Enlever la grid sur les plots
 - fixer l'axe f entre 0 et 1
@@ -74,3 +75,5 @@
 - Ajout de données depuis un fichier texte avec plusieurs paramètres
 - Idée de la structure de données pour la section modèles inverses
 
+### 25/05/2020
+- Version fonctionnelle de l'algorithme de résolution inverse à plusieurs paramètres
