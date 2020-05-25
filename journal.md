@@ -18,8 +18,6 @@
     - Eshelby en dehors des bornes
 ### Programme de la semaine
 - Terminer l'interface des modèles inverses
-    - Optimisation de la norme du vecteur de descente (pas)
-    - Changement du critère d'arrêt - critère sur la variation de l'erreur plutôt que sur sa valeur
     - Interface
 - Exporter les graphes en .txt
 - Enlever la grid sur les plots
@@ -81,3 +79,5 @@
 ### 25/05/2020
 - Version fonctionnelle de l'algorithme de résolution inverse à plusieurs paramètres
 - Optimisation du temps de calcul - suppression des sauvegardes de fichiers
+- Structure théorique de l'interface de la section modèle inverse et structure des données
+- Mise à jour du critère d'arrêt pour la prise en compte de la variation de l'erreur
