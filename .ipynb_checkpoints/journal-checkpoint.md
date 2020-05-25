@@ -81,3 +81,4 @@
 - Optimisation du temps de calcul - suppression des sauvegardes de fichiers
 - Structure théorique de l'interface de la section modèle inverse et structure des données
 - Mise à jour du critère d'arrêt pour la prise en compte de la variation de l'erreur
+- Exportation d'un graphe contenant uniquement des tracés de modèles en fichier texte
