@@ -82,3 +82,6 @@
 - Structure théorique de l'interface de la section modèle inverse et structure des données
 - Mise à jour du critère d'arrêt pour la prise en compte de la variation de l'erreur
 - Exportation d'un graphe contenant uniquement des tracés de modèles en fichier texte
+
+### 26/05/2020
+- Exportation d'un graphe avec suppression automatique des données provenant de fichiers d'entrée
