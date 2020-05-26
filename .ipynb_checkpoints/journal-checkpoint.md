@@ -19,9 +19,6 @@
 ### Programme de la semaine
 - Terminer l'interface des modèles inverses
     - Interface
-- Exporter les graphes en .txt
-- Enlever la grid sur les plots
-- fixer l'axe f entre 0 et 1
 - Comportements anisotropes
 - Comportements visco-élastiques "T" (ou "fréquence"), "K'", "K''", "G'", "G''" et K constant
 - Patterns isotropes
@@ -85,3 +82,4 @@
 
 ### 26/05/2020
 - Exportation d'un graphe avec suppression automatique des données provenant de fichiers d'entrée
+- Suppression des grid, axe des fractions volumiques limité à 0 - 1 (section comparaison de modèles)
