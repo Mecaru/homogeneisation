@@ -16,6 +16,7 @@
 - Corriger les modèles
     - Revoir le calcul de K de Mori-Tanaka
     - Eshelby en dehors des bornes
+    
 ### Programme de la semaine
 - Terminer l'interface des modèles inverses
     - Interface
