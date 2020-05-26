@@ -84,3 +84,4 @@
 ### 26/05/2020
 - Exportation d'un graphe avec suppression automatique des données provenant de fichiers d'entrée
 - Suppression des grid, axe des fractions volumiques limité à 0 - 1 (section comparaison de modèles)
+- Interface modèles inverses : choix du comportement cible et début de la création d'inclusions
