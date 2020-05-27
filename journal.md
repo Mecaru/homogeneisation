@@ -85,3 +85,6 @@
 - Exportation d'un graphe avec suppression automatique des données provenant de fichiers d'entrée
 - Suppression des grid, axe des fractions volumiques limité à 0 - 1 (section comparaison de modèles)
 - Interface modèles inverses : choix du comportement cible et début de la création d'inclusions
+
+### 27/05/2020
+- Interface modèles inverses: Création d'inclusions, de microstructure et début de la génération du dictionnaire des degrés de liberté de l'algorithme d'optimisation
