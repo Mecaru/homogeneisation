@@ -12,10 +12,18 @@
 - Distribution des ellipsoïdes
 - Calcul des tenseurs d'Eshelby
 - Validation des modèles
-- Modèles inverses
+- Comportements non isotropes avec fichier texte
 - Corriger les modèles
     - Revoir le calcul de K de Mori-Tanaka
     - Eshelby en dehors des bornes
+    
+### Programme de la semaine
+- Terminer l'interface des modèles inverses
+    - Interface
+- Comportements anisotropes
+- Comportements visco-élastiques "T" (ou "fréquence"), "K'", "K''", "G'", "G''" et K constant
+- Patterns isotropes
+
 ---
 ## Suivi
 ### 27/04/2020
@@ -64,3 +72,21 @@
 ### 19/05/2020
 - Sauvegarde des figures dans le dossier outputs
 - Ajout de données depuis un fichier texte avec plusieurs paramètres
+- Idée de la structure de données pour la section modèles inverses
+
+### 25/05/2020
+- Version fonctionnelle de l'algorithme de résolution inverse à plusieurs paramètres
+- Optimisation du temps de calcul - suppression des sauvegardes de fichiers
+- Structure théorique de l'interface de la section modèle inverse et structure des données
+- Mise à jour du critère d'arrêt pour la prise en compte de la variation de l'erreur
+- Exportation d'un graphe contenant uniquement des tracés de modèles en fichier texte
+
+### 26/05/2020
+- Exportation d'un graphe avec suppression automatique des données provenant de fichiers d'entrée
+- Suppression des grid, axe des fractions volumiques limité à 0 - 1 (section comparaison de modèles)
+- Interface modèles inverses : choix du comportement cible et début de la création d'inclusions
+
+### 27/05/2020
+- Interface modèles inverses: Création d'inclusions, de microstructure et début de la génération du dictionnaire des degrés de liberté de l'algorithme d'optimisation
+- Interface modèles inverses: Génération de microstructures avec paramètres de comportement de matrice, d'inclusions ou fractions volumiques d'inclusions inconnus
+- Interface modèle inverse terminée, sans optimisation du pas de descente

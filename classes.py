@@ -64,6 +64,16 @@ class Inclusion:
     def __repr__(self):
         return str(self)
 
+    def change_parameter(self, parameter, new_value):
+        """
+        Change the value of the parameter if it exists. Updates the behavior with the function "complete_behavior".
+        """
+        try:
+            self.behavior[parameter] = new_value
+            self.behavior = complete_behavior(self.behavior)
+        except:
+            None
+
     
 class Microstructure:
     """
@@ -108,7 +118,25 @@ class Microstructure:
         else :
             f_m = 1 - total_fi
             return f_m
-        
+
+    def change_fi(self, inclusion, new_f):
+        """
+        Met à jour la fraction volumique de l'inclusion ou l'ajoute au dictionnaire si celle-ci n'y était pas présente.
+        Met à jour la fraction volumique de matrice.
+        """
+        self.dict_inclusions[inclusion] = new_f
+        self.f_matrix = self.compute_fm()
+    
+    def change_parameter(self, parameter, new_value):
+        """
+        Change the value of the parameter if it exists. Updates the behavior with the function "complete_behavior".
+        """
+        try:
+            self.matrix_behavior[parameter] = new_value
+            self.matrix_behavior = complete_behavior(self.matrix_behavior)
+        except:
+            None
+
     def draw(self):
         """
         Méthode qui permet de dessiner la microstructure. Pour le moment, fonctionne uniquement avec une seule inclusion, sphérique, oblate ou prolate.
@@ -200,6 +228,7 @@ class Microstructure:
             
         
         return { 'Ginf' : ginf, 'Gsup' : gsup, 'Kinf' : kinf, 'Ksup' : ksup }
+
 
     
 class Mori_Tanaka:
@@ -622,11 +651,11 @@ def complete_behavior(behavior):
     """
     parameters = list(behavior.keys())
     result = behavior
-    if parameters == ['K', 'G']:
+    if parameters[:2] == ['K', 'G']:
         K, G = behavior['K'], behavior['G']
         E, nu = bulk_to_young(K, G)
         result['E'], result['nu'] = E, nu
-    elif parameters == ['E', 'nu']:
+    elif parameters[:2] == ['E', 'nu']:
         E, nu = behavior['E'], behavior['nu']
         K, G = young_to_bulk(E, nu)
         result['K'], result['G'] = K, G
@@ -637,15 +666,16 @@ dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', '
 dict_types = {0: 'Spheres', 1: 'Oblate', 2: 'Prolate'} # Types de géométries admissibles et leur identifiant
 
 # Tests
-#inclusion1 = Inclusion(1, {"E":300, "nu":0.3})
+# inclusion1 = Inclusion(1, {"E":300, "nu":0.3})
 #print(inclusion1)
 #inclusion1 = Inclusion(0, {"K":300, "G":0.3})
 #print(inclusion1)
 #inclusion2 = Inclusion(0, {"K":300, "G":150})
-#microstructure = Microstructure({"E":10, "nu":0.1}, {inclusion1:0.6})
+# microstructure = Microstructure({"E":10, "nu":0.1}, {inclusion1:0.6})
 #model = Mori_Tanaka()
-#print(microstructure)
+# print(microstructure)
 #print(model.check_hypothesis(microstructure))
 #print(model.compute_h_behavior(microstructure))
-#print(microstructure)
+# microstructure.change_fi(inclusion1, 0.3)
+# print(microstructure)
 #microstructure.draw()
