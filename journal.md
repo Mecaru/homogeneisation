@@ -89,3 +89,4 @@
 ### 27/05/2020
 - Interface modèles inverses: Création d'inclusions, de microstructure et début de la génération du dictionnaire des degrés de liberté de l'algorithme d'optimisation
 - Interface modèles inverses: Génération de microstructures avec paramètres de comportement de matrice, d'inclusions ou fractions volumiques d'inclusions inconnus
+- Interface modèle inverse fonctionnelle, non optimisée pour le cas de variables avec des range très différents
