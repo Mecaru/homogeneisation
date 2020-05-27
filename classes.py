@@ -64,6 +64,16 @@ class Inclusion:
     def __repr__(self):
         return str(self)
 
+    def change_parameter(self, parameter, new_value):
+        """
+        Change the value of the parameter if it exists. Updates the behavior with the function "complete_behavior".
+        """
+        try:
+            self.behavior[parameter] = new_value
+            self.behavior = complete_behavior(self.behavior)
+        except:
+            None
+
     
 class Microstructure:
     """
@@ -116,7 +126,17 @@ class Microstructure:
         """
         self.dict_inclusions[inclusion] = new_f
         self.f_matrix = self.compute_fm()
-        
+    
+    def change_parameter(self, parameter, new_value):
+        """
+        Change the value of the parameter if it exists. Updates the behavior with the function "complete_behavior".
+        """
+        try:
+            self.matrix_behavior[parameter] = new_value
+            self.matrix_behavior = complete_behavior(self.matrix_behavior)
+        except:
+            None
+
     def draw(self):
         """
         Méthode qui permet de dessiner la microstructure. Pour le moment, fonctionne uniquement avec une seule inclusion, sphérique, oblate ou prolate.
@@ -631,11 +651,11 @@ def complete_behavior(behavior):
     """
     parameters = list(behavior.keys())
     result = behavior
-    if parameters == ['K', 'G']:
+    if parameters[:2] == ['K', 'G']:
         K, G = behavior['K'], behavior['G']
         E, nu = bulk_to_young(K, G)
         result['E'], result['nu'] = E, nu
-    elif parameters == ['E', 'nu']:
+    elif parameters[:2] == ['E', 'nu']:
         E, nu = behavior['E'], behavior['nu']
         K, G = young_to_bulk(E, nu)
         result['K'], result['G'] = K, G
