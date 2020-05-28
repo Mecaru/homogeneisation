@@ -18,8 +18,6 @@
     - Eshelby en dehors des bornes
     
 ### Programme de la semaine
-- Terminer l'interface des modèles inverses
-    - Interface
 - Comportements anisotropes
 - Comportements visco-élastiques "T" (ou "fréquence"), "K'", "K''", "G'", "G''" et K constant
 - Patterns isotropes
@@ -90,3 +88,6 @@
 - Interface modèles inverses: Création d'inclusions, de microstructure et début de la génération du dictionnaire des degrés de liberté de l'algorithme d'optimisation
 - Interface modèles inverses: Génération de microstructures avec paramètres de comportement de matrice, d'inclusions ou fractions volumiques d'inclusions inconnus
 - Interface modèle inverse fonctionnelle, non optimisée pour le cas de variables avec des range très différents
+
+### 28/05/2020
+- Génération d'inclusions visco-élastiques
