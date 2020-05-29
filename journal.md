@@ -16,6 +16,7 @@
 - Corriger les modèles
     - Revoir le calcul de K de Mori-Tanaka
     - Eshelby en dehors des bornes
+- Organiser les dossier d'entrées et sorties (un dossier input, puis un dossier par type d'input, idem pour les outputs)
     
 ### Programme de la semaine
 - Comportements anisotropes

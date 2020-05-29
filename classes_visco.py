@@ -292,7 +292,7 @@ class Mori_Tanaka:
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = set(['K', "G'", "G''", 'G'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes, éventuellement visco-élastiques
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Mori-Tanaka"
         
@@ -328,12 +328,12 @@ class Mori_Tanaka:
                 return False
             # vérification du comportement des inclusions
             behavior = inclusion.behavior
-            if set(behavior.keys()) != self.behavior_condition:
+            if set(behavior.keys()).issubset(self.behavior_condition) == False:
                 #print (list(behavior.keys()) , self.behavior_condition)
                 #raise NameError("Inclusion and microstructure behavior incompatible")
                 return False
         # Vérification su comportement de la matrice
-        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+        if set(microstructure.matrix_behavior.keys()).issubset(self.behavior_condition) == False:
             raise NameError("Inclusion and microstructure behavior incompatible")
             return False
         # À ce stade, toutes les conditions ont été vérifiées
@@ -435,11 +435,13 @@ class Eshelby_Approximation:
                 return False
             # vérification du comportement des inclusions
             behavior = inclusion.behavior
-
-            if set(behavior.keys()) != self.behavior_condition:
+            if set(behavior.keys()).issubset(self.behavior_condition) == False:
+                #print (list(behavior.keys()) , self.behavior_condition)
+                #raise NameError("Inclusion and microstructure behavior incompatible")
                 return False
         # Vérification su comportement de la matrice
-        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+        if set(microstructure.matrix_behavior.keys()).issubset(self.behavior_condition) == False:
+            raise NameError("Inclusion and microstructure behavior incompatible")
             return False
         # À ce stade, toutes les conditions ont été vérifiées
         return True
@@ -544,13 +546,13 @@ class Differential_Scheme:
                 return False
             # vérification du comportement des inclusions
             behavior = inclusion.behavior
-            if set(behavior.keys()) != self.behavior_condition:
-                print (list(behavior.keys()) , self.behavior_condition)
+            if set(behavior.keys()).issubset(self.behavior_condition) == False:
+                #print (list(behavior.keys()) , self.behavior_condition)
                 #raise NameError("Inclusion and microstructure behavior incompatible")
                 return False
         # Vérification su comportement de la matrice
-        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
-            #raise NameError("Inclusion and microstructure behavior incompatible")
+        if set(microstructure.matrix_behavior.keys()).issubset(self.behavior_condition) == False:
+            raise NameError("Inclusion and microstructure behavior incompatible")
             return False
         # À ce stade, toutes les conditions ont été vérifiées
         return True
