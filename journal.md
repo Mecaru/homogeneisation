@@ -91,3 +91,6 @@
 
 ### 28/05/2020
 - Génération d'inclusions visco-élastiques
+
+### 29/05/2020
+- Génération de microstructures visco-élastiques

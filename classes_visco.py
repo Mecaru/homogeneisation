@@ -24,7 +24,7 @@ class Inclusion:
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
     
-    def __init__(self, type_inclusion, behavior, aspect_ratio=1, name=None, frequency=None):
+    def __init__(self, type_inclusion, behavior, aspect_ratio=1, name=None, frequency=[]):
         """
         TODO : Prise en compte de l'orientation
         type_inclusion : (int), 0 pour des inclusions sphériques. Voir la liste list_types (en bas du fichier) pour les autres types.
@@ -104,20 +104,26 @@ class Microstructure:
     TODO : Généraliser ces bornes à n phases (et pas 2 comme c'est le cas ici)
     """
     
-    def __init__(self, matrix_behavior, dict_inclusions=dict()):
+    def __init__(self, matrix_behavior, dict_inclusions=dict(), frequency=[]):
         """
         list_inclusions : (dict), sous la forme {inclusion: f_i} avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion.
         matrix_behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
+        frequency: liste des fréquences associées aux paramètres visco-élastiques
         """
         self.dict_inclusions = dict_inclusions
         self.matrix_behavior = complete_behavior(matrix_behavior)
         # Calcul de la fraction volumique de matrice f_m
         self.f_matrix = self.compute_fm()
+        self.frequency = frequency
         
     def __str__(self):
         string = "Microstructure\nf_m = {:.2f}, matrix".format(self.f_matrix, self.matrix_behavior)
         for parameter, value in self.matrix_behavior.items():
-            string += ", {}: {:.2f}".format(parameter, value) # TODO : transformer cette ligne en fonction print_behavior et l'appeler lors de l'affichage du comportement homogénéisé et des bornes de hashin
+            if type(value) != list:
+                string += ", {}: {:.2f}".format(parameter, value)
+            else:
+                string += ", {}: Visco-elastic".format(parameter)
+                # TODO : transformer cette ligne en fonction print_behavior et l'appeler lors de l'affichage du comportement homogénéisé et des bornes de hashin
         dict_inclusions = self.dict_inclusions
         # Présentation de toutes les inclusions contenues dans la microstructure
         for inclusion in dict_inclusions.keys():
@@ -158,6 +164,24 @@ class Microstructure:
             self.matrix_behavior = complete_behavior(self.matrix_behavior)
         except:
             None
+
+    def graph_parameter(self):
+        """
+        Trace le graphe d'évolution des paramètres visqueux-élastiques si ceux-ci existent.
+        """
+        if self.frequency == []:
+            None # L'inclusion ne contient pas de paramètres visco-élastiques
+        else:
+            plt.figure()
+            for parameter, values in self.matrix_behavior.items():
+                if type(values) == list:
+                    # Le paramètre est visco-élastique
+                    plt.plot(self.frequency, values, '.', label=parameter)
+                    plt.legend()
+                    plt.xlabel("Frequency/Temperature")
+                    plt.ylabel("Parameter value")
+                    plt.xlim(min(self.frequency), max(self.frequency))
+            plt.show()
 
     def draw(self):
         """
