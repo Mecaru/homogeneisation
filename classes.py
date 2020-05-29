@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
+
 class Inclusion:
     """
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
@@ -113,7 +114,7 @@ class Microstructure:
         for inclusion in dict_inclusions.keys():
             fi = dict_inclusions[inclusion]
             total_fi += fi
-        if total_fi >= 1:
+        if total_fi > 1:
             raise NameError("The total volumic fractions of the inclusions exceed 1")
         else :
             f_m = 1 - total_fi
@@ -208,26 +209,45 @@ class Microstructure:
         numerator = c2*(g2-g1)
         denominator = 1+6*c1*(g2-g1)*(k1+2*g1)/((3*k1+4*g1)*5*g1)
         return g1+numerator/denominator
-        
+    
+    def khsporous(k,g,c):
+        numerator = 4*(1-c)*k*g
+        denominator = 4*g+3*c*k
+        return numerator/denominator
+    
+    def ghsporous(k,g,c):
+        numerator = (1-c)*(8*g+9*k)*g
+        denominator = 4*g*(2+3*c)+3*k*(3+2*c)
+        return numerator/denominator
+    
     def Hashin_bounds(self):
         """
         Donne les bornes de Hashin-Shtrikman pour 1 seule phase, isotrope
         TODO : ajouter le cas des inclusion multiples
-        """
+        """    
         fm=self.f_matrix
         f=1-fm
         km,gm=self.matrix_behavior["K"],self.matrix_behavior["G"]
         
         for inclusion in self.dict_inclusions.keys():
             kf,gf=inclusion.behavior["K"],inclusion.behavior["G"]
-        
-        ksup=max(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
-        kinf=min(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
-        gsup=max(Microstructure.ghs(km,gm,fm,kf,gf,f),Microstructure.ghs(kf,gf,f,km,gm,fm))
-        ginf=min(Microstructure.ghs(km,gm,fm,kf,gf,f),Microstructure.ghs(kf,gf,f,km,gm,fm))
+            
+            if kf<10**-5 and gf<10**-5 :
+                ksup=max(Microstructure.khsporous(km,gm,f),Microstructure.khsporous(km,gm,f))
+                kinf=min(Microstructure.khsporous(km,gm,f),Microstructure.khsporous(km,gm,f))
+                gsup=max(Microstructure.ghsporous(km,gm,f),Microstructure.ghsporous(km,gm,f))
+                ginf=min(Microstructure.ghsporous(km,gm,f),Microstructure.ghsporous(km,gm,f))
+           
+            else :        
+                ksup=max(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
+                kinf=min(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
+                gsup=max(Microstructure.ghs(km,gm,fm,kf,gf,f),Microstructure.ghs(kf,gf,f,km,gm,fm))
+                ginf=min(Microstructure.ghs(km,gm,fm,kf,gf,f),Microstructure.ghs(kf,gf,f,km,gm,fm))
             
         
         return { 'Ginf' : ginf, 'Gsup' : gsup, 'Kinf' : kinf, 'Ksup' : ksup }
+   
+
 
 
     
@@ -313,7 +333,7 @@ class Mori_Tanaka:
         numerator = 5*f*Gm*(Gf-Gm)*(3*Km+4*Gm)
         Gh = Gm + numerator/denominator
         
-        denominator = 3*Kf+4*Gm+3*(1-f)*(Kf-Km)
+        denominator = 3*Km+4*Gm+3*(1-f)*(Kf-Km)
         numerator = f*(Kf-Km)*(3*Km+4*Gm)
         Kh = Km + numerator/denominator
         return complete_behavior({'K' : Kh, 'G' : Gh}) 
