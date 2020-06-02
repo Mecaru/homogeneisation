@@ -341,9 +341,9 @@ class Mori_Tanaka:
         # À ce stade, toutes les conditions ont été vérifiées
         return True
     
-    def compute_h_behavior(self, microstructure):
+    def compute_h_behavior(self, microstructure, viscoelastic=False):
         """
-        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
+        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés.
         TODO : compléter avec le calcul complet (K et G)
         """
         compatible = self.check_hypothesis(microstructure)
