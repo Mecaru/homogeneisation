@@ -60,7 +60,7 @@ class Inclusion:
         if self.type_inclusion != 0:
             string += " (c={})".format(self.aspect_ratio)
         for parameter, value in self.behavior.items():
-            if type(value) != list:
+            if type(value) not in [list, np.ndarray]:
                 string += ", {}: {:.2f}".format(parameter, value)
             else:
                 string += ", {}: Visco-elastic".format(parameter)
@@ -94,6 +94,7 @@ class Inclusion:
                     plt.legend()
                     plt.xlabel("Frequency/Temperature")
                     plt.ylabel("Parameter value")
+                    plt.title("Inclusion visco-elastic behavior")
                     plt.xlim(min(self.frequency), max(self.frequency))
             plt.show()
     
@@ -119,7 +120,7 @@ class Microstructure:
     def __str__(self):
         string = "Microstructure\nf_m = {:.2f}, matrix".format(self.f_matrix, self.matrix_behavior)
         for parameter, value in self.matrix_behavior.items():
-            if type(value) != list:
+            if type(value) not in [list, np.ndarray]:
                 string += ", {}: {:.2f}".format(parameter, value)
             else:
                 string += ", {}: Visco-elastic".format(parameter)
@@ -180,6 +181,7 @@ class Microstructure:
                     plt.legend()
                     plt.xlabel("Frequency/Temperature")
                     plt.ylabel("Parameter value")
+                    plt.title("Matrix visco-elastic behavior")
                     plt.xlim(min(self.frequency), max(self.frequency))
             plt.show()
 
@@ -292,7 +294,7 @@ class Mori_Tanaka:
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = set(['K', "G'", "G''", 'G'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes, éventuellement visco-élastiques
+        self.behavior_condition = set(['K', "G'", "G''", 'G', 'E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes, éventuellement visco-élastiques
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Mori-Tanaka"
         
@@ -399,7 +401,7 @@ class Eshelby_Approximation:
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0
-        self.behavior_condition = set(['K', 'G','E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = set(['K', "G'", "G''", 'G', 'E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Eshelby"
         
@@ -510,7 +512,7 @@ class Differential_Scheme:
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0
-        self.behavior_condition = set(['K', 'G','E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = set(['K', "G'", "G''", 'G', 'E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Differential"
         
