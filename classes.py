@@ -580,12 +580,12 @@ class Differential_Scheme:
         Kh,Gh,Kf,Gf=Module_final   
         
         ## ajout des bornes de Hashin
-        Khs=np.vectorize(Differential_Scheme.khs)
-        Ghs=np.vectorize(Differential_Scheme.ghs)
-        KINF=Khs(Km,Gm,1-f,Kf,Gf,f)
-        GINF=Ghs(Km,Gm,1-f,Kf,Gf,f)
-        KSUP=Khs(Kf,Gf,f,Km,Gm,1-f)
-        GSUP=Ghs(Kf,Gf,f,Km,Gm,1-f)
+        #Khs=np.vectorize(Differential_Scheme.khs)
+        #Ghs=np.vectorize(Differential_Scheme.ghs)
+        #KINF=Khs(Km,Gm,1-f,Kf,Gf,f)
+        #GINF=Ghs(Km,Gm,1-f,Kf,Gf,f)
+        #KSUP=Khs(Kf,Gf,f,Km,Gm,1-f)
+        #GSUP=Ghs(Kf,Gf,f,Km,Gm,1-f)
         ## affichage des graphes pour K et G
         
         #plt.subplot(211)
