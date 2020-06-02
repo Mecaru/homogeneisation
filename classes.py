@@ -201,8 +201,8 @@ class Microstructure:
      ## CALCUL DES BORNES DE HASHIN-SHTRICKMAN ##########  
     
     def khs(k1, g1, c1, k2, g2, c2):
-        numerator = c2*(k2-k1)
-        denominator = 1+3*c1*(k2-k1)/(4*g1+3*k1)
+        numerator = c2*(k2-k1)*(4*g1+3*k1)
+        denominator = (4*g1+3*k1)+3*c1*(k2-k1)
         return k1+numerator/denominator
     
     def ghs(k1, g1, c1, k2, g2, c2):
@@ -546,8 +546,8 @@ class Differential_Scheme:
         return np.array([dK,dG,0,0])
     
     def khs(k1, g1, c1, k2, g2, c2):
-        numerator = c2*(k2-k1)
-        denominator = 1+3*c1*(k2-k1)/(4*g1+3*k1)
+        numerator = c2*(k2-k1)*(4*g1+3*k1)
+        denominator = (4*g1+3*k1)+3*c1*(k2-k1)
         return k1+numerator/denominator
     
     def ghs(k1, g1, c1, k2, g2, c2):
@@ -673,10 +673,15 @@ def complete_behavior(behavior):
     result = behavior
     if parameters[:2] == ['K', 'G']:
         K, G = behavior['K'], behavior['G']
-        E, nu = bulk_to_young(K, G)
+        if (K==0 and G==0) : 
+            E, nu = 0, 0.3
+        else : 
+            E, nu = bulk_to_young(K, G)
         result['E'], result['nu'] = E, nu
     elif parameters[:2] == ['E', 'nu']:
         E, nu = behavior['E'], behavior['nu']
+        if nu >= 0.5 : 
+            nu = 0.4999999999
         K, G = young_to_bulk(E, nu)
         result['K'], result['G'] = K, G
     return result
