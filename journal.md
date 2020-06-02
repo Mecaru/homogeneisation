@@ -98,3 +98,4 @@
 
 ### 02/06/2020
 - Visco-élasticité: Interpolation des listes de fréquences
+- Visco-élasticité: Début de la modification des modèles
