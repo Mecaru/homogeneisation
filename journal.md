@@ -95,3 +95,6 @@
 
 ### 29/05/2020
 - Génération de microstructures visco-élastiques
+
+### 02/06/2020
+- Visco-élasticité: Interpolation des listes de fréquences
