@@ -579,35 +579,6 @@ class Differential_Scheme:
         Module_final=Module[npoints-1]
         Kh,Gh,Kf,Gf=Module_final   
         
-        ## ajout des bornes de Hashin
-        #Khs=np.vectorize(Differential_Scheme.khs)
-        #Ghs=np.vectorize(Differential_Scheme.ghs)
-        #KINF=Khs(Km,Gm,1-f,Kf,Gf,f)
-        #GINF=Ghs(Km,Gm,1-f,Kf,Gf,f)
-        #KSUP=Khs(Kf,Gf,f,Km,Gm,1-f)
-        #GSUP=Ghs(Kf,Gf,f,Km,Gm,1-f)
-        ## affichage des graphes pour K et G
-        
-        #plt.subplot(211)
-        #plt.plot(f,Module[:,0],label="Kh")        
-        #plt.plot(f,Module[:,2],label="Kf")
-        #plt.plot(f,KSUP,label="Ksup")
-        #plt.plot(f,KINF,label="Kinf")
-        #plt.title("Kh en fonction de f ")
-        #plt.legend()
-        #plt.xlabel("fraction volumique")
-        #plt.ylabel("Modules")
-        
-        #plt.subplot(212)
-        #plt.title("Gh en fonction de f ")
-        #plt.plot(f,Module[:,1],label="Gh")
-        #plt.plot(f,Module[:,3],label="Gf")
-        #plt.plot(f,GSUP,label="Gsup")
-        #plt.plot(f,GINF,label="Ginf")
-        #plt.legend()
-        #plt.xlabel("fraction volumique")
-        #plt.ylabel("Modules")
-        #plt.show()
         return complete_behavior({'K' : Kh, 'G' : Gh}) 
     
 
@@ -629,24 +600,290 @@ class Differential_Scheme:
             return False
         return True
 
-################ Tests 
 
-#inclusion1 = Inclusion(0, {"K":30, "G":150}, 1)
-#inclusion2 = Inclusion(0, {"K":90, "G":150}, 1)
-#inclusion3 = Inclusion(0, {"K":150, "G":150}, 1)
-#inclusion4 = Inclusion(0, {"K":230, "G":150}, 1)
-#inclusion5 = Inclusion(0, {"K":300, "G":150}, 1)
-#Incl=[inclusion1,inclusion2,inclusion3,inclusion4,inclusion5]
-#for i in range(1):
-#    inclusion=inclusion5
-#    f=0.999
-#    microstructure = Microstructure({"K":30, "G":15}, {inclusion:f})
-#    #print("Hashin Bounds : ", microstructure.Hashin_bounds())
-#    model = Differential_Scheme()
-#    Ch=model.compute_h_behavior(microstructure)
-    #print("Comportement homogénéisé : ", model.compute_h_behavior(microstructure))
-    #print ("Dans les bornes de Hashin : ", model.check_bounds(microstructure))
-#    print(inclusion.behavior['K'],inclusion.behavior['G'],inclusion.radius,f,microstructure.matrix_behavior['K'],microstructure.matrix_behavior['G'],microstructure.Hashin_bounds()['Kinf'],microstructure.Hashin_bounds()['Ksup'],microstructure.Hashin_bounds()['Ginf'],microstructure.Hashin_bounds()['Gsup'],Ch['K'],1,Ch['G'])
+class Autocoherent_III:
+    """
+    Hypothèses : 
+    -isotrope
+    -renforts sphériques (TO DO : PASSER AUX ELLIPSOÏDES)
+    -déformations elastiques ??? (A vérifier)
+    TODO : 
+    -déterminer précisément les toutes les microstructures admises
+    Modèle des autocohérent. Contient :
+    - Une fonction qui vérifie si le modèle est appliquable à une microstructure.
+    - Une fonction de description du modèle (TODO : écrire une fonction qui renvoie une description du modèle sous forme de str et qui pourrait être appelée dans le main)
+    - Un fonction qui renvoie le comportement homogénéisé de la microstructure.
+    - Des fonctions qui calculent une caractéristique particulière (fraction volumique d'une inclusion, rayon d'une inclusion, comportement d'une inclusion, etc..) à partir d'un comportement homogénéisé cible (TODO)
+    """
+    
+    def __init__(self):
+        """
+        Définition des hypothèses du modèle.
+        """
+        self.type_inclusion = 0 # Sphères
+        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.name = "Autocohérent généralisé"
+        
+    def __str__(self):
+        """
+        Description textuelle du modèle.
+        """
+        return "Modèle autocohérent généralisé"
+    
+    def __repr__(self):
+        """
+        Description textuelle du modèle.
+        """
+        return str(self)
+    
+    def check_hypothesis(self, microstructure):
+        """
+        Vérifies si la microstructure vérifie les hypothèses du modèle, renvoie un booléens. 
+        TODO : Éventuellement généraliser cette fonction en l'incorporant dans une classe mère Model pour qu'elle s'applique à tous les modèles.
+        """
+        dict_inclusions = microstructure.dict_inclusions
+        inclusions = dict_inclusions.keys()
+        n_inclusions = len(inclusions)
+        # vérification du nombre d'inclusions
+        if n_inclusions != self.n_inclusions:
+            # Le modèle ne peut pas traiter de microstructures avec autant d'inclusions de natures différentes
+             #raise NameError("Wrong number of inclusion")
+             return False
+        for inclusion in dict_inclusions.keys():
+            # Vérification du type d'inclusion
+            if inclusion.type_inclusion != self.type_inclusion:
+                #raise NameError("Wrong type of inclusion or microstructure")
+                return False
+            # vérification du comportement des inclusions
+            behavior = inclusion.behavior
+            if set(behavior.keys()) != self.behavior_condition:
+                #raise NameError("Inclusion and microstructure behavior incompatible")
+                return False
+        # Vérification su comportement de la matrice
+        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+            raise NameError("Inclusion and microstructure behavior incompatible")
+            return False
+        # À ce stade, toutes les conditions ont été vérifiées
+        return True
+    
+   
+  
+    def compute_h_behavior(self,microstructure):
+        """
+        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
+        """
+        compatible = self.check_hypothesis(microstructure)
+        if not compatible:
+            raise NameError("The microstructure does not match the model hypothesis")
+        Cm = microstructure.matrix_behavior
+        dict_inclusions = microstructure.dict_inclusions
+        inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
+        Cf = inclusion.behavior
+        
+        Gm, Km = Cm['G'], Cm['K']
+        num = (3*Km-2*Gm)/(6*Km+2*Gm)
+        Gf, Kf = Cf['G'], Cf['K']
+        nuf = (3*Kf-2*Gf)/(6*Kf+2*Gf)
+        f = dict_inclusions[inclusion]
+
+        ##Quelques constantes utiles au calcul de G         
+        dm=(Gf/Gm)-1 
+        eta1=dm*(49-50*nuf*num)+35*(dm+1)*(nuf-2*num)+35*(2*nuf-num) 
+        eta2=5*nuf*(dm-7)+7*(dm+5) 
+        eta3=(dm+1)*(8-10*num)+(7-5*num) 
+        
+        A=8*f**(10/3)*eta1*dm*(4-5*num)-2*f**(7/3)*(63*dm*eta2+2*eta1*eta3)+252*dm*eta2*f**(5/3)-50*dm*(7-12*num+8*num**2)*eta2*f+4*(7-10*num)*eta2*eta3 
+        B=-4*dm*(1-5*num)*eta1*f**(10/3)+4*(63*dm*eta2+2*eta1*eta3)*f**(7/3)-504*dm*eta2*f**(5/3)+150*dm*(3-num)*num*eta2*f+3*(15*num-7)*eta2*eta3 
+        D=4*dm*(5*num-7)*eta1*f**(10/3)-2*f**(7/3)*(63*dm*eta2+2*eta1*eta3)+252*dm*eta2*f**(5/3)+25*dm*(num**2-7)*eta2*f-(7+5*num)*eta2*eta3 
+        
+        ## Calcul de G
+        delta=B*B-4*D*A 
+        sol1=(-B - delta**(1/2))/(2*A) 
+        sol2=(-B + delta**(1/2))/(2*A) 
+        sol=sol1 
+        if ((sol1.real)<0) : 
+            sol=sol2
+            
+        Gh=sol*Gm
+        Kh=Km+f*(Kf-Km)/(1+(1-f)*(Kf-Km)/(Km+(4/3)*Gm))
+        
+        return complete_behavior({'K' : Kh, 'G' : Gh})
+    
+    
+
+class Autocoherent_IV:
+    """
+    Hypothèses : 
+    -isotrope
+    -renforts sphériques (TO DO : PASSER AUX ELLIPSOÏDES)
+    -déformations elastiques ??? (A vérifier)
+    TODO : 
+    -déterminer précisément les toutes les microstructures admises
+    Modèle des autocohérent. Contient :
+    - Une fonction qui vérifie si le modèle est appliquable à une microstructure.
+    - Une fonction de description du modèle (TODO : écrire une fonction qui renvoie une description du modèle sous forme de str et qui pourrait être appelée dans le main)
+    - Un fonction qui renvoie le comportement homogénéisé de la microstructure.
+    - Des fonctions qui calculent une caractéristique particulière (fraction volumique d'une inclusion, rayon d'une inclusion, comportement d'une inclusion, etc..) à partir d'un comportement homogénéisé cible (TODO)
+    """
+    def __init__(self):
+        """
+        Définition des hypothèses du modèle.
+        """
+        self.type_inclusion = 0 # Sphères
+        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.n_inclusions = 2 # Nombre d'inclusions de natures différentes 
+        self.name = "Autocohérent 4-phases"
+        
+    def __str__(self):
+        """
+        Description textuelle du modèle.
+        """
+        return "Modèle autocohérent 4-phases"
+    
+    def __repr__(self):
+        """
+        Description textuelle du modèle.
+        """
+        return str(self)
+    
+    def check_hypothesis(self, microstructure):
+        """
+        Vérifies si la microstructure vérifie les hypothèses du modèle, renvoie un booléens. 
+        TODO : Éventuellement généraliser cette fonction en l'incorporant dans une classe mère Model pour qu'elle s'applique à tous les modèles.
+        """
+        dict_inclusions = microstructure.dict_inclusions
+        inclusions = dict_inclusions.keys()
+        n_inclusions = len(inclusions)
+        # vérification du nombre d'inclusions
+        if n_inclusions != self.n_inclusions:
+            # Le modèle ne peut pas traiter de microstructures avec autant d'inclusions de natures différentes
+             #raise NameError("Wrong number of inclusion")
+             return False
+        for inclusion in dict_inclusions.keys():
+            # Vérification du type d'inclusion
+            if inclusion.type_inclusion != self.type_inclusion:
+                #raise NameError("Wrong type of inclusion or microstructure")
+                return False
+            # vérification du comportement des inclusions
+            behavior = inclusion.behavior
+            if set(behavior.keys()) != self.behavior_condition:
+                #raise NameError("Inclusion and microstructure behavior incompatible")
+                return False
+        # Vérification su comportement de la matrice
+        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+            raise NameError("Inclusion and microstructure behavior incompatible")
+            return False
+        # À ce stade, toutes les conditions ont été vérifiées
+        return True
+
+  
+    def compute_h_behavior(self,microstructure):
+        """
+        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
+        TODO : compléter avec le calcul complet (K et G)
+        """
+        
+        compatible = self.check_hypothesis(microstructure)
+        if not compatible:
+            raise NameError("The microstructure does not match the model hypothesis")
+        dict_inclusions = microstructure.dict_inclusions
+        inclusion = list(dict_inclusions.keys())[0]
+        interphase = list(dict_inclusions.keys())[1] ## Cela suppose qu'on a bien rentré phase et interphase dans l'ordre, avec l'épaisseur adéquate
+        Cf = inclusion.behavior
+        Cv = interphase.behavior
+        Cm = microstructure.matrix_behavior       
+        
+        Km,Gm = Cm['K'], Cm['G']
+        num = (3*Km-2*Gm)/(6*Km+2*Gm)
+        Kf,Gf = Cf['K'], Cf['G']
+        nuf = (3*Kf-2*Gf)/(6*Kf+2*Gf)
+        Kv,Gv = Cv['K'], Cv['G']
+        nuv = (3*Kv-2*Gv)/(6*Kv+2*Gv)
+        f = dict_inclusions[inclusion]
+        cf = dict_inclusions[interphase]
+
+        Rm = 1/(4*np.pi)**(1/3) 
+        Rv = (Rm**3*(f+cf))**(1/3) 
+        Rf = (Rm**3*f)**(1/3)  
+        
+        a1=(Gf/Gv)*(7+5*nuf)*(7-10*nuv)-(7-10*nuf)*(7+5*nuv) 
+        b1=4*(7-10*nuf)+(Gf/Gv)*(7+5*nuf) 
+        c1=(7-5*nuv)+2*(Gf/Gv)*(4-5*nuv) 
+        d1=(7+5*nuv)+4*(Gf/Gv)*(7-10*nuv) 
+        e1=2*(4-5*nuf)+(Gf/Gv)*(7-5*nuf) 
+        f1=(4-5*nuf)*(7-5*nuv)-(Gf/Gv)*(4-5*nuv)*(7-5*nuf) 
+        alpha1=(Gf/Gv)-1 
+        
+        a2=(Gv/Gm)*(7+5*nuv)*(7-10*num)-(7-10*nuv)*(7+5*num) 
+        b2=4*(7-10*nuv)+(Gv/Gm)*(7+5*nuv) 
+        c2=(7-5*num)+2*(Gv/Gm)*(4-5*num) 
+        d2=(7+5*num)+4*(Gv/Gm)*(7-10*num) 
+        e2=2*(4-5*nuv)+(Gv/Gm)*(7-5*nuv) 
+        f2=(4-5*nuv)*(7-5*num)-(Gv/Gm)*(4-5*num)*(7-5*nuv) 
+        alpha2=(Gv/Gm)-1 
+    
+        M1=np.zeros(shape=(4,4))
+        M1[0,0]=(5*(1-nuv))**(-1)*c1/3 
+        M1[0,1]=(5*(1-nuv))**(-1)*Rf**2*(3*b1-7*c1)/(5*(1-2*nuf)) 
+        M1[0,2]=(5*(1-nuv))**(-1)*(-12*alpha1/Rf**5) 
+        M1[0,3]=(5*(1-nuv))**(-1)*4*(f1-27*alpha1)/(15*(1-2*nuf)*Rf**3) 
+        M1[1,0]=0 
+        M1[1,1]=(5*(1-nuv))**(-1)*(1-2*nuv)*b1/(7*(1-2*nuf)) 
+        M1[1,2]=(5*(1-nuv))**(-1)*(-20*(1-2*nuv)*alpha1)/(7*Rf**7) 
+        M1[1,3]=(5*(1-nuv))**(-1)*(-12*alpha1*(1-2*nuv))/(7*(1-2*nuf)*Rf**5) 
+        M1[2,0]=(5*(1-nuv))**(-1)*Rf**5*alpha1/2 
+        M1[2,1]=(5*(1-nuv))**(-1)*(-Rf**7*(2*a1+147*alpha1))/(70*(1-2*nuf)) 
+        M1[2,2]=(5*(1-nuv))**(-1)*d1/7 
+        M1[2,3]=(5*(1-nuv))**(-1)*Rf**2*(105*(1-nuv)+12*alpha1*(7-10*nuv)-7*e1)/(35*(1-2*nuf)) 
+        M1[3,0]=(5*(1-nuv))**(-1)*(-5/6)*(1-2*nuv)*alpha1*Rf**3 
+        M1[3,1]=(5*(1-nuv))**(-1)*7*(1-2*nuv)*alpha1*Rf**5/(2*(1-2*nuf)) 
+        M1[3,2]=0 
+        M1[3,3]=(5*(1-nuv))**(-1)*e1*(1-2*nuv)/(3*(1-2*nuf)) 
+        
+        M2=np.zeros(shape=(4,4))
+        M2[0,0]=(5*(1-num))**(-1)*c2/3 
+        M2[0,1]=(5*(1-num))**(-1)*Rv**2*(3*b2-7*c2)/(5*(1-2*nuv)) 
+        M2[0,2]=(5*(1-num))**(-1)*(-12*alpha2/Rv**5) 
+        M2[0,3]=(5*(1-num))**(-1)*4*(f2-27*alpha2)/(15*(1-2*nuv)*Rv**3) 
+        M2[1,0]=0 
+        M2[1,1]=(5*(1-num))**(-1)*(1-2*num)*b2/(7*(1-2*nuv)) 
+        M2[1,2]=(5*(1-num))**(-1)*(-20*(1-2*num)*alpha2)/(7*Rv**7) 
+        M2[1,3]=(5*(1-num))**(-1)*(-12*alpha2*(1-2*num))/(7*(1-2*nuv)*Rv**5) 
+        M2[2,0]=(5*(1-num))**(-1)*Rv**5*alpha2/2 
+        M2[2,1]=(5*(1-num))**(-1)*(-Rv**7*(2*a2+147*alpha2))/(70*(1-2*nuv)) 
+        M2[2,2]=(5*(1-num))**(-1)*d2/7 
+        M2[2,3]=(5*(1-num))**(-1)*Rv**2*(105*(1-num)+12*alpha2*(7-10*num)-7*e2)/(35*(1-2*nuv)) 
+        M2[3,0]=(5*(1-num))**(-1)*(-5/6)*(1-2*num)*alpha2*Rv**3 
+        M2[3,1]=(5*(1-num))**(-1)*7*(1-2*num)*alpha2*Rv**5/(2*(1-2*nuv)) 
+        M2[3,2]=0 
+        M2[3,3]=(5*(1-num))**(-1)*e2*(1-2*num)/(3*(1-2*nuv)) 
+        
+        P = np.dot(M2,M1) 
+        
+        Z12 = P[0,0]*P[1,1]-P[1,0]*P[0,1] 
+        Z14 = P[0,0]*P[3,1]-P[3,0]*P[0,1] 
+        Z42 = P[3,0]*P[1,1]-P[1,0]*P[3,1] 
+        Z23 = P[1,0]*P[2,1]-P[2,0]*P[1,1] 
+        Z43 = P[3,0]*P[2,1]-P[2,0]*P[3,1] 
+        Z13 = P[0,0]*P[2,1]-P[2,0]*P[0,1] 
+    
+        A = 4*Rm**10*(1-2*num)*(7-10*num)*Z12+20*Rm**7*(7-12*num+8*num**2)*Z42+12*Rm**5*(1-2*num)*(Z14-7*Z23)+20*Rm**3*(1-2*num)**2*Z13+16*(4-5*num)*(1-2*num)*Z43
+        B = 3*Rm**10*(1-2*num)*(15*num-7)*Z12+60*Rm**7*(num-3)*num*Z42-24*Rm**5*(1-2*num)*(Z14-7*Z23)-40*Rm**3*(1-2*num)**2*Z13-8*(1-5*num)*(1-2*num)*Z43
+        C = -Rm**10*(1-2*num)*(7+5*num)*Z12+10*Rm**7*(7-num**2)*Z42+12*Rm**5*(1-2*num)*(Z14-7*Z23)+20*Rm**3*(1-2*num)**2*Z13-8*(7-5*num)*(1-2*num)*Z43
+        
+        delta=B*B-4*C*A 
+        sol1=(-B - delta**(1/2))/(2*A) 
+        sol2=(-B + delta**(1/2))/(2*A) 
+        sol=sol2 
+        if (sol2.real<0):
+            sol=sol1 
+     
+        Gh=sol*Gm
+        X=(3*Km+4*Gm)*(f+cf)*( (Kf-Kv)*f*(3*Km+4*Gv)+(Kv-Km)*(cf+f)*(3*Kf+4*Gv)) 
+        Y=3*(Kv-Kf)*f*( (f+cf)*(3 *Km+4*Gv)+4*(Gm-Gv)) + (3*Kf+4*Gv)*(f+cf)*(3*(cf+f)*(Km-Kv)+(3*Kv+4*Gm)) 
+        Kh=Km+X/Y
+        return complete_behavior({'K' : Kh, 'G' : Gh})
 
 
 def bulk_to_young(K, G):
