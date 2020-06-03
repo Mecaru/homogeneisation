@@ -731,13 +731,14 @@ class Autocoherent_IV:
     - Un fonction qui renvoie le comportement homogénéisé de la microstructure.
     - Des fonctions qui calculent une caractéristique particulière (fraction volumique d'une inclusion, rayon d'une inclusion, comportement d'une inclusion, etc..) à partir d'un comportement homogénéisé cible (TODO)
     """
-    def __init__(self):
+    def __init__(self,R_inclusion):
         """
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0 # Sphères
         self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 2 # Nombre d'inclusions de natures différentes 
+        self.R_inclusion = R_inclusion
         self.name = "Autocohérent 4-phases"
         
     def __str__(self):
@@ -809,10 +810,11 @@ class Autocoherent_IV:
         
         f = dict_inclusions[inclusion]
         cf = dict_inclusions[interphase]
-
-        Rm = 1/(4*np.pi)**(1/3) 
-        Rv = (Rm**3*(f+cf))**(1/3) 
-        Rf = (Rm**3*f)**(1/3)  
+  
+        Rf = self.R_inclusion
+        Rm = Rf/(f**(1/3))
+        Rv = Rm*(f+cf)**(1/3)
+        
         
         a1=(Gf/Gv)*(7+5*nuf)*(7-10*nuv)-(7-10*nuf)*(7+5*nuv) 
         b1=4*(7-10*nuf)+(Gf/Gv)*(7+5*nuf) 
