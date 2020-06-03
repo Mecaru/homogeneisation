@@ -660,10 +660,15 @@ class Autocoherent_III:
             if set(behavior.keys()) != self.behavior_condition:
                 #raise NameError("Inclusion and microstructure behavior incompatible")
                 return False
+            # Approximation du cas poreux
+            if (behavior['K'] == 0 and behavior['G'] == 0) : 
+                behavior['K'] = 10**-12
+                behavior['G'] = 10**-12
         # Vérification su comportement de la matrice
         if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
             raise NameError("Inclusion and microstructure behavior incompatible")
             return False
+        
         # À ce stade, toutes les conditions ont été vérifiées
         return True
     
@@ -676,15 +681,15 @@ class Autocoherent_III:
         compatible = self.check_hypothesis(microstructure)
         if not compatible:
             raise NameError("The microstructure does not match the model hypothesis")
-        Cm = microstructure.matrix_behavior
+            
         dict_inclusions = microstructure.dict_inclusions
         inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
-        Cf = inclusion.behavior
         
-        Gm, Km = Cm['G'], Cm['K']
-        num = (3*Km-2*Gm)/(6*Km+2*Gm)
-        Gf, Kf = Cf['G'], Cf['K']
-        nuf = (3*Kf-2*Gf)/(6*Kf+2*Gf)
+        Cm = microstructure.matrix_behavior
+        Cf = inclusion.behavior        
+        
+        Km,Gm,num = Cm['K'], Cm['G'], Cm['nu']
+        Kf,Gf,nuf = Cf['K'], Cf['G'], Cf['nu']
         f = dict_inclusions[inclusion]
 
         ##Quelques constantes utiles au calcul de G         
@@ -770,6 +775,10 @@ class Autocoherent_IV:
             if set(behavior.keys()) != self.behavior_condition:
                 #raise NameError("Inclusion and microstructure behavior incompatible")
                 return False
+            # Approximation du cas poreux
+            if (behavior['K'] == 0 and behavior['G'] == 0) : 
+                behavior['K'] = 10**-12
+                behavior['G'] = 10**-12
         # Vérification su comportement de la matrice
         if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
             raise NameError("Inclusion and microstructure behavior incompatible")
@@ -794,12 +803,10 @@ class Autocoherent_IV:
         Cv = interphase.behavior
         Cm = microstructure.matrix_behavior       
         
-        Km,Gm = Cm['K'], Cm['G']
-        num = (3*Km-2*Gm)/(6*Km+2*Gm)
-        Kf,Gf = Cf['K'], Cf['G']
-        nuf = (3*Kf-2*Gf)/(6*Kf+2*Gf)
-        Kv,Gv = Cv['K'], Cv['G']
-        nuv = (3*Kv-2*Gv)/(6*Kv+2*Gv)
+        Km,Gm,num = Cm['K'], Cm['G'], Cm['nu']
+        Kf,Gf,nuf = Cf['K'], Cf['G'], Cf['nu']
+        Kv,Gv,nuv = Cv['K'], Cv['G'], Cv['nu']
+        
         f = dict_inclusions[inclusion]
         cf = dict_inclusions[interphase]
 
@@ -927,17 +934,4 @@ list_models = [Mori_Tanaka, Eshelby_Approximation, Differential_Scheme] # Liste 
 dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', 'nu']}
 dict_types = {0: 'Spheres', 1: 'Oblate', 2: 'Prolate'} # Types de géométries admissibles et leur identifiant
 
-# Tests
-# inclusion1 = Inclusion(1, {"E":300, "nu":0.3})
-#print(inclusion1)
-#inclusion1 = Inclusion(0, {"K":300, "G":0.3})
-#print(inclusion1)
-#inclusion2 = Inclusion(0, {"K":300, "G":150})
-# microstructure = Microstructure({"E":10, "nu":0.1}, {inclusion1:0.6})
-#model = Mori_Tanaka()
-# print(microstructure)
-#print(model.check_hypothesis(microstructure))
-#print(model.compute_h_behavior(microstructure))
-# microstructure.change_fi(inclusion1, 0.3)
-# print(microstructure)
-#microstructure.draw()
+
