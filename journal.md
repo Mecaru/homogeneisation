@@ -107,4 +107,5 @@
 ### 03/06/2020
 - Fusion de cellules
 - Passage des bornes max des paramètres de comportement à 10^6
-- Adaptation de Mori-Tanak aux comportement visco-élastiques
+- Adaptation de Mori-Tanaka aux comportement visco-élastiques
+- Adaptation d'Eshelby au visco-élastique et début de la modification du différentiel

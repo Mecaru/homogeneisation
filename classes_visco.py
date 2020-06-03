@@ -471,12 +471,27 @@ class Eshelby_Approximation:
         compatible = self.check_hypothesis(microstructure)
         if not compatible:
             raise NameError("The microstructure does not match the model hypothesis")
+        # Récupération du comportement de la matrice
         Cm = microstructure.matrix_behavior
+        Km = np.array(Cm['K'])
+        try:
+            # Matrice élastique
+            Gm = np.array(Cm['G'])
+        except KeyError:
+            # Matrice visco-élastique
+            # Construction de G
+            Gm1, Gm2 = np.array(Cm["G'"]), np.array(Cm["G''"])
+            Gm = Gm1 + 1j*Gm2
+        # Récupération du comportement de l'inclusion
         dict_inclusions = microstructure.dict_inclusions
         inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
         Cf = inclusion.behavior
-        Gm, Km = Cm['G'], Cm['K']
-        Gf, Kf = Cf['G'], Cf['K']
+        Kf = np.array(Cf['K'])
+        try:
+            Gf = np.array(Cf['G'])
+        except KeyError:
+            Gf1, Gf2 = np.array(Cf["G'"]), np.array(Cf["G''"])
+            Gf = Gf1 + 1j*Gf2
         f = dict_inclusions[inclusion]
         
         denominator = 3*Km*(3*Gm+2*Gf) + 4*Gm*(2*Gm+3*Gf)
@@ -608,29 +623,58 @@ class Differential_Scheme:
         compatible = self.check_hypothesis(microstructure)
         if not compatible:
             raise NameError("The microstructure does not match the model hypothesis")
+
+        # Cm = microstructure.matrix_behavior
+        # dict_inclusions = microstructure.dict_inclusions
+        # inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
+        # Cf = inclusion.behavior
+        # Gm, Km = Cm['G'], Cm['K']
+        # Gf, Kf = Cf['G'], Cf['K']
+        # f_finale = dict_inclusions[inclusion]
+
+        # Récupération du comportement de la matrice
         Cm = microstructure.matrix_behavior
+        Km = np.array(Cm['K'])
+        try:
+            # Matrice élastique
+            Gm = np.array(Cm['G'])
+        except KeyError:
+            # Matrice visco-élastique
+            # Construction de G
+            Gm1, Gm2 = np.array(Cm["G'"]), np.array(Cm["G''"])
+            Gm = Gm1 + 1j*Gm2
+        # Récupération du comportement de l'inclusion
         dict_inclusions = microstructure.dict_inclusions
         inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
         Cf = inclusion.behavior
-        Gm, Km = Cm['G'], Cm['K']
-        Gf, Kf = Cf['G'], Cf['K']
+        Kf = np.array(Cf['K'])
+        try:
+            Gf = np.array(Cf['G'])
+        except KeyError:
+            Gf1, Gf2 = np.array(Cf["G'"]), np.array(Cf["G''"])
+            Gf = Gf1 + 1j*Gf2
         f_finale = dict_inclusions[inclusion]
+        # Initialisation du résultat
+        behavior = {'K':[], 'G':[]}
+        # Parcours de toutes les fréquences
+        for i in range(len(microstructure.frequency)):
+            npoints=100
+            f=np.linspace(0,f_finale,npoints)
+            Module_Initial=np.array([Km[i],Gm[i],Kf[i],Gf[i]])
+            Module=odeint(Differential_Scheme.deriv,Module_Initial,f)
+            
+            Module_final=Module[npoints-1]
+            Kh,Gh,Kf,Gf=Module_final  
+            behavior['K'].append(Kh)
+            behavior['G'].append(Gh) 
         
-        npoints=100
-        f=np.linspace(0,f_finale,npoints)
-        Module_Initial=np.array([Km,Gm,Kf,Gf])
-        Module=odeint(Differential_Scheme.deriv,Module_Initial,f)
-        
-        Module_final=Module[npoints-1]
-        Kh,Gh,Kf,Gf=Module_final   
-        
-        ## ajout des bornes de Hashin
-        Khs=np.vectorize(Differential_Scheme.khs)
-        Ghs=np.vectorize(Differential_Scheme.ghs)
-        KINF=Khs(Km,Gm,1-f,Kf,Gf,f)
-        GINF=Ghs(Km,Gm,1-f,Kf,Gf,f)
-        KSUP=Khs(Kf,Gf,f,Km,Gm,1-f)
-        GSUP=Ghs(Kf,Gf,f,Km,Gm,1-f)
+        # ## ajout des bornes de Hashin
+        # Khs=np.vectorize(Differential_Scheme.khs)
+        # Ghs=np.vectorize(Differential_Scheme.ghs)
+        # KINF=Khs(Km,Gm,1-f,Kf,Gf,f)
+        # GINF=Ghs(Km,Gm,1-f,Kf,Gf,f)
+        # KSUP=Khs(Kf,Gf,f,Km,Gm,1-f)
+        # GSUP=Ghs(Kf,Gf,f,Km,Gm,1-f)
         ## affichage des graphes pour K et G
         
         #plt.subplot(211)
