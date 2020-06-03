@@ -22,6 +22,10 @@
 - Comportements anisotropes
 - Comportements visco-élastiques "T" (ou "fréquence"), "K'", "K''", "G'", "G''" et K constant
 - Patterns isotropes
+- Graphe en 3D manipulable lors du dessin du VER
+- Modifier format fichiers outputs génération automatique
+- nu = 0.5 devient 0.49999
+- Demande à l'utilisateur de spécifier fréquence ou température et tracer en loglog dans un cas et semilogy dans l'autre
 
 ---
 ## Suivi
@@ -99,3 +103,8 @@
 ### 02/06/2020
 - Visco-élasticité: Interpolation des listes de fréquences
 - Visco-élasticité: Début de la modification des modèles
+
+### 03/06/2020
+- Fusion de cellules
+- Passage des bornes max des paramètres de comportement à 10^6
+- Adaptation de Mori-Tanak aux comportement visco-élastiques

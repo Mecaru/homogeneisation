@@ -340,21 +340,36 @@ class Mori_Tanaka:
             return False
         # À ce stade, toutes les conditions ont été vérifiées
         return True
-    
-    def compute_h_behavior(self, microstructure, viscoelastic=False):
+
+    def compute_h_behavior(self, microstructure):
         """
-        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés.
-        TODO : compléter avec le calcul complet (K et G)
+        Calcule le comportement visco-élastique homogène équivalent. Renvoie un dict avec la liste des valeurs des paramètres calculés correspondants aux fréquences de la liste self.frequency.
         """
+        # Vérification des conditions d'application
         compatible = self.check_hypothesis(microstructure)
         if not compatible:
             raise NameError("The microstructure does not match the model hypothesis")
+        # Récupération du comportement de la matrice
         Cm = microstructure.matrix_behavior
+        Km = np.array(Cm['K'])
+        try:
+            # Matrice élastique
+            Gm = np.array(Cm['G'])
+        except KeyError:
+            # Matrice visco-élastique
+            # Construction de G
+            Gm1, Gm2 = np.array(Cm["G'"]), np.array(Cm["G''"])
+            Gm = Gm1 + 1j*Gm2
+        # Récupération du comportement de l'inclusion
         dict_inclusions = microstructure.dict_inclusions
         inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
         Cf = inclusion.behavior
-        Gm, Km = Cm['G'], Cm['K']
-        Gf, Kf = Cf['G'], Cf['K']
+        Kf = np.array(Cf['K'])
+        try:
+            Gf = np.array(Cf['G'])
+        except KeyError:
+            Gf1, Gf2 = np.array(Cf["G'"]), np.array(Cf["G''"])
+            Gf = Gf1 + 1j*Gf2
         f = dict_inclusions[inclusion]
         
         denominator = 5*Gm*(3*Km+4*Gm)+6*(1-f)*(Gf-Gm)*(Km+2*Gm)
