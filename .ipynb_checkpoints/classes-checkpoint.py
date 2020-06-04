@@ -731,7 +731,7 @@ class Autocoherent_IV:
     - Un fonction qui renvoie le comportement homogénéisé de la microstructure.
     - Des fonctions qui calculent une caractéristique particulière (fraction volumique d'une inclusion, rayon d'une inclusion, comportement d'une inclusion, etc..) à partir d'un comportement homogénéisé cible (TODO)
     """
-    def __init__(self,R_inclusion):
+    def __init__(self,R_inclusion=1):
         """
         Définition des hypothèses du modèle.
         """
