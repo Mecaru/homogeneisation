@@ -17,15 +17,18 @@
     - Revoir le calcul de K de Mori-Tanaka
     - Eshelby en dehors des bornes
 - Organiser les dossier d'entrées et sorties (un dossier input, puis un dossier par type d'input, idem pour les outputs)
+- Ajouter les graphes de validation des modèles aux descriptions de modèles
+- Comportements anisotropes
+- Patterns isotropes
     
 ### Programme de la semaine
-- Comportements anisotropes
-- Comportements visco-élastiques "T" (ou "fréquence"), "K'", "K''", "G'", "G''" et K constant
-- Patterns isotropes
-- Graphe en 3D manipulable lors du dessin du VER
-- Modifier format fichiers outputs génération automatique
-- nu = 0.5 devient 0.49999
-- Demande à l'utilisateur de spécifier fréquence ou température et tracer en loglog dans un cas et semilogy dans l'autre
+- Graphe en 3D manipulable lors du dessin du VER 
+- Modifier format fichiers outputs génération automatique 
+- nu = 0.5 devient 0.49999 
+- Demande à l'utilisateur de spécifier fréquence ou température et tracer en loglog dans un cas et semilogy dans l'autre 
+- Intégrer les modèles autocohérents 
+- Passer différentiel en visco 
+- Suite du visco 
 
 ---
 ## Suivi
@@ -109,3 +112,6 @@
 - Passage des bornes max des paramètres de comportement à 10^6
 - Adaptation de Mori-Tanaka aux comportement visco-élastiques
 - Adaptation d'Eshelby au visco-élastique et début de la modification du différentiel
+
+### 08/06/2020
+- Ajout du modèle différentiel visco-élastique sans tracé de la partie imaginaire de K

@@ -591,19 +591,31 @@ class Differential_Scheme:
     
     ## Fonctions utiles au calcul du comportement homogénéisé
     
-    def deriv(Module,f):
-        K,G,Kf,Gf=Module[0],Module[1],Module[2],Module[3]
-        mu=(3*K-2*G)/(6*K+2*G)
+    def deriv(module, f):
+        """
+        Fonction qui calcule les dérivée des paramètres K et G par rapport à la fraction volumique d'inclusion. Conçue pour être appelée par la fonction odeint lors de l'intégration numérique.
+        module: list, contient les valeurs réelles et imaginaires des paramètres K, G courants ainsi que Kf et Gf propres à l'inclusion.
+        f: float, fraction volumique d'inclusion courante.
+        """
+        K1, K2, G1, G2, Kf1, Kf2, Gf1, Gf2 = module
+        # Construction des paramètres complexes
+        K = K1 + K2*1j
+        G = G1 + G2*1j
+        Kf = Kf1 + Kf2*1j
+        Gf = Gf1 + Gf2*1j
+        nu = (3*K-2*G)/(6*K+2*G)
+        # Calcul de dK
+        numerator = K-Kf
+        denominator = (1-f)*(1+(Kf-K)/(K+4*G/3))
+        dK = -numerator/denominator
+        dK1, dK2 = dK.real, dK.imag
+        # Calcul de dG
+        numerator = 15*(1-nu)*(G-Gf)
+        denominator = (1-f)*(7-5*nu+2*(4-5*nu)*Gf/G)
+        dG = -numerator/denominator
+        dG1, dG2 = dG.real, dG.imag
         
-        numerator=K-Kf
-        denominator=(1-f)*(1+(Kf-K)/(K+4*G/3))
-        dK=-numerator/denominator
-        
-        numerator=15*(1-mu)*(G-Gf)
-        denominator=(1-f)*(7-5*mu+2*(4-5*mu)*Gf/G)
-        dG=-numerator/denominator
-        
-        return np.array([dK,dG,0,0])
+        return np.array([dK1, dK2 ,dG1, dG2] + 4*[0])
     
     def khs(k1, g1, c1, k2, g2, c2):
         numerator = c2*(k2-k1)
@@ -623,14 +635,6 @@ class Differential_Scheme:
         compatible = self.check_hypothesis(microstructure)
         if not compatible:
             raise NameError("The microstructure does not match the model hypothesis")
-
-        # Cm = microstructure.matrix_behavior
-        # dict_inclusions = microstructure.dict_inclusions
-        # inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
-        # Cf = inclusion.behavior
-        # Gm, Km = Cm['G'], Cm['K']
-        # Gf, Kf = Cf['G'], Cf['K']
-        # f_finale = dict_inclusions[inclusion]
 
         # Récupération du comportement de la matrice
         Cm = microstructure.matrix_behavior
@@ -657,17 +661,23 @@ class Differential_Scheme:
         # Initialisation du résultat
         behavior = {'K':[], 'G':[]}
         # Parcours de toutes les fréquences
-        for i in range(len(microstructure.frequency)):
-            npoints=100
-            f=np.linspace(0,f_finale,npoints)
-            Module_Initial=np.array([Km[i],Gm[i],Kf[i],Gf[i]])
-            Module=odeint(Differential_Scheme.deriv,Module_Initial,f)
+        for frequ_index in range(len(microstructure.frequency)):
+            npoints = 100 # Nombre de points d'intégration
+            f = np.linspace(0, f_finale, npoints) # Liste des fractions volumiques diluées
+
+            initial_module = []
+            for parameter in [Km[frequ_index], Gm[frequ_index], Kf[frequ_index], Gf[frequ_index]]:
+                initial_module += [parameter.real, parameter.imag]
+            initial_module = np.array(initial_module)
+            module = odeint(Differential_Scheme.deriv, initial_module, f)
             
-            Module_final=Module[npoints-1]
-            Kh,Gh,Kf,Gf=Module_final  
-            behavior['K'].append(Kh)
-            behavior['G'].append(Gh) 
-        
+            final_module = module[-1]
+            Kh1, Kh2, Gh1, Gh2 = final_module[:4]  
+            behavior['K'].append(Kh1+1j*Kh2)
+            behavior['G'].append(Gh1+1j*Gh2) 
+        # Passage des listes de behavior en array
+        for parameter, value in behavior.items():
+            behavior[parameter] = np.array(value)
         # ## ajout des bornes de Hashin
         # Khs=np.vectorize(Differential_Scheme.khs)
         # Ghs=np.vectorize(Differential_Scheme.ghs)
@@ -697,7 +707,7 @@ class Differential_Scheme:
         #plt.xlabel("fraction volumique")
         #plt.ylabel("Modules")
         #plt.show()
-        return complete_behavior({'K' : Kh, 'G' : Gh}) 
+        return complete_behavior(behavior) 
     
 
     
