@@ -371,11 +371,11 @@ class Mori_Tanaka:
             Gf1, Gf2 = np.array(Cf["G'"]), np.array(Cf["G''"])
             Gf = Gf1 + 1j*Gf2
         f = dict_inclusions[inclusion]
-        
+        # Calcul de Gh
         denominator = 5*Gm*(3*Km+4*Gm)+6*(1-f)*(Gf-Gm)*(Km+2*Gm)
         numerator = 5*f*Gm*(Gf-Gm)*(3*Km+4*Gm)
         Gh = Gm + numerator/denominator
-        
+        # Calculd e Kh
         denominator = 3*Kf+4*Gm+3*(1-f)*(Kf-Km)
         numerator = f*(Kf-Km)*(3*Km+4*Gm)
         Kh = Km + numerator/denominator

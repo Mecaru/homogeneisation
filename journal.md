@@ -26,9 +26,8 @@
 - Modifier format fichiers outputs génération automatique 
 - nu = 0.5 devient 0.49999 
 - Demande à l'utilisateur de spécifier fréquence ou température et tracer en loglog dans un cas et semilogy dans l'autre 
-- Intégrer les modèles autocohérents 
-- Passer différentiel en visco 
-- Suite du visco 
+- Intégrer les modèles autocohérents
+- Suite du visco
 
 ---
 ## Suivi
@@ -115,3 +114,4 @@
 
 ### 08/06/2020
 - Ajout du modèle différentiel visco-élastique sans tracé de la partie imaginaire de K
+- Ajout du tracé de K' et K''
