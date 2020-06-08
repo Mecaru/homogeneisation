@@ -115,3 +115,4 @@
 ### 08/06/2020
 - Ajout du modèle différentiel visco-élastique sans tracé de la partie imaginaire de K
 - Ajout du tracé de K' et K''
+- Manipulation des graphes matplotlib sur le main visco
