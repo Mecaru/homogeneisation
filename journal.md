@@ -20,9 +20,10 @@
 - Ajouter les graphes de validation des modèles aux descriptions de modèles
 - Comportements anisotropes
 - Patterns isotropes
+- Autocohérents avec interphase: épaisseur en entrée
     
 ### Programme de la semaine
-- Intégrer les modèles autocohérents
+- Intégrer les modèles autocohérents en visco
 - Suite du visco
 
 ---
@@ -117,3 +118,4 @@
 - calculs depuis un fichier .txt: Modification du format des fichiers de sortie, section valable uniquement pour des calculs en non-visco isotrope 
 - Possibilité d'entrer un nu=0.5
 - Visco-élasticité: implémentation du choix de l'abscisse (fréquence ou temperature)
+- Intégration des modèles auto-cohérents au main
