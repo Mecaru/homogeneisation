@@ -16,13 +16,14 @@
 - Corriger les modèles
     - Revoir le calcul de K de Mori-Tanaka
     - Eshelby en dehors des bornes
+- Organiser les dossier d'entrées et sorties (un dossier input, puis un dossier par type d'input, idem pour les outputs)
+- Ajouter les graphes de validation des modèles aux descriptions de modèles
+- Comportements anisotropes
+- Patterns isotropes
     
 ### Programme de la semaine
-- Terminer l'interface des modèles inverses
-    - Interface
-- Comportements anisotropes
-- Comportements visco-élastiques "T" (ou "fréquence"), "K'", "K''", "G'", "G''" et K constant
-- Patterns isotropes
+- Intégrer les modèles autocohérents
+- Suite du visco
 
 ---
 ## Suivi
@@ -90,3 +91,29 @@
 - Interface modèles inverses: Création d'inclusions, de microstructure et début de la génération du dictionnaire des degrés de liberté de l'algorithme d'optimisation
 - Interface modèles inverses: Génération de microstructures avec paramètres de comportement de matrice, d'inclusions ou fractions volumiques d'inclusions inconnus
 - Interface modèle inverse fonctionnelle, non optimisée pour le cas de variables avec des range très différents
+
+### 28/05/2020
+- Génération d'inclusions visco-élastiques
+
+### 29/05/2020
+- Génération de microstructures visco-élastiques
+
+### 02/06/2020
+- Visco-élasticité: Interpolation des listes de fréquences
+- Visco-élasticité: Début de la modification des modèles
+
+### 03/06/2020
+- Fusion de cellules
+- Passage des bornes max des paramètres de comportement à 10^6
+- Adaptation de Mori-Tanaka aux comportement visco-élastiques
+- Adaptation d'Eshelby au visco-élastique et début de la modification du différentiel
+
+### 08/06/2020
+- Ajout du modèle différentiel visco-élastique sans tracé de la partie imaginaire de K
+- Ajout du tracé de K' et K''
+- Manipulation des graphes matplotlib sur le main visco
+
+### 09/06/2020
+- calculs depuis un fichier .txt: Modification du format des fichiers de sortie, section valable uniquement pour des calculs en non-visco isotrope 
+- Possibilité d'entrer un nu=0.5
+- Visco-élasticité: implémentation du choix de l'abscisse (fréquence ou temperature)

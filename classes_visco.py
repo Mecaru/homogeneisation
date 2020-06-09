@@ -24,17 +24,21 @@ class Inclusion:
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
     
-    def __init__(self, type_inclusion, behavior, aspect_ratio=1, name=None):
+    def __init__(self, type_inclusion, behavior, aspect_ratio=1, name=None, frequency=[], abscissa="frequency"):
         """
         TODO : Prise en compte de l'orientation
         type_inclusion : (int), 0 pour des inclusions sphériques. Voir la liste list_types (en bas du fichier) pour les autres types.
         radius : (float), valeur du rayon des inclusions sphériques. TODO : À remplacer par un paramètre plus général pour des inclusions de types différents. 
         behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
+        frequency: (list), liste des fréquences/températures associées aux paramètres visco-élastiques
+        abscissa: (str), vaut "frequency" ou "temperature", indique la nature physique des valeurs de la liste frequency
         """
         self.type_inclusion = type_inclusion
         self.aspect_ratio = aspect_ratio
         self.behavior = complete_behavior(behavior)
         self.name = name
+        self.frequency = frequency
+        self.abscissa = abscissa
     
     def type_to_str(self):
         """
@@ -58,12 +62,46 @@ class Inclusion:
         if self.type_inclusion != 0:
             string += " (c={})".format(self.aspect_ratio)
         for parameter, value in self.behavior.items():
-            string += ", {}: {:.2f}".format(parameter, value)
+            if type(value) not in [list, np.ndarray]:
+                string += ", {}: {:.2f}".format(parameter, value)
+            else:
+                string += ", {}: Visco-elastic".format(parameter)
         return string
 
     def __repr__(self):
         return str(self)
 
+    def change_parameter(self, parameter, new_value):
+        """
+        Change the value of the parameter if it exists. Updates the behavior with the function "complete_behavior".
+        """
+        try:
+            self.behavior[parameter] = new_value
+            self.behavior = complete_behavior(self.behavior)
+        except:
+            None
+
+    def graph_parameter(self):
+        """
+        Trace le graphe d'évolution des paramètres visqueux-élastiques si ceux-ci existent.
+        """
+        if self.frequency == []:
+            None # L'inclusion ne contient pas de paramètres visco-élastiques
+        else:
+            plt.figure()
+            for parameter, values in self.behavior.items():
+                if type(values) == list:
+                    # Le paramètre est visco-élastique
+                    if self.abscissa == "temperature":
+                        plt.semilogy(self.frequency, values, '.', label=parameter)
+                    elif self.abscissa == "frequency":
+                        plt.loglog(self.frequency, values, '.', label=parameter)
+                    plt.legend()
+                    plt.xlabel(self.abscissa)
+                    plt.ylabel("Parameter value")
+                    plt.title("Inclusion visco-elastic behavior")
+                    plt.xlim(min(self.frequency), max(self.frequency))
+            plt.show()
     
 class Microstructure:
     """
@@ -72,20 +110,27 @@ class Microstructure:
     TODO : Généraliser ces bornes à n phases (et pas 2 comme c'est le cas ici)
     """
     
-    def __init__(self, matrix_behavior, dict_inclusions=dict()):
+    def __init__(self, matrix_behavior, dict_inclusions=dict(), frequency=[], abscissa="frequency"):
         """
         list_inclusions : (dict), sous la forme {inclusion: f_i} avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion.
         matrix_behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
+        frequency: liste des fréquences associées aux paramètres visco-élastiques
         """
         self.dict_inclusions = dict_inclusions
         self.matrix_behavior = complete_behavior(matrix_behavior)
         # Calcul de la fraction volumique de matrice f_m
         self.f_matrix = self.compute_fm()
+        self.frequency = frequency
+        self.abscissa = abscissa
         
     def __str__(self):
         string = "Microstructure\nf_m = {:.2f}, matrix".format(self.f_matrix, self.matrix_behavior)
         for parameter, value in self.matrix_behavior.items():
-            string += ", {}: {:.2f}".format(parameter, value) # TODO : transformer cette ligne en fonction print_behavior et l'appeler lors de l'affichage du comportement homogénéisé et des bornes de hashin
+            if type(value) not in [list, np.ndarray]:
+                string += ", {}: {:.2f}".format(parameter, value)
+            else:
+                string += ", {}: Visco-elastic".format(parameter)
+                # TODO : transformer cette ligne en fonction print_behavior et l'appeler lors de l'affichage du comportement homogénéisé et des bornes de hashin
         dict_inclusions = self.dict_inclusions
         # Présentation de toutes les inclusions contenues dans la microstructure
         for inclusion in dict_inclusions.keys():
@@ -116,7 +161,39 @@ class Microstructure:
         """
         self.dict_inclusions[inclusion] = new_f
         self.f_matrix = self.compute_fm()
-        
+    
+    def change_parameter(self, parameter, new_value):
+        """
+        Change the value of the parameter if it exists. Updates the behavior with the function "complete_behavior".
+        """
+        try:
+            self.matrix_behavior[parameter] = new_value
+            self.matrix_behavior = complete_behavior(self.matrix_behavior)
+        except:
+            None
+
+    def graph_parameter(self):
+        """
+        Trace le graphe d'évolution des paramètres visqueux-élastiques si ceux-ci existent.
+        """
+        if self.frequency == []:
+            None # L'inclusion ne contient pas de paramètres visco-élastiques
+        else:
+            plt.figure()
+            for parameter, values in self.matrix_behavior.items():
+                if type(values) == list:
+                    # Le paramètre est visco-élastique
+                    if self.abscissa == "temperature":
+                        plt.semilogy(self.frequency, values, '.', label=parameter)
+                    elif self.abscissa == "frequency":
+                        plt.loglog(self.frequency, values, '.', label=parameter)
+                    plt.legend()
+                    plt.xlabel(self.abscissa)
+                    plt.ylabel("Parameter value")
+                    plt.title("Matrix visco-elastic behavior")
+                    plt.xlim(min(self.frequency), max(self.frequency))
+            plt.show()
+
     def draw(self):
         """
         Méthode qui permet de dessiner la microstructure. Pour le moment, fonctionne uniquement avec une seule inclusion, sphérique, oblate ou prolate.
@@ -226,7 +303,7 @@ class Mori_Tanaka:
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = set(['K', "G'", "G''", 'G', 'E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes, éventuellement visco-élastiques
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Mori-Tanaka"
         
@@ -262,37 +339,52 @@ class Mori_Tanaka:
                 return False
             # vérification du comportement des inclusions
             behavior = inclusion.behavior
-            if set(behavior.keys()) != self.behavior_condition:
+            if set(behavior.keys()).issubset(self.behavior_condition) == False:
                 #print (list(behavior.keys()) , self.behavior_condition)
                 #raise NameError("Inclusion and microstructure behavior incompatible")
                 return False
         # Vérification su comportement de la matrice
-        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+        if set(microstructure.matrix_behavior.keys()).issubset(self.behavior_condition) == False:
             raise NameError("Inclusion and microstructure behavior incompatible")
             return False
         # À ce stade, toutes les conditions ont été vérifiées
         return True
-    
+
     def compute_h_behavior(self, microstructure):
         """
-        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
-        TODO : compléter avec le calcul complet (K et G)
+        Calcule le comportement visco-élastique homogène équivalent. Renvoie un dict avec la liste des valeurs des paramètres calculés correspondants aux fréquences de la liste self.frequency.
         """
+        # Vérification des conditions d'application
         compatible = self.check_hypothesis(microstructure)
         if not compatible:
             raise NameError("The microstructure does not match the model hypothesis")
+        # Récupération du comportement de la matrice
         Cm = microstructure.matrix_behavior
+        Km = np.array(Cm['K'])
+        try:
+            # Matrice élastique
+            Gm = np.array(Cm['G'])
+        except KeyError:
+            # Matrice visco-élastique
+            # Construction de G
+            Gm1, Gm2 = np.array(Cm["G'"]), np.array(Cm["G''"])
+            Gm = Gm1 + 1j*Gm2
+        # Récupération du comportement de l'inclusion
         dict_inclusions = microstructure.dict_inclusions
         inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
         Cf = inclusion.behavior
-        Gm, Km = Cm['G'], Cm['K']
-        Gf, Kf = Cf['G'], Cf['K']
+        Kf = np.array(Cf['K'])
+        try:
+            Gf = np.array(Cf['G'])
+        except KeyError:
+            Gf1, Gf2 = np.array(Cf["G'"]), np.array(Cf["G''"])
+            Gf = Gf1 + 1j*Gf2
         f = dict_inclusions[inclusion]
-        
+        # Calcul de Gh
         denominator = 5*Gm*(3*Km+4*Gm)+6*(1-f)*(Gf-Gm)*(Km+2*Gm)
         numerator = 5*f*Gm*(Gf-Gm)*(3*Km+4*Gm)
         Gh = Gm + numerator/denominator
-        
+        # Calculd e Kh
         denominator = 3*Kf+4*Gm+3*(1-f)*(Kf-Km)
         numerator = f*(Kf-Km)*(3*Km+4*Gm)
         Kh = Km + numerator/denominator
@@ -333,7 +425,7 @@ class Eshelby_Approximation:
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0
-        self.behavior_condition = set(['K', 'G','E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = set(['K', "G'", "G''", 'G', 'E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Eshelby"
         
@@ -369,11 +461,13 @@ class Eshelby_Approximation:
                 return False
             # vérification du comportement des inclusions
             behavior = inclusion.behavior
-
-            if set(behavior.keys()) != self.behavior_condition:
+            if set(behavior.keys()).issubset(self.behavior_condition) == False:
+                #print (list(behavior.keys()) , self.behavior_condition)
+                #raise NameError("Inclusion and microstructure behavior incompatible")
                 return False
         # Vérification su comportement de la matrice
-        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+        if set(microstructure.matrix_behavior.keys()).issubset(self.behavior_condition) == False:
+            raise NameError("Inclusion and microstructure behavior incompatible")
             return False
         # À ce stade, toutes les conditions ont été vérifiées
         return True
@@ -386,12 +480,27 @@ class Eshelby_Approximation:
         compatible = self.check_hypothesis(microstructure)
         if not compatible:
             raise NameError("The microstructure does not match the model hypothesis")
+        # Récupération du comportement de la matrice
         Cm = microstructure.matrix_behavior
+        Km = np.array(Cm['K'])
+        try:
+            # Matrice élastique
+            Gm = np.array(Cm['G'])
+        except KeyError:
+            # Matrice visco-élastique
+            # Construction de G
+            Gm1, Gm2 = np.array(Cm["G'"]), np.array(Cm["G''"])
+            Gm = Gm1 + 1j*Gm2
+        # Récupération du comportement de l'inclusion
         dict_inclusions = microstructure.dict_inclusions
         inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
         Cf = inclusion.behavior
-        Gm, Km = Cm['G'], Cm['K']
-        Gf, Kf = Cf['G'], Cf['K']
+        Kf = np.array(Cf['K'])
+        try:
+            Gf = np.array(Cf['G'])
+        except KeyError:
+            Gf1, Gf2 = np.array(Cf["G'"]), np.array(Cf["G''"])
+            Gf = Gf1 + 1j*Gf2
         f = dict_inclusions[inclusion]
         
         denominator = 3*Km*(3*Gm+2*Gf) + 4*Gm*(2*Gm+3*Gf)
@@ -442,7 +551,7 @@ class Differential_Scheme:
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0
-        self.behavior_condition = set(['K', 'G','E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = set(['K', "G'", "G''", 'G', 'E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Differential"
         
@@ -478,32 +587,44 @@ class Differential_Scheme:
                 return False
             # vérification du comportement des inclusions
             behavior = inclusion.behavior
-            if set(behavior.keys()) != self.behavior_condition:
-                print (list(behavior.keys()) , self.behavior_condition)
+            if set(behavior.keys()).issubset(self.behavior_condition) == False:
+                #print (list(behavior.keys()) , self.behavior_condition)
                 #raise NameError("Inclusion and microstructure behavior incompatible")
                 return False
         # Vérification su comportement de la matrice
-        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
-            #raise NameError("Inclusion and microstructure behavior incompatible")
+        if set(microstructure.matrix_behavior.keys()).issubset(self.behavior_condition) == False:
+            raise NameError("Inclusion and microstructure behavior incompatible")
             return False
         # À ce stade, toutes les conditions ont été vérifiées
         return True
     
     ## Fonctions utiles au calcul du comportement homogénéisé
     
-    def deriv(Module,f):
-        K,G,Kf,Gf=Module[0],Module[1],Module[2],Module[3]
-        mu=(3*K-2*G)/(6*K+2*G)
+    def deriv(module, f):
+        """
+        Fonction qui calcule les dérivée des paramètres K et G par rapport à la fraction volumique d'inclusion. Conçue pour être appelée par la fonction odeint lors de l'intégration numérique.
+        module: list, contient les valeurs réelles et imaginaires des paramètres K, G courants ainsi que Kf et Gf propres à l'inclusion.
+        f: float, fraction volumique d'inclusion courante.
+        """
+        K1, K2, G1, G2, Kf1, Kf2, Gf1, Gf2 = module
+        # Construction des paramètres complexes
+        K = K1 + K2*1j
+        G = G1 + G2*1j
+        Kf = Kf1 + Kf2*1j
+        Gf = Gf1 + Gf2*1j
+        nu = (3*K-2*G)/(6*K+2*G)
+        # Calcul de dK
+        numerator = K-Kf
+        denominator = (1-f)*(1+(Kf-K)/(K+4*G/3))
+        dK = -numerator/denominator
+        dK1, dK2 = dK.real, dK.imag
+        # Calcul de dG
+        numerator = 15*(1-nu)*(G-Gf)
+        denominator = (1-f)*(7-5*nu+2*(4-5*nu)*Gf/G)
+        dG = -numerator/denominator
+        dG1, dG2 = dG.real, dG.imag
         
-        numerator=K-Kf
-        denominator=(1-f)*(1+(Kf-K)/(K+4*G/3))
-        dK=-numerator/denominator
-        
-        numerator=15*(1-mu)*(G-Gf)
-        denominator=(1-f)*(7-5*mu+2*(4-5*mu)*Gf/G)
-        dG=-numerator/denominator
-        
-        return np.array([dK,dG,0,0])
+        return np.array([dK1, dK2 ,dG1, dG2] + 4*[0])
     
     def khs(k1, g1, c1, k2, g2, c2):
         numerator = c2*(k2-k1)
@@ -523,29 +644,56 @@ class Differential_Scheme:
         compatible = self.check_hypothesis(microstructure)
         if not compatible:
             raise NameError("The microstructure does not match the model hypothesis")
+
+        # Récupération du comportement de la matrice
         Cm = microstructure.matrix_behavior
+        Km = np.array(Cm['K'])
+        try:
+            # Matrice élastique
+            Gm = np.array(Cm['G'])
+        except KeyError:
+            # Matrice visco-élastique
+            # Construction de G
+            Gm1, Gm2 = np.array(Cm["G'"]), np.array(Cm["G''"])
+            Gm = Gm1 + 1j*Gm2
+        # Récupération du comportement de l'inclusion
         dict_inclusions = microstructure.dict_inclusions
         inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
         Cf = inclusion.behavior
-        Gm, Km = Cm['G'], Cm['K']
-        Gf, Kf = Cf['G'], Cf['K']
+        Kf = np.array(Cf['K'])
+        try:
+            Gf = np.array(Cf['G'])
+        except KeyError:
+            Gf1, Gf2 = np.array(Cf["G'"]), np.array(Cf["G''"])
+            Gf = Gf1 + 1j*Gf2
         f_finale = dict_inclusions[inclusion]
-        
-        npoints=100
-        f=np.linspace(0,f_finale,npoints)
-        Module_Initial=np.array([Km,Gm,Kf,Gf])
-        Module=odeint(Differential_Scheme.deriv,Module_Initial,f)
-        
-        Module_final=Module[npoints-1]
-        Kh,Gh,Kf,Gf=Module_final   
-        
-        ## ajout des bornes de Hashin
-        Khs=np.vectorize(Differential_Scheme.khs)
-        Ghs=np.vectorize(Differential_Scheme.ghs)
-        KINF=Khs(Km,Gm,1-f,Kf,Gf,f)
-        GINF=Ghs(Km,Gm,1-f,Kf,Gf,f)
-        KSUP=Khs(Kf,Gf,f,Km,Gm,1-f)
-        GSUP=Ghs(Kf,Gf,f,Km,Gm,1-f)
+        # Initialisation du résultat
+        behavior = {'K':[], 'G':[]}
+        # Parcours de toutes les fréquences
+        for frequ_index in range(len(microstructure.frequency)):
+            npoints = 100 # Nombre de points d'intégration
+            f = np.linspace(0, f_finale, npoints) # Liste des fractions volumiques diluées
+
+            initial_module = []
+            for parameter in [Km[frequ_index], Gm[frequ_index], Kf[frequ_index], Gf[frequ_index]]:
+                initial_module += [parameter.real, parameter.imag]
+            initial_module = np.array(initial_module)
+            module = odeint(Differential_Scheme.deriv, initial_module, f)
+            
+            final_module = module[-1]
+            Kh1, Kh2, Gh1, Gh2 = final_module[:4]  
+            behavior['K'].append(Kh1+1j*Kh2)
+            behavior['G'].append(Gh1+1j*Gh2) 
+        # Passage des listes de behavior en array
+        for parameter, value in behavior.items():
+            behavior[parameter] = np.array(value)
+        # ## ajout des bornes de Hashin
+        # Khs=np.vectorize(Differential_Scheme.khs)
+        # Ghs=np.vectorize(Differential_Scheme.ghs)
+        # KINF=Khs(Km,Gm,1-f,Kf,Gf,f)
+        # GINF=Ghs(Km,Gm,1-f,Kf,Gf,f)
+        # KSUP=Khs(Kf,Gf,f,Km,Gm,1-f)
+        # GSUP=Ghs(Kf,Gf,f,Km,Gm,1-f)
         ## affichage des graphes pour K et G
         
         #plt.subplot(211)
@@ -568,7 +716,7 @@ class Differential_Scheme:
         #plt.xlabel("fraction volumique")
         #plt.ylabel("Modules")
         #plt.show()
-        return complete_behavior({'K' : Kh, 'G' : Gh}) 
+        return complete_behavior(behavior) 
     
 
     
@@ -631,18 +779,18 @@ def complete_behavior(behavior):
     """
     parameters = list(behavior.keys())
     result = behavior
-    if parameters == ['K', 'G']:
+    if parameters[:2] == ['K', 'G']:
         K, G = behavior['K'], behavior['G']
         E, nu = bulk_to_young(K, G)
         result['E'], result['nu'] = E, nu
-    elif parameters == ['E', 'nu']:
+    elif parameters[:2] == ['E', 'nu']:
         E, nu = behavior['E'], behavior['nu']
         K, G = young_to_bulk(E, nu)
         result['K'], result['G'] = K, G
     return result
     
 list_models = [Mori_Tanaka, Eshelby_Approximation, Differential_Scheme] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
-dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', 'nu']}
+dict_behaviors = {'Elastic isotropic (K & G)': ['K', 'G'], 'Elastic isotropic (E & nu)': ['E', 'nu'], 'Visco-elastic': ['K', "G'", "G''"]}
 dict_types = {0: 'Spheres', 1: 'Oblate', 2: 'Prolate'} # Types de géométries admissibles et leur identifiant
 
 # Tests
