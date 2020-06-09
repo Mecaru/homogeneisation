@@ -1058,7 +1058,7 @@ def complete_behavior(behavior):
         result['K'], result['G'] = K, G
     return result
     
-list_models = [Mori_Tanaka, Eshelby_Approximation, Differential_Scheme] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
+list_models = [Mori_Tanaka, Eshelby_Approximation, Differential_Scheme, Autocoherent_Hill, Autocoherent_III, Autocoherent_IV] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
 dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', 'nu']}
 dict_types = {0: 'Spheres', 1: 'Oblate', 2: 'Prolate'} # Types de géométries admissibles et leur identifiant
 
