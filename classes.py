@@ -599,6 +599,132 @@ class Differential_Scheme:
             raise NameError("K out of Hashin-Shtrikman bounds")
             return False
         return True
+    
+    
+    
+class Autocoherent_Hill:
+    
+    
+    def __init__(self):
+        """
+        Définition des hypothèses du modèle.
+        """
+        self.type_inclusion = 0 # Sphères
+        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.name = "Autocohérent"
+        self.precision = 10**-12
+        self.n_point_fixe = 100
+        
+    def __str__(self):
+        """
+        Description textuelle du modèle.
+        """
+        return "Modèle autocohérent"
+    
+    def __repr__(self):
+        """
+        Description textuelle du modèle.
+        """
+        return str(self)
+    
+    def check_hypothesis(self, microstructure):
+        """
+        Vérifies si la microstructure vérifie les hypothèses du modèle, renvoie un boolées. 
+        TODO : Éventuellement généraliser cette fonction en l'incorporant dans une classe mère Model pour qu'elle s'applique à tous les modèles.
+        """
+        dict_inclusions = microstructure.dict_inclusions
+        inclusions = dict_inclusions.keys()
+        n_inclusions = len(inclusions)
+        # vérification du nombre d'inclusions
+        if n_inclusions != self.n_inclusions:
+            # Le modèle ne peut pas traiter de microstructures avec autant d'inclusions de natures différentes
+             #raise NameError("Wrong number of inclusion")
+             return False
+        for inclusion in dict_inclusions.keys():
+            # Vérification du type d'inclusion
+            if inclusion.type_inclusion != self.type_inclusion:
+                #raise NameError("Wrong type of inclusion or microstructure")
+                return False
+            # vérification du comportement des inclusions
+            behavior = inclusion.behavior
+            if set(behavior.keys()) != self.behavior_condition:
+                #raise NameError("Inclusion and microstructure behavior incompatible")
+                return False
+        # Vérification su comportement de la matrice
+        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
+            raise NameError("Inclusion and microstructure behavior incompatible")
+            return False
+        # À ce stade, toutes les conditions ont été vérifiées
+        return True
+    
+    def Reccurence(Module,f):
+        K,G,Km,Gm,Kf,Gf=Module
+        ##Calcul de Kn+1
+        numerator = f*(Kf-Km)*(3*K+4*G)
+        denominator = 3*Kf+4*G
+        nextK = Km + numerator/denominator
+        ##Calcul de Gn+1
+        numerator = 5*f*G*(Gf-Gm)*(3*K+4*G)
+        denominator = 3*K*(3*G+2*Gf)+4*G*(3*Gf+2*G)        
+        nextG = Gm + numerator/denominator
+        return nextK,nextG
+    
+  
+    def compute_h_behavior(self,microstructure):
+        """
+        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
+        TODO : compléter avec le calcul complet (K et G)
+        """           
+        
+        compatible = self.check_hypothesis(microstructure)
+        if not compatible:
+            raise NameError("The microstructure does not match the model hypothesis")
+        Cm = microstructure.matrix_behavior
+        dict_inclusions = microstructure.dict_inclusions
+        inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
+        Cf = inclusion.behavior
+        
+        Gm, Km = Cm['G'], Cm['K']
+        Gf, Kf = Cf['G'], Cf['K']
+        f = dict_inclusions[inclusion]
+        F = np.linspace(0,f,self.n_point_fixe)
+        
+        Kinit = Km
+        Ginit = Gm
+        for i in range(len(F)) : 
+            fi = F[i]
+            # Initialisation du point fixe
+            K = Kinit
+            G = Ginit
+            # Algorithme du point fixe
+            precision = self.precision
+            nextK,nextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)
+            while abs(nextK-K) > precision or abs(nextG-G) > precision : 
+                K,G=nextK,nextG
+                nextK,NextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)  
+            # Mise à jour de l'initialisation
+            Kinit = nextK
+            Ginit = nextG
+        return complete_behavior({'K' : nextK, 'G' : nextG})
+    
+    
+    def check_bounds(self,microstructure):
+        Behavior_h=self.compute_h_behavior(microstructure)
+        Gh = Behavior_h['G']
+        Kh = Behavior_h['K']
+        Bounds=microstructure.Hashin_bounds()
+        Gsup = Bounds['Gsup']
+        Ginf = Bounds['Ginf']
+        Ksup = Bounds['Ksup']
+        Kinf = Bounds['Kinf']
+        if Gh < Ginf or Gh > Gsup : 
+            raise NameError("G out of Hashin-Shtrikman bounds")
+            return False
+        if Kh < Kinf or Kh > Ksup :
+            raise NameError("K out of Hashin-Shtrikman bounds")
+            return False
+        return True   
 
 
 class Autocoherent_III:
