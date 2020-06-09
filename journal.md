@@ -22,7 +22,6 @@
 - Patterns isotropes
     
 ### Programme de la semaine
-- nu = 0.5 devient 0.49999 
 - Demande à l'utilisateur de spécifier fréquence ou température et tracer en loglog dans un cas et semilogy dans l'autre 
 - Intégrer les modèles autocohérents
 - Suite du visco
@@ -117,3 +116,4 @@
 
 ### 09/06/2020
 - calculs depuis un fichier .txt: Modification du format des fichiers de sortie, section valable uniquement pour des calculs en non-visco isotrope 
+- Possibilité d'entrer un nu=0.5
