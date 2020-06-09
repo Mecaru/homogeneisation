@@ -24,19 +24,21 @@ class Inclusion:
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
     
-    def __init__(self, type_inclusion, behavior, aspect_ratio=1, name=None, frequency=[]):
+    def __init__(self, type_inclusion, behavior, aspect_ratio=1, name=None, frequency=[], abscissa="frequency"):
         """
         TODO : Prise en compte de l'orientation
         type_inclusion : (int), 0 pour des inclusions sphériques. Voir la liste list_types (en bas du fichier) pour les autres types.
         radius : (float), valeur du rayon des inclusions sphériques. TODO : À remplacer par un paramètre plus général pour des inclusions de types différents. 
         behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
         frequency: (list), liste des fréquences/températures associées aux paramètres visco-élastiques
+        abscissa: (str), vaut "frequency" ou "temperature", indique la nature physique des valeurs de la liste frequency
         """
         self.type_inclusion = type_inclusion
         self.aspect_ratio = aspect_ratio
         self.behavior = complete_behavior(behavior)
         self.name = name
         self.frequency = frequency
+        self.abscissa = abscissa
     
     def type_to_str(self):
         """
@@ -90,9 +92,12 @@ class Inclusion:
             for parameter, values in self.behavior.items():
                 if type(values) == list:
                     # Le paramètre est visco-élastique
-                    plt.plot(self.frequency, values, '.', label=parameter)
+                    if self.abscissa == "temperature":
+                        plt.semilogy(self.frequency, values, '.', label=parameter)
+                    elif self.abscissa == "frequency":
+                        plt.loglog(self.frequency, values, '.', label=parameter)
                     plt.legend()
-                    plt.xlabel("Frequency/Temperature")
+                    plt.xlabel(self.abscissa)
                     plt.ylabel("Parameter value")
                     plt.title("Inclusion visco-elastic behavior")
                     plt.xlim(min(self.frequency), max(self.frequency))
@@ -105,7 +110,7 @@ class Microstructure:
     TODO : Généraliser ces bornes à n phases (et pas 2 comme c'est le cas ici)
     """
     
-    def __init__(self, matrix_behavior, dict_inclusions=dict(), frequency=[]):
+    def __init__(self, matrix_behavior, dict_inclusions=dict(), frequency=[], abscissa="frequency"):
         """
         list_inclusions : (dict), sous la forme {inclusion: f_i} avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion.
         matrix_behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
@@ -116,6 +121,7 @@ class Microstructure:
         # Calcul de la fraction volumique de matrice f_m
         self.f_matrix = self.compute_fm()
         self.frequency = frequency
+        self.abscissa = abscissa
         
     def __str__(self):
         string = "Microstructure\nf_m = {:.2f}, matrix".format(self.f_matrix, self.matrix_behavior)
@@ -177,9 +183,12 @@ class Microstructure:
             for parameter, values in self.matrix_behavior.items():
                 if type(values) == list:
                     # Le paramètre est visco-élastique
-                    plt.plot(self.frequency, values, '.', label=parameter)
+                    if self.abscissa == "temperature":
+                        plt.semilogy(self.frequency, values, '.', label=parameter)
+                    elif self.abscissa == "frequency":
+                        plt.loglog(self.frequency, values, '.', label=parameter)
                     plt.legend()
-                    plt.xlabel("Frequency/Temperature")
+                    plt.xlabel(self.abscissa)
                     plt.ylabel("Parameter value")
                     plt.title("Matrix visco-elastic behavior")
                     plt.xlim(min(self.frequency), max(self.frequency))
