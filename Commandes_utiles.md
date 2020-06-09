@@ -1,6 +1,6 @@
 # Commandes utiles
 ## Installation de tous les modules
-pip install [maths, numpy, matplotlib, pandas, scipy]
+pip3 install numpy matplotlib pandas scipy
 ## Installation de ipywidgets
 conda install -c conda-forge ipywidgets
 ## Installation de matplotlib widgets
