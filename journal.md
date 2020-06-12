@@ -21,10 +21,13 @@
 - Comportements anisotropes
 - Patterns isotropes
 - Autocohérents avec interphase: épaisseur en entrée
+- 4 phases avec différents patterns
     
 ### Programme de la semaine
 - Intégrer les modèles autocohérents en visco
 - Suite du visco
+- Visco-élastique E' E", K' K"
+- Ajout de modèles sur le même graphe pour une fraction volumique
 
 ---
 ## Suivi
@@ -119,3 +122,6 @@
 - Possibilité d'entrer un nu=0.5
 - Visco-élasticité: implémentation du choix de l'abscisse (fréquence ou temperature)
 - Intégration des modèles auto-cohérents au main
+
+### 12/06/2020
+- Fusion de classes.py et classes_visco.py en classes_v2.py, ajout des modèles auto-cohérents en visco, ajout de nouveaux modèles facilité
