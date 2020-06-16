@@ -595,9 +595,6 @@ class Autocoherent_Hill(Model):
     
   
     def compute_behavior(self, Cm, inclusion_behaviors):
-        """
-        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
-        """           
         # Récupération du comportement de la matrice
         Km = Cm['K']
         Gm = Cm['G']
@@ -869,16 +866,9 @@ def complete_behavior(behavior):
         K, G = behavior['K'], behavior['G']
         E, nu = bulk_to_young(K, G)
         result['E'], result['nu'] = E, nu
-        # if nu == 0.5:
-        #     # Cas incompressible
-        #     result['nu'] = 0.49999
     # Isotrope E et nu
     elif parameters[:2] == ['E', 'nu']:
-        E, nu = behavior['E'], behavior['nu']
-        # if nu == 0.5:
-        #     # Cas incompressible
-        #     nu = 0.49999
-        #     result['nu'] = nu            
+        E, nu = behavior['E'], behavior['nu']        
         K, G = young_to_bulk(E, nu)
         result['K'], result['G'] = K, G
     

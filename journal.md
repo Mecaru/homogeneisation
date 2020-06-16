@@ -27,7 +27,14 @@
 - Intégrer les modèles autocohérents en visco
 - Suite du visco
 - Visco-élastique E' E", K' K"
-- Ajout de modèles sur le même graphe pour une fraction volumique
+- Instance inclusion+interphase
+- Format des graphes (trop gros)
+- Spheroids, not ellipsoids
+- Suppression d'inclusions
+- Petite modif Hill (Cf mail)
+- K, G poreux à 10**-20 et reproduire erreur stackoverflow sur autocohérent
+- Reprendre la résolution inverse avec classes_v2
+- Valider différentiel
 
 ---
 ## Suivi
@@ -125,3 +132,6 @@
 
 ### 12/06/2020
 - Fusion de classes.py et classes_visco.py en classes_v2.py, ajout des modèles auto-cohérents en visco, ajout de nouveaux modèles facilité
+
+### 16/06/2020
+- Fusion des cellules "calcul de comportement homogénéisé" sur les deux mains
