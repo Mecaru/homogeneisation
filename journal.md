@@ -135,3 +135,4 @@
 
 ### 16/06/2020
 - Fusion des cellules "calcul de comportement homogénéisé" sur les deux mains
+- Visco: Ajout de modèles sur le même graphe avec tracé des différents paramètres sur différents subplots
