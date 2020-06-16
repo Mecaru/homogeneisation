@@ -22,10 +22,10 @@
 - Patterns isotropes
 - Autocohérents avec interphase: épaisseur en entrée
 - 4 phases avec différents patterns
+- Suite du visco
     
 ### Programme de la semaine
-- Intégrer les modèles autocohérents en visco
-- Suite du visco
+- Suite du visco - comparaison de modèles, sauvegarde des données en txt et figures
 - Visco-élastique E' E", K' K"
 - Instance inclusion+interphase
 - Format des graphes (trop gros)
