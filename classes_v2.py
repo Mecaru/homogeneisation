@@ -595,9 +595,6 @@ class Autocoherent_Hill(Model):
     
   
     def compute_behavior(self, Cm, inclusion_behaviors):
-        """
-        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
-        """           
         # Récupération du comportement de la matrice
         Km = Cm['K']
         Gm = Cm['G']
@@ -617,7 +614,7 @@ class Autocoherent_Hill(Model):
             # Algorithme du point fixe
             precision = self.precision
             nextK,nextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)
-            while abs(nextK-K) > precision or abs(nextG-G) > precision : 
+            while abs(nextK-K)/K > precision or abs(nextG-G)/G > precision : 
                 K,G=nextK,nextG
                 nextK,NextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)  
             # Mise à jour de l'initialisation
@@ -865,20 +862,13 @@ def complete_behavior(behavior):
                 elif parameter == 'nu' and value == 0.5:
                     result[parameter][i] = 0.4999999
     # Isotrope K et G
-    if parameters[:2] == ['K', 'G']:
+    if parameters[:2] == ['K', 'G'] or parameters[:2] == ['G', 'K']:
         K, G = behavior['K'], behavior['G']
         E, nu = bulk_to_young(K, G)
         result['E'], result['nu'] = E, nu
-        # if nu == 0.5:
-        #     # Cas incompressible
-        #     result['nu'] = 0.49999
     # Isotrope E et nu
-    elif parameters[:2] == ['E', 'nu']:
-        E, nu = behavior['E'], behavior['nu']
-        # if nu == 0.5:
-        #     # Cas incompressible
-        #     nu = 0.49999
-        #     result['nu'] = nu            
+    elif parameters[:2] == ['E', 'nu'] or parameters[:2] == ['nu', 'E']:
+        E, nu = behavior['E'], behavior['nu']        
         K, G = young_to_bulk(E, nu)
         result['K'], result['G'] = K, G
     
@@ -888,7 +878,11 @@ def complete_behavior(behavior):
 
 #%% Définition des modèles, comportements et géométries d'inclusions 
 list_models = [Mori_Tanaka, Eshelby_Approximation, Differential_Scheme, Autocoherent_Hill, Autocoherent_III, Autocoherent_IV]
-dict_behaviors_visco = {'Elastic isotropic (K & G)': ['K', 'G'], 'Elastic isotropic (E & nu)': ['E', 'nu'], 'Visco-elastic': ['K', "G'", "G''"]}
+dict_behaviors_visco = {'Elastic isotropic (K & G)': ['K', 'G'],
+                        'Elastic isotropic (E & nu)': ['E', 'nu'],
+                        'Visco-elastic 1': ['K', "G'", "G''"],
+                        'Visco-elastic 2': ["K'", "K''", "G'", "G''"],
+                        'Visco-elastic 3': ["E'", "E''", 'nu']}
 dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', 'nu']}
 dict_types = {0: 'Spheres', 1: 'Oblate', 2: 'Prolate'}
     

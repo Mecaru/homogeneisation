@@ -22,12 +22,19 @@
 - Patterns isotropes
 - Autocohérents avec interphase: épaisseur en entrée
 - 4 phases avec différents patterns
+- Suite du visco
     
 ### Programme de la semaine
-- Intégrer les modèles autocohérents en visco
-- Suite du visco
+- Comportements anisotropes + ellipsoïdes
 - Visco-élastique E' E", K' K"
-- Ajout de modèles sur le même graphe pour une fraction volumique
+- Instance inclusion+interphase
+- Format des graphes (trop gros)
+- Spheroids, not ellipsoids
+- Suppression d'inclusions
+- Petite modif (Cf mail)
+- Reprendre la résolution inverse avec classes_v2
+- Valider différentiel
+- Schéma deux inclusions ou interphase
 
 ---
 ## Suivi
@@ -125,3 +132,13 @@
 
 ### 12/06/2020
 - Fusion de classes.py et classes_visco.py en classes_v2.py, ajout des modèles auto-cohérents en visco, ajout de nouveaux modèles facilité
+
+### 16/06/2020
+- Fusion des cellules "calcul de comportement homogénéisé" sur les deux mains
+- Visco: Ajout de modèles sur le même graphe avec tracé des différents paramètres sur différents subplots
+
+### 17/06/2020
+- Visco: changement des limites de l'axe x du graphe
+- Visco: sauvegarde des graphes et ajout d'un dossier visco dans outputs
+- Visco: sauvegarde des graphes en csv
+- Visco: ajout des comportements en K' et K'', ou E' et E''
