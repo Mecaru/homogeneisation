@@ -26,7 +26,6 @@
     
 ### Programme de la semaine
 - Comportements anisotropes + ellipsoïdes
-- Suite du visco - comparaison de modèles, sauvegarde des données en txt et figures
 - Visco-élastique E' E", K' K"
 - Instance inclusion+interphase
 - Format des graphes (trop gros)
@@ -142,3 +141,4 @@
 - Visco: changement des limites de l'axe x du graphe
 - Visco: sauvegarde des graphes et ajout d'un dossier visco dans outputs
 - Visco: sauvegarde des graphes en csv
+- Visco: ajout des comportements en K' et K'', ou E' et E''

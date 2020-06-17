@@ -862,12 +862,12 @@ def complete_behavior(behavior):
                 elif parameter == 'nu' and value == 0.5:
                     result[parameter][i] = 0.4999999
     # Isotrope K et G
-    if parameters[:2] == ['K', 'G']:
+    if parameters[:2] == ['K', 'G'] or parameters[:2] == ['G', 'K']:
         K, G = behavior['K'], behavior['G']
         E, nu = bulk_to_young(K, G)
         result['E'], result['nu'] = E, nu
     # Isotrope E et nu
-    elif parameters[:2] == ['E', 'nu']:
+    elif parameters[:2] == ['E', 'nu'] or parameters[:2] == ['nu', 'E']:
         E, nu = behavior['E'], behavior['nu']        
         K, G = young_to_bulk(E, nu)
         result['K'], result['G'] = K, G
@@ -880,9 +880,9 @@ def complete_behavior(behavior):
 list_models = [Mori_Tanaka, Eshelby_Approximation, Differential_Scheme, Autocoherent_Hill, Autocoherent_III, Autocoherent_IV]
 dict_behaviors_visco = {'Elastic isotropic (K & G)': ['K', 'G'],
                         'Elastic isotropic (E & nu)': ['E', 'nu'],
-                        'Visco-elastic': ['K', "G'", "G''"]}#,
-                        # 'Visco-elastic 2': ["K'", "K''", "G'", "G''"],
-                        # 'Visco-elastic 3': ["E'", "E''", 'nu']}
+                        'Visco-elastic 1': ['K', "G'", "G''"],
+                        'Visco-elastic 2': ["K'", "K''", "G'", "G''"],
+                        'Visco-elastic 3': ["E'", "E''", 'nu']}
 dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', 'nu']}
 dict_types = {0: 'Spheres', 1: 'Oblate', 2: 'Prolate'}
     
