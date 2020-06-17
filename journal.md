@@ -25,8 +25,7 @@
 - Suite du visco
     
 ### Programme de la semaine
-- Comportements anisotropes + ellipsoïdes
-- Visco-élastique E' E", K' K"
+- Ellipsoïdes
 - Instance inclusion+interphase
 - Format des graphes (trop gros)
 - Spheroids, not ellipsoids
@@ -142,3 +141,4 @@
 - Visco: sauvegarde des graphes et ajout d'un dossier visco dans outputs
 - Visco: sauvegarde des graphes en csv
 - Visco: ajout des comportements en K' et K'', ou E' et E''
+- Ajout de comportements anisotropes via fichiers texte sous la forme de matrices 6X6

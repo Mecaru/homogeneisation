@@ -67,7 +67,7 @@ class Inclusion:
             if type(value) not in [list, np.ndarray]:
                 string += ", {}: {:.2f}".format(parameter, value)
             else:
-                string += ", {}: Visco-elastic".format(parameter)
+                string += ", {}: list".format(parameter)
         return string
 
     def __repr__(self):
@@ -134,7 +134,7 @@ class Microstructure:
             if type(value) not in [list, np.ndarray]:
                 string += ", {}: {:.2f}".format(parameter, value)
             else:
-                string += ", {}: Visco-elastic".format(parameter)
+                string += ", {}: list".format(parameter)
         dict_inclusions = self.dict_inclusions
         # Présentation de toutes les inclusions contenues dans la microstructure
         for inclusion in dict_inclusions.keys():
@@ -857,7 +857,7 @@ def complete_behavior(behavior):
         except:
             # Les valeurs sont des listes (cas visco-élastique)
             for i, value in enumerate(values):
-                if value == 0:
+                if type(value)!=list and value == 0:
                     result[parameter][i] = 10**(-12)
                 elif parameter == 'nu' and value == 0.5:
                     result[parameter][i] = 0.4999999
@@ -883,7 +883,10 @@ dict_behaviors_visco = {'Elastic isotropic (K & G)': ['K', 'G'],
                         'Visco-elastic 1': ['K', "G'", "G''"],
                         'Visco-elastic 2': ["K'", "K''", "G'", "G''"],
                         'Visco-elastic 3': ["E'", "E''", 'nu']}
-dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', 'nu']}
+dict_behaviors = {'Isotropic (K & G)': ['K', 'G'],
+                  'Isotropic (E & nu)': ['E', 'nu'],
+                  'Anisotropic (stifness)': ['S'],
+                  'Anisotropic (compliance)': ['C']}
 dict_types = {0: 'Spheres', 1: 'Oblate', 2: 'Prolate'}
     
     
