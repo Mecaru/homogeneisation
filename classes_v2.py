@@ -300,6 +300,18 @@ class Model:
     Contient la méthode permettant de vérifier les hypothèses du modèle sur une microstructure, ainsi que la méthode appelée lors du calcul du comportement homogénéisé.
     """
     
+    def __str__(self):
+        """
+        Description textuelle du modèle.
+        """
+        return self.name + " model"
+    
+    def __repr__(self):
+        """
+        Description textuelle du modèle.
+        """
+        return str(self)
+    
     def check_hypothesis(self, microstructure):
         """
         Vérifies si la microstructure vérifie les hypothèses du modèle, renvoie un booléen. 
@@ -388,18 +400,6 @@ class Mori_Tanaka(Model):
         self.behavior_condition = set(['K', 'G', 'E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Mori-Tanaka"
-        
-    def __str__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return "Modèle de Mori-Tanaka"
-    
-    def __repr__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return str(self)
     
     def compute_behavior(self, Cm, inclusion_behaviors):
         """
@@ -438,18 +438,6 @@ class Eshelby_Approximation(Model):
         self.behavior_condition = set(['K', 'G', 'E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Eshelby"
-        
-    def __str__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return "Modèle d'Eshelby'"
-    
-    def __repr__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return str(self)
    
     def compute_behavior(self, Cm, inclusion_behaviors):
         """
@@ -486,18 +474,6 @@ class Differential_Scheme(Model):
         self.behavior_condition = set(['K', 'G', 'E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Differential"
-        
-    def __str__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return "Modèle différentiel"
-    
-    def __repr__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return str(self)
     
     ## Fonctions utiles au calcul du comportement homogénéisé
     
@@ -568,18 +544,6 @@ class Autocoherent_Hill(Model):
         self.name = "Self-consistent"
         self.precision = 10**-12
         self.n_point_fixe = 100
-        
-    def __str__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return "Modèle autocohérent"
-    
-    def __repr__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return str(self)
     
     def Reccurence(Module,f):
         K,G,Km,Gm,Kf,Gf = Module
@@ -645,18 +609,6 @@ class Autocoherent_III(Model):
         self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Generalised self-consistent"
-        
-    def __str__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return "Modèle autocohérent généralisé"
-    
-    def __repr__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return str(self)
   
     def compute_behavior(self, Cm, inclusion_behaviors):
         """
@@ -714,18 +666,6 @@ class Autocoherent_IV(Model):
         self.n_inclusions = 2 # Nombre d'inclusions de natures différentes 
         self.R_inclusion = R_inclusion
         self.name = "4-phases self-consistent"
-        
-    def __str__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return "Modèle autocohérent 4-phases"
-    
-    def __repr__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return str(self)
 
     def compute_behavior(self, Cm, inclusion_behaviors):
         """

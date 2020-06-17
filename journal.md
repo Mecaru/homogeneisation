@@ -142,3 +142,4 @@
 - Visco: sauvegarde des graphes en csv
 - Visco: ajout des comportements en K' et K'', ou E' et E''
 - Ajout de comportements anisotropes via fichiers texte sous la forme de matrices 6X6
+- Passage des méthodes str et repr des classes modèles à la classe mère Model
