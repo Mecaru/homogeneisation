@@ -140,3 +140,4 @@
 
 ### 17/06/2020
 - Visco: changement des limites de l'axe x du graphe
+- Visco: sauvegarde des graphes et ajout d'un dossier visco dans outputs
