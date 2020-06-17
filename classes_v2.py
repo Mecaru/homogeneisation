@@ -614,7 +614,7 @@ class Autocoherent_Hill(Model):
             # Algorithme du point fixe
             precision = self.precision
             nextK,nextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)
-            while abs(nextK-K) > precision or abs(nextG-G) > precision : 
+            while abs(nextK-K)/K > precision or abs(nextG-G)/G > precision : 
                 K,G=nextK,nextG
                 nextK,NextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)  
             # Mise à jour de l'initialisation
@@ -878,7 +878,11 @@ def complete_behavior(behavior):
 
 #%% Définition des modèles, comportements et géométries d'inclusions 
 list_models = [Mori_Tanaka, Eshelby_Approximation, Differential_Scheme, Autocoherent_Hill, Autocoherent_III, Autocoherent_IV]
-dict_behaviors_visco = {'Elastic isotropic (K & G)': ['K', 'G'], 'Elastic isotropic (E & nu)': ['E', 'nu'], 'Visco-elastic': ['K', "G'", "G''"]}
+dict_behaviors_visco = {'Elastic isotropic (K & G)': ['K', 'G'],
+                        'Elastic isotropic (E & nu)': ['E', 'nu'],
+                        'Visco-elastic': ['K', "G'", "G''"]}#,
+                        # 'Visco-elastic 2': ["K'", "K''", "G'", "G''"],
+                        # 'Visco-elastic 3': ["E'", "E''", 'nu']}
 dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', 'nu']}
 dict_types = {0: 'Spheres', 1: 'Oblate', 2: 'Prolate'}
     

@@ -25,16 +25,17 @@
 - Suite du visco
     
 ### Programme de la semaine
+- Comportements anisotropes + ellipsoïdes
 - Suite du visco - comparaison de modèles, sauvegarde des données en txt et figures
 - Visco-élastique E' E", K' K"
 - Instance inclusion+interphase
 - Format des graphes (trop gros)
 - Spheroids, not ellipsoids
 - Suppression d'inclusions
-- Petite modif Hill (Cf mail)
-- K, G poreux à 10**-20 et reproduire erreur stackoverflow sur autocohérent
+- Petite modif (Cf mail)
 - Reprendre la résolution inverse avec classes_v2
 - Valider différentiel
+- Schéma deux inclusions ou interphase
 
 ---
 ## Suivi
@@ -136,3 +137,6 @@
 ### 16/06/2020
 - Fusion des cellules "calcul de comportement homogénéisé" sur les deux mains
 - Visco: Ajout de modèles sur le même graphe avec tracé des différents paramètres sur différents subplots
+
+### 17/06/2020
+- Visco: changement des limites de l'axe x du graphe
