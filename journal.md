@@ -25,7 +25,6 @@
 - Suite du visco
     
 ### Programme de la semaine
-- Ellipsoïdes (ajout d'un second rapport de forme, ajout d'un argument rapports de formes pour les fonctions compute, modif des types, affichage)
 - Instance inclusion+interphase
 - Format des graphes (trop gros)
 - Spheroids, not ellipsoids
