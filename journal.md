@@ -34,6 +34,7 @@
 - Reprendre la résolution inverse avec classes_v2
 - Valider différentiel
 - Schéma deux inclusions ou interphase
+- Notice modèle et changement behavior acceptable
 
 ---
 ## Suivi
@@ -143,4 +144,7 @@
 - Visco: ajout des comportements en K' et K'', ou E' et E''
 - Ajout de comportements anisotropes via fichiers texte sous la forme de matrices 6X6
 - Passage des méthodes str et repr des classes modèles à la classe mère Model
+
+### 18/06/2020
 - Suppression des prolate et oblate, ajout d'inclusions ellipsoïdales avec deux rapports d'aspect et leur affichage
+- Modification des arguments d'entrée des fonctions compute avec prise en compte des rapports d'apsects

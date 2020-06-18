@@ -355,8 +355,8 @@ class Model:
         # Cas élastique
         if not list(frequency):
             Cm = microstructure.behavior
-            # Récupération du comportement des inclusions, format {Cf: fraction_volumique}
-            inclusion_behaviors = [(inclusion.behavior, f) for (inclusion,f) in microstructure.dict_inclusions.items()]
+            # Récupération du comportement des inclusions, format [inclusion.behavior, f, aspect_ratio]
+            inclusion_behaviors = [(inclusion.behavior, f, inclusion.aspect_ratio) for (inclusion,f) in microstructure.dict_inclusions.items()]
             # Calcul du comportement homogénéisé
             h_behavior = self.compute_behavior(Cm, inclusion_behaviors)
             h_behavior = {parameter: value.real for (parameter,value) in h_behavior.items()} # Conversion des valeurs éventuellement complexes en valeurs réelles
@@ -373,7 +373,7 @@ class Model:
                 inclusion_behaviors = [] # Initialisation
                 for inclusion, f in microstructure.dict_inclusions.items():
                     inclusion_behavior = {parameter: values[i] for (parameter, values) in inclusion.behavior.items()}
-                    inclusion_behaviors.append((inclusion_behavior, f))
+                    inclusion_behaviors.append((inclusion_behavior, f, inclusion.aspect_ratio))
                 # Calcul du comportement homogénéisé à la fréquence i
                 h_behavior_i = self.compute_behavior(Cm, inclusion_behaviors)
                 h_behavior_i = complete_behavior(h_behavior_i)
@@ -409,13 +409,13 @@ class Mori_Tanaka(Model):
         Calcule le comportement élastique homogène équivalent. 
         Renvoie un dict de comportement.
         Cm: (dict), dictionnaire du comportement de la matrice
-        inclusion_behaviors(dict), format {Cf: fraction_volumique} avec Cf les dictionnaires de comportement des inclusions
+        inclusion_behaviors(dict), format [(Cf, f, aspect_ratio)] avec Cf les dictionnaires de comportement des inclusions et aspect_ratio un tuple contenant les deux valeurs de rapports de forme
         """
         # Récupération du comportement de la matrice
         Km = Cm['K']
         Gm = Cm['G']
         # Récupération du comportement de l'inclusion
-        Cf, f = inclusion_behaviors[0]
+        Cf, f, ratio = inclusion_behaviors[0]
         Kf = Cf['K']
         Gf = Cf['G']
         # Calcul de Gh
@@ -450,7 +450,7 @@ class Eshelby_Approximation(Model):
         Km = Cm['K']
         Gm = Cm['G']
         # Récupération du comportement de l'inclusion
-        Cf, f = inclusion_behaviors[0]
+        Cf, f, ratio = inclusion_behaviors[0]
         Kf = Cf['K']
         Gf = Cf['G']
         # Calcul de Gh
@@ -515,7 +515,7 @@ class Differential_Scheme(Model):
         Km = Cm['K']
         Gm = Cm['G']
         # Récupération du comportement de l'inclusion
-        Cf, f_finale = inclusion_behaviors[0]
+        Cf, f_finale, ratio = inclusion_behaviors[0]
         Kf = Cf['K']
         Gf = Cf['G']
         # Initialisation des paramètres d'intégration
@@ -566,7 +566,7 @@ class Autocoherent_Hill(Model):
         Km = Cm['K']
         Gm = Cm['G']
         # Récupération du comportement de l'inclusion
-        Cf, f = inclusion_behaviors[0]
+        Cf, f, ratio = inclusion_behaviors[0]
         Kf = Cf['K']
         Gf = Cf['G']
         F = np.linspace(0,f,self.n_point_fixe)
@@ -620,7 +620,7 @@ class Autocoherent_III(Model):
         # Récupération du comportement de la matrice
         Km, Gm, num = Cm['K'], Cm['G'], Cm['nu']
         # Récupération du comportement de l'inclusion
-        Cf, f = inclusion_behaviors[0]
+        Cf, f, ratio = inclusion_behaviors[0]
         Kf, Gf, nuf = Cf['K'], Cf['G'], Cf['nu']
 
         ##Quelques constantes utiles au calcul de G         
@@ -676,8 +676,8 @@ class Autocoherent_IV(Model):
         TODO : compléter avec le calcul complet (K et G)
         """
         # Récupération des paramètres matériaux
-        Cf, f = inclusion_behaviors[0]
-        Cv, cf = inclusion_behaviors[1]
+        Cf, f, ratio0 = inclusion_behaviors[0]
+        Cv, cf, ratio1 = inclusion_behaviors[1]
         Km,Gm,num = Cm['K'], Cm['G'], Cm['nu']
         Kf,Gf,nuf = Cf['K'], Cf['G'], Cf['nu']
         Kv,Gv,nuv = Cv['K'], Cv['G'], Cv['nu']
