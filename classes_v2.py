@@ -26,12 +26,12 @@ class Inclusion:
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
     
-    def __init__(self, type_inclusion, behavior, aspect_ratio=1, name=None, frequency=[], abscissa="frequency"):
+    def __init__(self, type_inclusion, behavior, aspect_ratio=(1.,1.), name=None, frequency=[], abscissa="frequency"):
         """
         TODO: Prise en compte de l'orientation
-        type_inclusion: (int), 0 pour des inclusions sphériques. Voir la liste list_types (en bas du fichier) pour les autres types.
-        aspect_ratio: (float), TODO: À remplacer par un paramètre plus général pour des inclusions de types différents. 
-        behavior: (dict), contient les valeurs des paramètres de la matrice de comportement
+        type_inclusion: (int), 0 pour des inclusions sphériques, 1 pour des inclusions ellipsoïdales
+        aspect_ratio: (tuple), tuple de deux flottants représentant les rapports des longueurs des axes 2 et 3 de l'ellipsoïde sur la longueur de l'axe 1
+        behavior: (dict), contient les valeurs des paramètres de la matrice de comportement, voir dict_behavior dans la dernière section du script
         frequency: (list), liste des fréquences/températures associées aux paramètres visco-élastiques
         abscissa: (str), vaut "frequency" ou "temperature", indique la nature physique des valeurs de la liste frequency
         """
@@ -62,7 +62,7 @@ class Inclusion:
         str_type_inclusion = self.type_to_str()
         string = "{}, {}".format(self.name, str_type_inclusion)
         if self.type_inclusion != 0:
-            string += " (c={})".format(self.aspect_ratio)
+            string += " (ratios={})".format(self.aspect_ratio)
         for parameter, value in self.behavior.items():
             if type(value) not in [list, np.ndarray]:
                 string += ", {}: {:.2f}".format(parameter, value)
@@ -203,22 +203,25 @@ class Microstructure:
 
     def draw(self):
         """
-        Méthode qui permet de dessiner la microstructure. Pour le moment, fonctionne uniquement avec une seule inclusion, sphérique, oblate ou prolate.
+        Méthode qui permet de dessiner la microstructure.
+        TODO: dessin d'interphases
+        TODO: dessin de plusieurs inclusions
         """
         inclusions = list(self.dict_inclusions.keys())
         if len(inclusions) == 1:
             inclusion = inclusions[0]
             fi = self.dict_inclusions[inclusion]
             # Calcul du rayon pour un VER de taille 10X10X10
-            ratio = inclusion.aspect_ratio
-            a = (1000*fi/(4/3*pi*ratio))**(1/3)
-            b = ratio*a
+            c1, c2 = inclusion.aspect_ratio
+            a = (1000*fi/(4/3*pi*c1*c2))**(1/3)
+            b = c1*a
+            c = c2*a
             
             fig = plt.figure(figsize=plt.figaspect(1))  # Square figure
             ax = fig.add_subplot(111, projection='3d')
 
             # Radii:
-            rx, ry, rz = np.array([b, a, a])
+            rx, ry, rz = np.array([a, b, c])
 
             # Set of all spherical angles:
             u = np.linspace(0, 2 * np.pi, 100)
@@ -827,7 +830,7 @@ dict_behaviors = {'Isotropic (K & G)': ['K', 'G'],
                   'Isotropic (E & nu)': ['E', 'nu'],
                   'Anisotropic (stifness)': ['S'],
                   'Anisotropic (compliance)': ['C']}
-dict_types = {0: 'Spheres', 1: 'Oblate', 2: 'Prolate'}
+dict_types = {0: 'Spheres', 1: 'Ellipsoids'}
     
     
     

@@ -25,7 +25,7 @@
 - Suite du visco
     
 ### Programme de la semaine
-- Ellipsoïdes
+- Ellipsoïdes (ajout d'un second rapport de forme, ajout d'un argument rapports de formes pour les fonctions compute, modif des types, affichage)
 - Instance inclusion+interphase
 - Format des graphes (trop gros)
 - Spheroids, not ellipsoids
@@ -143,3 +143,4 @@
 - Visco: ajout des comportements en K' et K'', ou E' et E''
 - Ajout de comportements anisotropes via fichiers texte sous la forme de matrices 6X6
 - Passage des méthodes str et repr des classes modèles à la classe mère Model
+- Suppression des prolate et oblate, ajout d'inclusions ellipsoïdales avec deux rapports d'aspect et leur affichage
