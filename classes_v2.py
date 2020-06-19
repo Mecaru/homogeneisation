@@ -355,7 +355,7 @@ class Model:
         # Cas élastique
         if not list(frequency):
             Cm = microstructure.behavior
-            # Récupération du comportement des inclusions, format [inclusion.behavior, f, aspect_ratio]
+            # Récupération du comportement des inclusions, format [(inclusion.behavior, f, aspect_ratio)]
             inclusion_behaviors = [(inclusion.behavior, f, inclusion.aspect_ratio) for (inclusion,f) in microstructure.dict_inclusions.items()]
             # Calcul du comportement homogénéisé
             h_behavior = self.compute_behavior(Cm, inclusion_behaviors)
@@ -409,7 +409,7 @@ class Mori_Tanaka(Model):
         Calcule le comportement élastique homogène équivalent. 
         Renvoie un dict de comportement.
         Cm: (dict), dictionnaire du comportement de la matrice
-        inclusion_behaviors(dict), format [(Cf, f, aspect_ratio)] avec Cf les dictionnaires de comportement des inclusions et aspect_ratio un tuple contenant les deux valeurs de rapports de forme
+        inclusion_behaviors(list), format [(Cf, f, aspect_ratio)] avec Cf les dictionnaires de comportement des inclusions et aspect_ratio un tuple contenant les deux valeurs de rapports de forme
         """
         # Récupération du comportement de la matrice
         Km = Cm['K']
@@ -786,34 +786,54 @@ def young_to_bulk(E, nu):
 
 def complete_behavior(behavior):
     """
-    Si le comportement en entrée est isotrope, le complète avec E et nu ou K et G. Sinon, le renvoie tel quel.
+    Si le comportement en entrée est isotrope, le complète avec E et nu ou K et G.
+    Sinon, le complète avec C ou S si la matrice entrée est inversible.
     """
     parameters = list(behavior.keys())
     result = behavior
+    nu_max = 0.4999999
     # Cas de paramètres nuls (milieux poreux) et cas incompressible (nu=0.5)
     for parameter, values in result.items():
-        try:
-            if values == 0:
+        # Comportements isotropes élastiques
+        if type(values) in [float, int]:
+            if values==0:
                 result[parameter] = 10**(-12)
-            elif parameter == 'nu' and values == 0.5:
-                result[parameter] = 0.4999999
-        except:
-            # Les valeurs sont des listes (cas visco-élastique)
+            elif values==0.5 and parameter=='nu':
+                result[parameter] = nu_max
+        # Comportements isotropes visco-élastiques
+        elif type(values)==np.ndarray and type(values[0])!=np.ndarray:
             for i, value in enumerate(values):
-                if type(value)!=list and value == 0:
+                if value==0:
                     result[parameter][i] = 10**(-12)
-                elif parameter == 'nu' and value == 0.5:
-                    result[parameter][i] = 0.4999999
+                elif value==0.5 and parameter=='nu':
+                    result[parameter][i] = nu_max
     # Isotrope K et G
-    if parameters[:2] == ['K', 'G'] or parameters[:2] == ['G', 'K']:
+    if parameters[:2]==['K', 'G'] or parameters[:2]==['G', 'K']:
         K, G = behavior['K'], behavior['G']
         E, nu = bulk_to_young(K, G)
         result['E'], result['nu'] = E, nu
     # Isotrope E et nu
-    elif parameters[:2] == ['E', 'nu'] or parameters[:2] == ['nu', 'E']:
+    elif parameters[:2]==['E', 'nu'] or parameters[:2]==['nu', 'E']:
         E, nu = behavior['E'], behavior['nu']        
         K, G = young_to_bulk(E, nu)
         result['K'], result['G'] = K, G
+    # Anisotrope
+    elif parameters[0]=='C':
+        C = behavior['C']
+        try:
+            S = np.linalg.inv(C)
+        except:
+            # C non inversible
+            S = None
+        result['S'] = S
+    elif parameters[0]=='S':
+        S = behavior['S']
+        try:
+            C = np.linalg.inv(S)
+        except:
+            # C non inversible
+            C = None
+        result['C'] = C
     
     # Renvoi du résultat
     return result
