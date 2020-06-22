@@ -107,7 +107,31 @@ class Inclusion:
                 plt.title("Inclusion visco-elastic behavior")
                 plt.xlim(min(self.frequency), max(self.frequency))
             plt.show()
-            
+
+class InclusionAndInterphase:
+    """
+    Instance représentant une inclusion et l'interphase associée.
+    """            
+    
+    def __init__(self, inclusion, interphase):
+        """
+        inclusion: Instance de classe inclusion
+        interphase: Instance de classe inclusion, représente l'interphase associée à l'inclusion
+        L'interphase et l'inclusion doivent être du même type (sphères ou ellipsoïdes avec les mêmes rapports d'aspect)
+        """
+        assert inclusion.aspect_ratio==interphase.aspect_ratio
+        self.inclusion = inclusion
+        self.interphase = interphase
+        
+    def __str__(self):
+        string = "Inclusion + Interphase\n"
+        string += "Inclusion: {}\n".format(str(self.inclusion))
+        string += "Interphase: " + str(self.interphase)
+        return string
+    
+    def __repr__(self):
+        return str(self)
+
 class Microstructure:
     """
     Contient des informations sur la microstructure (comportement de la matrice, inclusions, etc..).
@@ -117,7 +141,7 @@ class Microstructure:
     
     def __init__(self, behavior, dict_inclusions=dict(), frequency=[], abscissa="frequency"):
         """
-        list_inclusions: (dict), sous la forme {inclusion: f_i} avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion.
+        list_inclusions: (dict), sous la forme {inclusion: f_i} avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion. inclusion peut aussi être une instance de classe InclusionAndInterphase, dans ce cas, f_i est un tuple de flottants
         behavior: (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment
         frequency: liste des fréquences associées aux paramètres visco-élastiques
         """
@@ -151,7 +175,12 @@ class Microstructure:
         dict_inclusions = self.dict_inclusions
         for inclusion in dict_inclusions.keys():
             fi = dict_inclusions[inclusion]
-            total_fi += fi
+            # Cas des inclusions + interphase
+            if type(fi)==tuple:
+                total_fi += fi[0] + fi[1]
+            # Inclusions simples
+            else:
+                total_fi += fi
         if total_fi >= 1:
             raise NameError("The total volumic fractions of the inclusions exceed 1")
         else :
@@ -281,12 +310,15 @@ class Microstructure:
         Donne les bornes de Hashin-Shtrikman pour 1 seule phase, isotrope
         TODO : ajouter le cas des inclusion multiples
         """
-        fm=self.f_matrix
-        f=1-fm
-        km,gm=self.behavior["K"],self.behavior["G"]
+        fm = self.f_matrix
+        f = 1-fm
+        km,gm = self.behavior["K"], self.behavior["G"]
         
         for inclusion in self.dict_inclusions.keys():
-            kf,gf=inclusion.behavior["K"],inclusion.behavior["G"]
+            try:
+                kf,gf=inclusion.behavior["K"],inclusion.behavior["G"]
+            except:
+                None
         
         ksup=max(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
         kinf=min(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
@@ -321,13 +353,24 @@ class Model:
         """
         # Récupération des inclusions de la microstructure
         dict_inclusions = microstructure.dict_inclusions
-        inclusions = list(dict_inclusions.keys())
-        n_inclusions = len(inclusions)
+        instances = list(dict_inclusions.keys())
+        n_instances = len(instances)
         # Initialisation du résultat
         result = True
         # Vérification du nombre d'inclusions
-        if n_inclusions != self.n_inclusions:
+        if n_instances != self.n_inclusions:
              result = False
+        # Vérification de la présence ou de l'absence d'interphase
+        for instance in instances:
+            if (type(instance)==InclusionAndInterphase)!=self.interphase:
+                result = False
+        # Construction d'une liste d'inclusions sans interphase
+        inclusions = []
+        for instance in instances:
+            if type(instance)==InclusionAndInterphase:
+                inclusions += [instance.inclusion, instance.interphase]
+            else:
+                inclusions.append(instance)
         # Vérification du type d'inclusion
         for inclusion in inclusions:
             if inclusion.type_inclusion != self.type_inclusion:
@@ -350,13 +393,20 @@ class Model:
         compatible = self.check_hypothesis(microstructure)
         if not compatible:
             raise NameError("The microstructure does not match the model hypothesis")
-        
         frequency = microstructure.frequency
+        # Création du dictionnaire contenant uniquement des instances de classe Inclusion
+        inclusions = {}
+        for instance, f in microstructure.dict_inclusions.items():
+            if type(instance)==InclusionAndInterphase:
+                inclusions[instance.inclusion] = f[0]
+                inclusions[instance.interphase] = f[1]
+            else:
+                inclusions[instance] = f
         # Cas élastique
         if not list(frequency):
             Cm = microstructure.behavior
             # Récupération du comportement des inclusions, format [(inclusion.behavior, f, aspect_ratio)]
-            inclusion_behaviors = [(inclusion.behavior, f, inclusion.aspect_ratio) for (inclusion,f) in microstructure.dict_inclusions.items()]
+            inclusion_behaviors = [(inclusion.behavior, f, inclusion.aspect_ratio) for (inclusion,f) in inclusions.items()]
             # Calcul du comportement homogénéisé
             h_behavior = self.compute_behavior(Cm, inclusion_behaviors)
             h_behavior = {parameter: value.real for (parameter,value) in h_behavior.items()} # Conversion des valeurs éventuellement complexes en valeurs réelles
@@ -371,7 +421,7 @@ class Model:
                 Cm = {parameter: values[i] for (parameter,values) in microstructure.behavior.items()}
                 # Récupération des comportements des inclusions à la fréquence i
                 inclusion_behaviors = [] # Initialisation
-                for inclusion, f in microstructure.dict_inclusions.items():
+                for inclusion, f in inclusions.items():
                     inclusion_behavior = {parameter: values[i] for (parameter, values) in inclusion.behavior.items()}
                     inclusion_behaviors.append((inclusion_behavior, f, inclusion.aspect_ratio))
                 # Calcul du comportement homogénéisé à la fréquence i
@@ -401,7 +451,8 @@ class Mori_Tanaka(Model):
         """
         self.type_inclusion = 0 # Sphères
         self.behavior_condition = set(['K', 'G', 'E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes
+        self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.name = "Mori-Tanaka"
     
     def compute_behavior(self, Cm, inclusion_behaviors):
@@ -440,6 +491,7 @@ class Eshelby_Approximation(Model):
         self.type_inclusion = 0
         self.behavior_condition = set(['K', 'G', 'E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.interphase = False
         self.name = "Eshelby"
    
     def compute_behavior(self, Cm, inclusion_behaviors):
@@ -475,7 +527,8 @@ class Differential_Scheme(Model):
         """
         self.type_inclusion = 0
         self.behavior_condition = set(['K', 'G', 'E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes  
+        self.interphase = False
         self.name = "Differential"
     
     ## Fonctions utiles au calcul du comportement homogénéisé
@@ -544,6 +597,7 @@ class Autocoherent_Hill(Model):
         self.type_inclusion = 0 # Sphères
         self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.name = "Self-consistent"
         self.precision = 10**-12
         self.n_point_fixe = 100
@@ -611,6 +665,7 @@ class Autocoherent_III(Model):
         self.type_inclusion = 0 # Sphères
         self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.name = "Generalised self-consistent"
   
     def compute_behavior(self, Cm, inclusion_behaviors):
@@ -666,7 +721,8 @@ class Autocoherent_IV(Model):
         """
         self.type_inclusion = 0 # Sphères
         self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 2 # Nombre d'inclusions de natures différentes 
+        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.interphase = True # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.R_inclusion = R_inclusion
         self.name = "4-phases self-consistent"
 
@@ -851,11 +907,6 @@ dict_behaviors = {'Isotropic (K & G)': ['K', 'G'],
                   'Anisotropic (stifness)': ['S'],
                   'Anisotropic (compliance)': ['C']}
 dict_types = {0: 'Spheres', 1: 'Ellipsoids'}
-    
-    
-    
-    
-    
     
     
     

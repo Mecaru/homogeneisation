@@ -146,7 +146,11 @@
 
 ### 18/06/2020
 - Suppression des prolate et oblate, ajout d'inclusions ellipsoïdales avec deux rapports d'aspect et leur affichage
-- Modification des arguments d'entrée des fonctions compute avec prise en compte des rapports d'apsects
+- Modification des arguments d'entrée des fonctions compute avec prise en compte des rapports d'aspect
 
 ### 19/06/2020
-- Correction de bugset version fonctionnelle des comportements anisotropes
+- Correction de bugs et version fonctionnelle des comportements anisotropes
+
+### 22/06/2020
+- Création du dossier anisotropic_behaviors
+- Ajout d'une instance InclusionAndInterphase et modifications des classes
