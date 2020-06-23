@@ -161,3 +161,4 @@
 - Ajout de la génération d'inclusions avec interphases au main
 - Ajout de la génération d'inclusions avec interphases au main visco
 - Dessin de plusieurs inclusions
+- Dessin d'inclusions avec interphases
