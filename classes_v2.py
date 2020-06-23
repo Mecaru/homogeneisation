@@ -113,7 +113,7 @@ class InclusionAndInterphase:
     Instance représentant une inclusion et l'interphase associée.
     """            
     
-    def __init__(self, inclusion, interphase):
+    def __init__(self, inclusion, interphase, name=None):
         """
         inclusion: Instance de classe inclusion
         interphase: Instance de classe inclusion, représente l'interphase associée à l'inclusion
@@ -122,6 +122,8 @@ class InclusionAndInterphase:
         assert inclusion.aspect_ratio==interphase.aspect_ratio
         self.inclusion = inclusion
         self.interphase = interphase
+        self.name = name
+        self.aspect_ratio = inclusion.aspect_ratio
         
     def __str__(self):
         string = "Inclusion + Interphase\n"
@@ -318,7 +320,7 @@ class Microstructure:
             try:
                 kf,gf=inclusion.behavior["K"],inclusion.behavior["G"]
             except:
-                None
+                return None
         
         ksup=max(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
         kinf=min(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))

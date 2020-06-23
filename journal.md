@@ -25,6 +25,8 @@
 - Suite du visco
     
 ### Programme de la semaine
+- E complexe et K réel (visco)
+- Inverser C et S
 - Instance inclusion+interphase
 - Format des graphes (trop gros)
 - Spheroids, not ellipsoids
@@ -154,3 +156,6 @@
 ### 22/06/2020
 - Création du dossier anisotropic_behaviors
 - Ajout d'une instance InclusionAndInterphase et modifications des classes
+
+### 23/06/2020
+- Ajout de la génération d'inclusions avec interphases au main
