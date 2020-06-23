@@ -160,3 +160,4 @@
 ### 23/06/2020
 - Ajout de la génération d'inclusions avec interphases au main
 - Ajout de la génération d'inclusions avec interphases au main visco
+- Dessin de plusieurs inclusions

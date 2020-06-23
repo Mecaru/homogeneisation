@@ -232,68 +232,128 @@ class Microstructure:
                 plt.xlim(min(self.frequency), max(self.frequency))
             plt.show()
 
+    # def draw(self):
+    #     """
+    #     Méthode qui permet de dessiner la microstructure.
+    #     """
+    #     inclusions = list(self.dict_inclusions.keys())
+    #     if len(inclusions) == 1:
+    #         inclusion = inclusions[0]
+    #         fi = self.dict_inclusions[inclusion]
+    #         # Calcul du rayon pour un VER de taille 10X10X10
+    #         c1, c2 = inclusion.aspect_ratio
+    #         a = (1000*fi/(4/3*pi*c1*c2))**(1/3)
+    #         b = c1*a
+    #         c = c2*a
+            
+    #         fig = plt.figure(figsize=plt.figaspect(1))  # Square figure
+    #         ax = fig.add_subplot(111, projection='3d')
+
+    #         # Radii:
+    #         rx, ry, rz = np.array([a, b, c])
+
+    #         # Set of all spherical angles:
+    #         u = np.linspace(0, 2 * np.pi, 100)
+    #         v = np.linspace(0, np.pi, 100)
+
+    #         # Cartesian coordinates that correspond to the spherical angles:
+    #         # (this is the equation of an ellipsoid):
+    #         x = rx * np.outer(np.cos(u), np.sin(v))
+    #         y = ry * np.outer(np.sin(u), np.sin(v))
+    #         z = rz * np.outer(np.ones_like(u), np.cos(v))
+
+    #         # Plot:
+    #         ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='b')
+
+    #         # Adjustment of the axes, so that they all have the same span:
+    #         max_radius = 5
+    #         for axis in 'xyz':
+    #             getattr(ax, 'set_{}lim'.format(axis))((-max_radius, max_radius))
+
+    #         # Cube 
+    #         points = 5*np.array([[-1, -1, -1],
+    #                               [1, -1, -1 ],
+    #                               [1, 1, -1],
+    #                               [-1, 1, -1],
+    #                               [-1, -1, 1],
+    #                               [1, -1, 1 ],
+    #                               [1, 1, 1],
+    #                               [-1, 1, 1]])
+
+    #         r = [-5,5]
+    #         X, Y = np.meshgrid(r, r)
+    #         one = 5*np.ones(4).reshape(2, 2)
+    #         ax.plot_wireframe(X,Y,one, alpha=0.5)
+    #         ax.plot_wireframe(X,Y,-one, alpha=0.5)
+    #         ax.plot_wireframe(X,-one,Y, alpha=0.5)
+    #         ax.plot_wireframe(X,one,Y, alpha=0.5)
+    #         ax.plot_wireframe(one,X,Y, alpha=0.5)
+    #         ax.plot_wireframe(-one,X,Y, alpha=0.5)
+    #         ax.scatter3D(points[:, 0], points[:, 1], points[:, 2])
+
+    #         plt.show()
+            
     def draw(self):
         """
         Méthode qui permet de dessiner la microstructure.
-        TODO: dessin d'interphases
-        TODO: dessin de plusieurs inclusions
         """
         inclusions = list(self.dict_inclusions.keys())
-        if len(inclusions) == 1:
-            inclusion = inclusions[0]
-            fi = self.dict_inclusions[inclusion]
-            # Calcul du rayon pour un VER de taille 10X10X10
-            c1, c2 = inclusion.aspect_ratio
-            a = (1000*fi/(4/3*pi*c1*c2))**(1/3)
-            b = c1*a
-            c = c2*a
-            
-            fig = plt.figure(figsize=plt.figaspect(1))  # Square figure
-            ax = fig.add_subplot(111, projection='3d')
-
-            # Radii:
-            rx, ry, rz = np.array([a, b, c])
-
-            # Set of all spherical angles:
-            u = np.linspace(0, 2 * np.pi, 100)
-            v = np.linspace(0, np.pi, 100)
-
-            # Cartesian coordinates that correspond to the spherical angles:
-            # (this is the equation of an ellipsoid):
-            x = rx * np.outer(np.cos(u), np.sin(v))
-            y = ry * np.outer(np.sin(u), np.sin(v))
-            z = rz * np.outer(np.ones_like(u), np.cos(v))
-
-            # Plot:
-            ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='b')
-
-            # Adjustment of the axes, so that they all have the same span:
-            max_radius = 5
-            for axis in 'xyz':
-                getattr(ax, 'set_{}lim'.format(axis))((-max_radius, max_radius))
-
-            # Cube 
-            points = 5*np.array([[-1, -1, -1],
-                                  [1, -1, -1 ],
-                                  [1, 1, -1],
-                                  [-1, 1, -1],
-                                  [-1, -1, 1],
-                                  [1, -1, 1 ],
-                                  [1, 1, 1],
-                                  [-1, 1, 1]])
-
-            r = [-5,5]
-            X, Y = np.meshgrid(r, r)
-            one = 5*np.ones(4).reshape(2, 2)
-            ax.plot_wireframe(X,Y,one, alpha=0.5)
-            ax.plot_wireframe(X,Y,-one, alpha=0.5)
-            ax.plot_wireframe(X,-one,Y, alpha=0.5)
-            ax.plot_wireframe(X,one,Y, alpha=0.5)
-            ax.plot_wireframe(one,X,Y, alpha=0.5)
-            ax.plot_wireframe(-one,X,Y, alpha=0.5)
-            ax.scatter3D(points[:, 0], points[:, 1], points[:, 2])
-
-            plt.show()
+        n_fig = len(inclusions)
+        fig = plt.figure(figsize=(n_fig*5 ,5))
+        for index, instance in enumerate(inclusions):
+            if type(instance)==Inclusion:
+                inclusion = instance
+                fi = self.dict_inclusions[inclusion]
+                # Calcul du rayon pour un VER de taille 10X10X10
+                c1, c2 = inclusion.aspect_ratio
+                a = (1000*fi/(4/3*pi*c1*c2))**(1/3)
+                b = c1*a
+                c = c2*a
+                
+                ax = fig.add_subplot(1, n_fig, index+1, projection='3d')
+    
+                # Radii:
+                rx, ry, rz = np.array([a, b, c])
+    
+                # Set of all spherical angles:
+                u = np.linspace(0, 2 * np.pi, 100)
+                v = np.linspace(0, np.pi, 100)
+    
+                # Cartesian coordinates that correspond to the spherical angles:
+                # (this is the equation of an ellipsoid):
+                x = rx * np.outer(np.cos(u), np.sin(v))
+                y = ry * np.outer(np.sin(u), np.sin(v))
+                z = rz * np.outer(np.ones_like(u), np.cos(v))
+    
+                # Plot:
+                ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='b')
+    
+                # Adjustment of the axes, so that they all have the same span:
+                max_radius = 5
+                for axis in 'xyz':
+                    getattr(ax, 'set_{}lim'.format(axis))((-max_radius, max_radius))
+    
+                # Cube 
+                points = 5*np.array([[-1, -1, -1],
+                                      [1, -1, -1 ],
+                                      [1, 1, -1],
+                                      [-1, 1, -1],
+                                      [-1, -1, 1],
+                                      [1, -1, 1 ],
+                                      [1, 1, 1],
+                                      [-1, 1, 1]])
+    
+                r = [-5,5]
+                X, Y = np.meshgrid(r, r)
+                one = 5*np.ones(4).reshape(2, 2)
+                ax.plot_wireframe(X,Y,one, alpha=0.5)
+                ax.plot_wireframe(X,Y,-one, alpha=0.5)
+                ax.plot_wireframe(X,-one,Y, alpha=0.5)
+                ax.plot_wireframe(X,one,Y, alpha=0.5)
+                ax.plot_wireframe(one,X,Y, alpha=0.5)
+                ax.plot_wireframe(-one,X,Y, alpha=0.5)
+                ax.scatter3D(points[:, 0], points[:, 1], points[:, 2])
+        plt.show()
             
      ## CALCUL DES BORNES DE HASHIN-SHTRICKMAN ##########  
     
