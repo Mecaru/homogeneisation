@@ -167,3 +167,4 @@
 ### 24/06/2020
 - Comparaison de modèles contenant des inclusions avec interphases
 - Reset de la microstructure à son état initial après la comparaison de modèles
+- Correction d'un bug dû à la fonction draw lors de la génération de microstructures sans inclusions + correction d'une erreur lors du tracé des bornes de Hashin lorsque leur calcul n'est pas possible
