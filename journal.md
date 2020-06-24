@@ -25,6 +25,7 @@
 - Suite du visco
     
 ### Programme de la semaine
+- Comparaison de modèles avec interphases
 - E complexe et K réel (visco)
 - Inverser C et S
 - Instance inclusion+interphase
@@ -162,3 +163,6 @@
 - Ajout de la génération d'inclusions avec interphases au main visco
 - Dessin de plusieurs inclusions
 - Dessin d'inclusions avec interphases
+
+### 24/06/2020
+- Comparaison de modèles contenant des inclusions avec interphases

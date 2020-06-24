@@ -34,6 +34,7 @@ class Inclusion:
         behavior: (dict), contient les valeurs des paramètres de la matrice de comportement, voir dict_behavior dans la dernière section du script
         frequency: (list), liste des fréquences/températures associées aux paramètres visco-élastiques
         abscissa: (str), vaut "frequency" ou "temperature", indique la nature physique des valeurs de la liste frequency
+        inc_and_int: ([InclusionAndInterphase,int]), None par défaut, renvoie vers l'instance de classe InclusionAndInterphase à laquelle appartient l'inclusion, si celle-ci existe, et un entier, 0 pour l'inclusion, 1 pour l'interphase
         """
         self.type_inclusion = type_inclusion
         self.aspect_ratio = aspect_ratio
@@ -41,6 +42,7 @@ class Inclusion:
         self.name = name
         self.frequency = frequency
         self.abscissa = abscissa
+        self.inc_and_int = None
     
     def type_to_str(self):
         """
@@ -124,6 +126,9 @@ class InclusionAndInterphase:
         self.interphase = interphase
         self.name = name
         self.aspect_ratio = inclusion.aspect_ratio
+        # Modification de l'attribut inc_and_int des inclusion et interphase
+        inclusion.inc_and_int = [self, 0]
+        interphase.inc_and_int = [self, 1]
         
     def __str__(self):
         string = "Inclusion + Interphase\n"
