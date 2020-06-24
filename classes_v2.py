@@ -941,6 +941,14 @@ def young_to_bulk(E, nu):
     G = E/(2*(1+nu))
     return K, G   
 
+def bulk_to_shear(K, E):
+    """
+    Transforme les modules K et E en modules G et nu
+    """
+    G = 3*K*E/(9*K-E)
+    nu = (3*K-E)/(6*K)
+    return G, nu
+
 def complete_behavior(behavior):
     """
     Si le comportement en entrée est isotrope, le complète avec E et nu ou K et G.
@@ -974,6 +982,11 @@ def complete_behavior(behavior):
         E, nu = behavior['E'], behavior['nu']        
         K, G = young_to_bulk(E, nu)
         result['K'], result['G'] = K, G
+    # Isotrope K et E
+    elif parameters[:2]==['K', 'E'] or parameters[:2]==['E', 'K']:
+        K, E = behavior['K'], behavior['E']        
+        G, nu = bulk_to_shear(K, E)
+        result['G'], result['nu'] = G, nu
     # Anisotrope
     elif parameters[0]=='C':
         C = behavior['C']
@@ -1002,7 +1015,7 @@ dict_behaviors_visco = {'Elastic isotropic (K & G)': ['K', 'G'],
                         'Elastic isotropic (E & nu)': ['E', 'nu'],
                         'Visco-elastic 1': ['K', "G'", "G''"],
                         'Visco-elastic 2': ["K'", "K''", "G'", "G''"],
-                        'Visco-elastic 3': ["E'", "E''", 'nu']}
+                        'Visco-elastic 3': ["E'", "E''", 'K']}
 dict_behaviors = {'Isotropic (K & G)': ['K', 'G'],
                   'Isotropic (E & nu)': ['E', 'nu'],
                   'Anisotropic (stifness)': ['S'],

@@ -25,10 +25,7 @@
 - Suite du visco
     
 ### Programme de la semaine
-- Comparaison de modèles avec interphases
-- E complexe et K réel (visco)
 - Inverser C et S
-- Instance inclusion+interphase
 - Format des graphes (trop gros)
 - Spheroids, not ellipsoids
 - Suppression d'inclusions
@@ -168,3 +165,4 @@
 - Comparaison de modèles contenant des inclusions avec interphases
 - Reset de la microstructure à son état initial après la comparaison de modèles
 - Correction d'un bug dû à la fonction draw lors de la génération de microstructures sans inclusions + correction d'une erreur lors du tracé des bornes de Hashin lorsque leur calcul n'est pas possible
+- Ajout du couple de comportement isotrope E visco-élastique et K élastique
