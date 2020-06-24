@@ -1018,8 +1018,8 @@ dict_behaviors_visco = {'Elastic isotropic (K & G)': ['K', 'G'],
                         'Visco-elastic 3': ["E'", "E''", 'K']}
 dict_behaviors = {'Isotropic (K & G)': ['K', 'G'],
                   'Isotropic (E & nu)': ['E', 'nu'],
-                  'Anisotropic (stifness)': ['S'],
-                  'Anisotropic (compliance)': ['C']}
+                  'Anisotropic (Compliance)': ['S'],
+                  'Anisotropic (Stifness)': ['C']}
 dict_types = {0: 'Spheres', 1: 'Ellipsoids'}
     
     

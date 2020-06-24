@@ -25,7 +25,6 @@
 - Suite du visco
     
 ### Programme de la semaine
-- Inverser C et S
 - Format des graphes (trop gros)
 - Spheroids, not ellipsoids
 - Suppression d'inclusions
@@ -166,3 +165,4 @@
 - Reset de la microstructure à son état initial après la comparaison de modèles
 - Correction d'un bug dû à la fonction draw lors de la génération de microstructures sans inclusions + correction d'une erreur lors du tracé des bornes de Hashin lorsque leur calcul n'est pas possible
 - Ajout du couple de comportement isotrope E visco-élastique et K élastique
+- Correction d'une erreur sur le nom des matrices C et S (stifness et compliance)
