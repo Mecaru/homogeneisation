@@ -307,7 +307,7 @@ class Microstructure:
         if n_fig==0:
             # Microstructure sans inclusion
             return None
-        fig = plt.figure(figsize=(n_fig*5 ,5))
+        fig = plt.figure(figsize=(n_fig*3 ,3))
         for index, instance in enumerate(inclusions):
             fi = self.dict_inclusions[instance]
             if type(instance)==Inclusion:

@@ -25,13 +25,11 @@
 - Suite du visco
     
 ### Programme de la semaine
-- Format des graphes (trop gros)
 - Spheroids, not ellipsoids
 - Suppression d'inclusions
 - Petite modif (Cf mail)
 - Reprendre la résolution inverse avec classes_v2
 - Valider différentiel
-- Schéma deux inclusions ou interphase
 - Notice modèle et changement behavior acceptable
 
 ---
@@ -166,3 +164,4 @@
 - Correction d'un bug dû à la fonction draw lors de la génération de microstructures sans inclusions + correction d'une erreur lors du tracé des bornes de Hashin lorsque leur calcul n'est pas possible
 - Ajout du couple de comportement isotrope E visco-élastique et K élastique
 - Correction d'une erreur sur le nom des matrices C et S (stifness et compliance)
+- Réduction de la taille des graphes et de la taille de police
