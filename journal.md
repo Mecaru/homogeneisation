@@ -166,3 +166,4 @@
 
 ### 24/06/2020
 - Comparaison de modèles contenant des inclusions avec interphases
+- Reset de la microstructure à son état initial après la comparaison de modèles
