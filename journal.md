@@ -4,28 +4,21 @@
 - Coder l'interface (notebook avec explications, interface user-friendly, "homogeneisation_main.ipynb")
     - Réfléchir à l'implémentation de la bdd
     - Réfléchir à l'intégration de modèles auto-cohérents à l'interface
-    - Cas matériaux poreux
-    - Réfléchir à la représentation graphique de plus d'une inclusion
 - Ajouter des modèles
     - Réfléchir à l'intégration des modèles auto-cohérents avec phases
-- Ajouter tous les modèles simples
 - Distribution des ellipsoïdes
 - Calcul des tenseurs d'Eshelby
 - Validation des modèles
-- Comportements non isotropes avec fichier texte
 - Corriger les modèles
     - Revoir le calcul de K de Mori-Tanaka
     - Eshelby en dehors des bornes
 - Organiser les dossier d'entrées et sorties (un dossier input, puis un dossier par type d'input, idem pour les outputs)
 - Ajouter les graphes de validation des modèles aux descriptions de modèles
-- Comportements anisotropes
 - Patterns isotropes
-- Autocohérents avec interphase: épaisseur en entrée
 - 4 phases avec différents patterns
 - Suite du visco
     
 ### Programme de la semaine
-- Spheroids, not ellipsoids
 - Suppression d'inclusions
 - Petite modif (Cf mail)
 - Reprendre la résolution inverse avec classes_v2
@@ -165,3 +158,6 @@
 - Ajout du couple de comportement isotrope E visco-élastique et K élastique
 - Correction d'une erreur sur le nom des matrices C et S (stifness et compliance)
 - Réduction de la taille des graphes et de la taille de police
+
+### 25/06/2020
+- Affichage des infos des inclusions et suppression d'inclusions, affichage des noms des inclusions plutôt que leur description dans les Dropdown (main)
