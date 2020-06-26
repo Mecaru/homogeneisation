@@ -161,3 +161,6 @@
 
 ### 25/06/2020
 - Affichage des infos des inclusions et suppression d'inclusions, affichage des noms des inclusions plutôt que leur description dans les Dropdown (main)
+
+### 26/06/2020
+- Affichage des noms des inclusions plutôt que leur description dans la section comparaison de modèles du main
