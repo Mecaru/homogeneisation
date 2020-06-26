@@ -164,3 +164,4 @@
 
 ### 26/06/2020
 - Affichage des noms des inclusions plutôt que leur description dans la section comparaison de modèles du main
+- Affichage des noms des inclusions plutôt que leur description et ajout des infos inclusions dans le main visco
