@@ -16,11 +16,10 @@
 - Ajouter les graphes de validation des modèles aux descriptions de modèles
 - Patterns isotropes
 - 4 phases avec différents patterns
-- Suite du visco
+- Améliorer la résolution inverse (interface et soft)
+- Résolution inverse en visco et avec une interphase
     
 ### Programme de la semaine
-- Suppression d'inclusions
-- Petite modif (Cf mail)
 - Reprendre la résolution inverse avec classes_v2
 - Valider différentiel
 - Notice modèle et changement behavior acceptable
@@ -145,6 +144,8 @@
 - Création du dossier anisotropic_behaviors
 - Ajout d'une instance InclusionAndInterphase et modifications des classes
 
+---
+
 ### 23/06/2020
 - Ajout de la génération d'inclusions avec interphases au main
 - Ajout de la génération d'inclusions avec interphases au main visco
@@ -165,3 +166,6 @@
 ### 26/06/2020
 - Affichage des noms des inclusions plutôt que leur description dans la section comparaison de modèles du main
 - Affichage des noms des inclusions plutôt que leur description et ajout des infos inclusions dans le main visco
+
+### 29/06/2020
+- Résolution inverse pour des inclusions sans interphase en élasticité isotrope
