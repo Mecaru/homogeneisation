@@ -169,3 +169,4 @@
 
 ### 29/06/2020
 - Résolution inverse pour des inclusions sans interphase en élasticité isotrope
+- Comparaison des modèles autocohérents old et new
