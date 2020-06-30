@@ -172,3 +172,6 @@
 - Comparaison des modèles autocohérents old et new
 
 ---
+
+### 30/06/2020
+- Rempalcement des tuples de fraction volumique des inclusions+interphase par des listes mutables, simplification du code associé dans comparaison de modèles
