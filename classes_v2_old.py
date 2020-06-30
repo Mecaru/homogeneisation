@@ -562,7 +562,6 @@ class Autocoherent_Hill(Model):
         print(nextK, nextG)
         return nextK,nextG
     
-  
     def compute_behavior(self, Cm, inclusion_behaviors):
         # Récupération du comportement de la matrice
         Km = Cm['K']

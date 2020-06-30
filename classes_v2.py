@@ -26,7 +26,7 @@ class Inclusion:
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
     
-    def __init__(self, type_inclusion, behavior, aspect_ratio=(1.,1.), name=None, frequency=[], abscissa="frequency"):
+    def __init__(self, type_inclusion, behavior, aspect_ratio=[1.,1.], name=None, frequency=[], abscissa="frequency"):
         """
         TODO: Prise en compte de l'orientation
         type_inclusion: (int), 0 pour des inclusions sphériques, 1 pour des inclusions ellipsoïdales
@@ -183,7 +183,7 @@ class Microstructure:
         for inclusion in dict_inclusions.keys():
             fi = dict_inclusions[inclusion]
             # Cas des inclusions + interphase
-            if type(fi)==tuple:
+            if type(fi)==list:
                 total_fi += fi[0] + fi[1]
             # Inclusions simples
             else:

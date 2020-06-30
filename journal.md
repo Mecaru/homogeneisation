@@ -12,7 +12,6 @@
 - Corriger les modèles
     - Revoir le calcul de K de Mori-Tanaka
     - Eshelby en dehors des bornes
-- Organiser les dossier d'entrées et sorties (un dossier input, puis un dossier par type d'input, idem pour les outputs)
 - Ajouter les graphes de validation des modèles aux descriptions de modèles
 - Patterns isotropes
 - 4 phases avec différents patterns
@@ -22,7 +21,10 @@
 ### Programme de la semaine
 - Reprendre la résolution inverse avec classes_v2
 - Valider différentiel
+- Organiser les dossier d'entrées et sorties (un dossier input, puis un dossier par type d'input, idem pour les outputs)
+- Reprendre calculs automatisés
 - Notice modèle et changement behavior acceptable
+- Présentation
 
 ---
 ## Suivi
@@ -144,8 +146,6 @@
 - Création du dossier anisotropic_behaviors
 - Ajout d'une instance InclusionAndInterphase et modifications des classes
 
----
-
 ### 23/06/2020
 - Ajout de la génération d'inclusions avec interphases au main
 - Ajout de la génération d'inclusions avec interphases au main visco
@@ -170,3 +170,5 @@
 ### 29/06/2020
 - Résolution inverse pour des inclusions sans interphase en élasticité isotrope
 - Comparaison des modèles autocohérents old et new
+
+---
