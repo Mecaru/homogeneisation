@@ -174,5 +174,8 @@
 ---
 
 ### 30/06/2020
-- Rempalcement des tuples de fraction volumique des inclusions+interphase par des listes mutables, simplification du code associé dans comparaison de modèles
+- Remplacement des tuples de fraction volumique des inclusions+interphase par des listes mutables, simplification du code associé dans comparaison de modèles
 - Résolution inverse avec inclusions et interpahses
+
+### 01/07/2020
+- Fusion des cellules résolution inverse et correction d'un bug mineur
