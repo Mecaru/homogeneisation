@@ -4,36 +4,24 @@
 - Coder l'interface (notebook avec explications, interface user-friendly, "homogeneisation_main.ipynb")
     - Réfléchir à l'implémentation de la bdd
     - Réfléchir à l'intégration de modèles auto-cohérents à l'interface
-    - Cas matériaux poreux
-    - Réfléchir à la représentation graphique de plus d'une inclusion
 - Ajouter des modèles
     - Réfléchir à l'intégration des modèles auto-cohérents avec phases
-- Ajouter tous les modèles simples
 - Distribution des ellipsoïdes
 - Calcul des tenseurs d'Eshelby
 - Validation des modèles
-- Comportements non isotropes avec fichier texte
 - Corriger les modèles
     - Revoir le calcul de K de Mori-Tanaka
     - Eshelby en dehors des bornes
-- Organiser les dossier d'entrées et sorties (un dossier input, puis un dossier par type d'input, idem pour les outputs)
 - Ajouter les graphes de validation des modèles aux descriptions de modèles
-- Comportements anisotropes
 - Patterns isotropes
-- Autocohérents avec interphase: épaisseur en entrée
 - 4 phases avec différents patterns
-- Suite du visco
+- Améliorer la résolution inverse (interface et soft)
+- Résolution inverse en visco et avec une interphase
     
 ### Programme de la semaine
-- Instance inclusion+interphase
-- Format des graphes (trop gros)
-- Spheroids, not ellipsoids
-- Suppression d'inclusions
-- Petite modif (Cf mail)
-- Reprendre la résolution inverse avec classes_v2
-- Valider différentiel
-- Schéma deux inclusions ou interphase
-- Notice modèle et changement behavior acceptable
+- Mori-Tanaka ellipsoïdes
+- Notice
+- Présentation
 
 ---
 ## Suivi
@@ -146,7 +134,48 @@
 
 ### 18/06/2020
 - Suppression des prolate et oblate, ajout d'inclusions ellipsoïdales avec deux rapports d'aspect et leur affichage
-- Modification des arguments d'entrée des fonctions compute avec prise en compte des rapports d'apsects
+- Modification des arguments d'entrée des fonctions compute avec prise en compte des rapports d'aspect
 
 ### 19/06/2020
-- Correction de bugset version fonctionnelle des comportements anisotropes
+- Correction de bugs et version fonctionnelle des comportements anisotropes
+
+### 22/06/2020
+- Création du dossier anisotropic_behaviors
+- Ajout d'une instance InclusionAndInterphase et modifications des classes
+
+### 23/06/2020
+- Ajout de la génération d'inclusions avec interphases au main
+- Ajout de la génération d'inclusions avec interphases au main visco
+- Dessin de plusieurs inclusions
+- Dessin d'inclusions avec interphases
+
+### 24/06/2020
+- Comparaison de modèles contenant des inclusions avec interphases
+- Reset de la microstructure à son état initial après la comparaison de modèles
+- Correction d'un bug dû à la fonction draw lors de la génération de microstructures sans inclusions + correction d'une erreur lors du tracé des bornes de Hashin lorsque leur calcul n'est pas possible
+- Ajout du couple de comportement isotrope E visco-élastique et K élastique
+- Correction d'une erreur sur le nom des matrices C et S (stifness et compliance)
+- Réduction de la taille des graphes et de la taille de police
+
+### 25/06/2020
+- Affichage des infos des inclusions et suppression d'inclusions, affichage des noms des inclusions plutôt que leur description dans les Dropdown (main)
+
+### 26/06/2020
+- Affichage des noms des inclusions plutôt que leur description dans la section comparaison de modèles du main
+- Affichage des noms des inclusions plutôt que leur description et ajout des infos inclusions dans le main visco
+
+### 29/06/2020
+- Résolution inverse pour des inclusions sans interphase en élasticité isotrope
+- Comparaison des modèles autocohérents old et new
+
+---
+
+### 30/06/2020
+- Remplacement des tuples de fraction volumique des inclusions+interphase par des listes mutables, simplification du code associé dans comparaison de modèles
+- Résolution inverse avec inclusions et interpahses
+
+### 01/07/2020
+- Fusion des cellules résolution inverse et correction d'un bug mineur
+- Ajout des infos inclusions et de la suppression d'inclusions en résolution inverse
+- Tests de validation différentiel en visco
+- Réorganisation des dossiers inputs et outputs

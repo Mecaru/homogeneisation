@@ -21,12 +21,13 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 #%% Classes microstructure
+
 class Inclusion:
     """
     Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
     """
     
-    def __init__(self, type_inclusion, behavior, aspect_ratio=[1.,1.], name=None, frequency=[], abscissa="frequency"):
+    def __init__(self, type_inclusion, behavior, aspect_ratio=(1.,1.), name=None, frequency=[], abscissa="frequency"):
         """
         TODO: Prise en compte de l'orientation
         type_inclusion: (int), 0 pour des inclusions sphériques, 1 pour des inclusions ellipsoïdales
@@ -34,7 +35,6 @@ class Inclusion:
         behavior: (dict), contient les valeurs des paramètres de la matrice de comportement, voir dict_behavior dans la dernière section du script
         frequency: (list), liste des fréquences/températures associées aux paramètres visco-élastiques
         abscissa: (str), vaut "frequency" ou "temperature", indique la nature physique des valeurs de la liste frequency
-        inc_and_int: ([InclusionAndInterphase,int]), None par défaut, renvoie vers l'instance de classe InclusionAndInterphase à laquelle appartient l'inclusion, si celle-ci existe, et un entier, 0 pour l'inclusion, 1 pour l'interphase
         """
         self.type_inclusion = type_inclusion
         self.aspect_ratio = aspect_ratio
@@ -42,7 +42,6 @@ class Inclusion:
         self.name = name
         self.frequency = frequency
         self.abscissa = abscissa
-        self.inc_and_int = None
     
     def type_to_str(self):
         """
@@ -109,36 +108,7 @@ class Inclusion:
                 plt.title("Inclusion visco-elastic behavior")
                 plt.xlim(min(self.frequency), max(self.frequency))
             plt.show()
-
-class InclusionAndInterphase:
-    """
-    Instance représentant une inclusion et l'interphase associée.
-    """            
-    
-    def __init__(self, inclusion, interphase, name=None):
-        """
-        inclusion: Instance de classe inclusion
-        interphase: Instance de classe inclusion, représente l'interphase associée à l'inclusion
-        L'interphase et l'inclusion doivent être du même type (sphères ou ellipsoïdes avec les mêmes rapports d'aspect)
-        """
-        assert inclusion.aspect_ratio==interphase.aspect_ratio
-        self.inclusion = inclusion
-        self.interphase = interphase
-        self.name = name
-        self.aspect_ratio = inclusion.aspect_ratio
-        # Modification de l'attribut inc_and_int des inclusion et interphase
-        inclusion.inc_and_int = [self, 0]
-        interphase.inc_and_int = [self, 1]
-        
-    def __str__(self):
-        string = "Inclusion + Interphase\n"
-        string += "Inclusion: {}\n".format(str(self.inclusion))
-        string += "Interphase: " + str(self.interphase)
-        return string
-    
-    def __repr__(self):
-        return str(self)
-
+            
 class Microstructure:
     """
     Contient des informations sur la microstructure (comportement de la matrice, inclusions, etc..).
@@ -148,7 +118,7 @@ class Microstructure:
     
     def __init__(self, behavior, dict_inclusions=dict(), frequency=[], abscissa="frequency"):
         """
-        list_inclusions: (dict), sous la forme {inclusion: f_i} avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion. inclusion peut aussi être une instance de classe InclusionAndInterphase, dans ce cas, f_i est un tuple de flottants
+        list_inclusions: (dict), sous la forme {inclusion: f_i} avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion.
         behavior: (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment
         frequency: liste des fréquences associées aux paramètres visco-élastiques
         """
@@ -182,12 +152,7 @@ class Microstructure:
         dict_inclusions = self.dict_inclusions
         for inclusion in dict_inclusions.keys():
             fi = dict_inclusions[inclusion]
-            # Cas des inclusions + interphase
-            if type(fi)==list:
-                total_fi += fi[0] + fi[1]
-            # Inclusions simples
-            else:
-                total_fi += fi
+            total_fi += fi
         if total_fi >= 1:
             raise NameError("The total volumic fractions of the inclusions exceed 1")
         else :
@@ -237,96 +202,24 @@ class Microstructure:
                 plt.xlim(min(self.frequency), max(self.frequency))
             plt.show()
 
-    # def draw(self):
-    #     """
-    #     Méthode qui permet de dessiner la microstructure.
-    #     """
-    #     inclusions = list(self.dict_inclusions.keys())
-    #     if len(inclusions) == 1:
-    #         inclusion = inclusions[0]
-    #         fi = self.dict_inclusions[inclusion]
-    #         # Calcul du rayon pour un VER de taille 10X10X10
-    #         c1, c2 = inclusion.aspect_ratio
-    #         a = (1000*fi/(4/3*pi*c1*c2))**(1/3)
-    #         b = c1*a
-    #         c = c2*a
-            
-    #         fig = plt.figure(figsize=plt.figaspect(1))  # Square figure
-    #         ax = fig.add_subplot(111, projection='3d')
-
-    #         # Radii:
-    #         rx, ry, rz = np.array([a, b, c])
-
-    #         # Set of all spherical angles:
-    #         u = np.linspace(0, 2 * np.pi, 100)
-    #         v = np.linspace(0, np.pi, 100)
-
-    #         # Cartesian coordinates that correspond to the spherical angles:
-    #         # (this is the equation of an ellipsoid):
-    #         x = rx * np.outer(np.cos(u), np.sin(v))
-    #         y = ry * np.outer(np.sin(u), np.sin(v))
-    #         z = rz * np.outer(np.ones_like(u), np.cos(v))
-
-    #         # Plot:
-    #         ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='b')
-
-    #         # Adjustment of the axes, so that they all have the same span:
-    #         max_radius = 5
-    #         for axis in 'xyz':
-    #             getattr(ax, 'set_{}lim'.format(axis))((-max_radius, max_radius))
-
-    #         # Cube 
-    #         points = 5*np.array([[-1, -1, -1],
-    #                               [1, -1, -1 ],
-    #                               [1, 1, -1],
-    #                               [-1, 1, -1],
-    #                               [-1, -1, 1],
-    #                               [1, -1, 1 ],
-    #                               [1, 1, 1],
-    #                               [-1, 1, 1]])
-
-    #         r = [-5,5]
-    #         X, Y = np.meshgrid(r, r)
-    #         one = 5*np.ones(4).reshape(2, 2)
-    #         ax.plot_wireframe(X,Y,one, alpha=0.5)
-    #         ax.plot_wireframe(X,Y,-one, alpha=0.5)
-    #         ax.plot_wireframe(X,-one,Y, alpha=0.5)
-    #         ax.plot_wireframe(X,one,Y, alpha=0.5)
-    #         ax.plot_wireframe(one,X,Y, alpha=0.5)
-    #         ax.plot_wireframe(-one,X,Y, alpha=0.5)
-    #         ax.scatter3D(points[:, 0], points[:, 1], points[:, 2])
-
-    #         plt.show()
-            
     def draw(self):
         """
         Méthode qui permet de dessiner la microstructure.
+        TODO: dessin d'interphases
+        TODO: dessin de plusieurs inclusions
         """
         inclusions = list(self.dict_inclusions.keys())
-        n_fig = len(inclusions)
-        if n_fig==0:
-            # Microstructure sans inclusion
-            return None
-        fig = plt.figure(figsize=(n_fig*3 ,3))
-        for index, instance in enumerate(inclusions):
-            fi = self.dict_inclusions[instance]
-            if type(instance)==Inclusion:
-                inclusion = instance
-                f_inc = fi
-                interphase = None
-            else:
-                inclusion = instance.inclusion
-                interphase = instance.interphase
-                f_inc = fi[0]
-                f_int = fi[1]
-                
-            ### Tracé inclusion
-            ax = fig.add_subplot(1, n_fig, index+1, projection='3d')
+        if len(inclusions) == 1:
+            inclusion = inclusions[0]
+            fi = self.dict_inclusions[inclusion]
             # Calcul du rayon pour un VER de taille 10X10X10
             c1, c2 = inclusion.aspect_ratio
-            a = (1000*f_inc/(4/3*pi*c1*c2))**(1/3)
+            a = (1000*fi/(4/3*pi*c1*c2))**(1/3)
             b = c1*a
             c = c2*a
+            
+            fig = plt.figure(figsize=plt.figaspect(1))  # Square figure
+            ax = fig.add_subplot(111, projection='3d')
 
             # Radii:
             rx, ry, rz = np.array([a, b, c])
@@ -343,30 +236,7 @@ class Microstructure:
 
             # Plot:
             ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='b')
-            
-            ### Tracé interphase
-            if interphase!=None:
-                a = (1000*(f_inc+f_int)/(4/3*pi*c1*c2))**(1/3)
-                b = c1*a
-                c = c2*a
-    
-                # Radii:
-                rx, ry, rz = np.array([a, b, c])
-    
-                # Set of all spherical angles:
-                u = np.linspace(0, np.pi, 100)
-                v = np.linspace(0, np.pi, 100)
-    
-                # Cartesian coordinates that correspond to the spherical angles:
-                # (this is the equation of an ellipsoid):
-                x = rx * np.outer(np.cos(u), np.sin(v))
-                y = ry * np.outer(np.sin(u), np.sin(v))
-                z = rz * np.outer(np.ones_like(u), np.cos(v))
-    
-                # Plot:
-                ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='r')
-            
-            ### Tracé bords VER
+
             # Adjustment of the axes, so that they all have the same span:
             max_radius = 5
             for axis in 'xyz':
@@ -392,7 +262,8 @@ class Microstructure:
             ax.plot_wireframe(one,X,Y, alpha=0.5)
             ax.plot_wireframe(-one,X,Y, alpha=0.5)
             ax.scatter3D(points[:, 0], points[:, 1], points[:, 2])
-        plt.show()
+
+            plt.show()
             
      ## CALCUL DES BORNES DE HASHIN-SHTRICKMAN ##########  
     
@@ -411,15 +282,12 @@ class Microstructure:
         Donne les bornes de Hashin-Shtrikman pour 1 seule phase, isotrope
         TODO : ajouter le cas des inclusion multiples
         """
-        fm = self.f_matrix
-        f = 1-fm
-        km,gm = self.behavior["K"], self.behavior["G"]
+        fm=self.f_matrix
+        f=1-fm
+        km,gm=self.behavior["K"],self.behavior["G"]
         
         for inclusion in self.dict_inclusions.keys():
-            try:
-                kf,gf=inclusion.behavior["K"],inclusion.behavior["G"]
-            except:
-                return None
+            kf,gf=inclusion.behavior["K"],inclusion.behavior["G"]
         
         ksup=max(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
         kinf=min(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
@@ -454,24 +322,13 @@ class Model:
         """
         # Récupération des inclusions de la microstructure
         dict_inclusions = microstructure.dict_inclusions
-        instances = list(dict_inclusions.keys())
-        n_instances = len(instances)
+        inclusions = list(dict_inclusions.keys())
+        n_inclusions = len(inclusions)
         # Initialisation du résultat
         result = True
         # Vérification du nombre d'inclusions
-        if n_instances != self.n_inclusions:
+        if n_inclusions != self.n_inclusions:
              result = False
-        # Vérification de la présence ou de l'absence d'interphase
-        for instance in instances:
-            if (type(instance)==InclusionAndInterphase)!=self.interphase:
-                result = False
-        # Construction d'une liste d'inclusions sans interphase
-        inclusions = []
-        for instance in instances:
-            if type(instance)==InclusionAndInterphase:
-                inclusions += [instance.inclusion, instance.interphase]
-            else:
-                inclusions.append(instance)
         # Vérification du type d'inclusion
         for inclusion in inclusions:
             if inclusion.type_inclusion != self.type_inclusion:
@@ -494,20 +351,13 @@ class Model:
         compatible = self.check_hypothesis(microstructure)
         if not compatible:
             raise NameError("The microstructure does not match the model hypothesis")
+        
         frequency = microstructure.frequency
-        # Création du dictionnaire contenant uniquement des instances de classe Inclusion
-        inclusions = {}
-        for instance, f in microstructure.dict_inclusions.items():
-            if type(instance)==InclusionAndInterphase:
-                inclusions[instance.inclusion] = f[0]
-                inclusions[instance.interphase] = f[1]
-            else:
-                inclusions[instance] = f
         # Cas élastique
         if not list(frequency):
             Cm = microstructure.behavior
             # Récupération du comportement des inclusions, format [(inclusion.behavior, f, aspect_ratio)]
-            inclusion_behaviors = [(inclusion.behavior, f, inclusion.aspect_ratio) for (inclusion,f) in inclusions.items()]
+            inclusion_behaviors = [(inclusion.behavior, f, inclusion.aspect_ratio) for (inclusion,f) in microstructure.dict_inclusions.items()]
             # Calcul du comportement homogénéisé
             h_behavior = self.compute_behavior(Cm, inclusion_behaviors)
             h_behavior = {parameter: value.real for (parameter,value) in h_behavior.items()} # Conversion des valeurs éventuellement complexes en valeurs réelles
@@ -522,7 +372,7 @@ class Model:
                 Cm = {parameter: values[i] for (parameter,values) in microstructure.behavior.items()}
                 # Récupération des comportements des inclusions à la fréquence i
                 inclusion_behaviors = [] # Initialisation
-                for inclusion, f in inclusions.items():
+                for inclusion, f in microstructure.dict_inclusions.items():
                     inclusion_behavior = {parameter: values[i] for (parameter, values) in inclusion.behavior.items()}
                     inclusion_behaviors.append((inclusion_behavior, f, inclusion.aspect_ratio))
                 # Calcul du comportement homogénéisé à la fréquence i
@@ -552,8 +402,7 @@ class Mori_Tanaka(Model):
         """
         self.type_inclusion = 0 # Sphères
         self.behavior_condition = set(['K', 'G', 'E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes
-        self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
+        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Mori-Tanaka"
     
     def compute_behavior(self, Cm, inclusion_behaviors):
@@ -592,7 +441,6 @@ class Eshelby_Approximation(Model):
         self.type_inclusion = 0
         self.behavior_condition = set(['K', 'G', 'E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
-        self.interphase = False
         self.name = "Eshelby"
    
     def compute_behavior(self, Cm, inclusion_behaviors):
@@ -628,8 +476,7 @@ class Differential_Scheme(Model):
         """
         self.type_inclusion = 0
         self.behavior_condition = set(['K', 'G', 'E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes  
-        self.interphase = False
+        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.name = "Differential"
     
     ## Fonctions utiles au calcul du comportement homogénéisé
@@ -698,9 +545,8 @@ class Autocoherent_Hill(Model):
         self.type_inclusion = 0 # Sphères
         self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
-        self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.name = "Self-consistent"
-        self.precision = 10**-12
+        self.precision = 10**-3
         self.n_point_fixe = 100
     
     def Reccurence(Module,f):
@@ -713,9 +559,9 @@ class Autocoherent_Hill(Model):
         numerator = 5*f*G*(Gf-Gm)*(3*K+4*G)
         denominator = 3*K*(3*G+2*Gf)+4*G*(3*Gf+2*G)        
         nextG = Gm + numerator/denominator
+        print(nextK, nextG)
         return nextK,nextG
     
-  
     def compute_behavior(self, Cm, inclusion_behaviors):
         # Récupération du comportement de la matrice
         Km = Cm['K']
@@ -737,7 +583,6 @@ class Autocoherent_Hill(Model):
             precision = self.precision
             nextK,nextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)
             while abs((nextK-K)/K) > precision or abs((nextG-G)/G) > precision : 
-                K,G=nextK,nextG
                 nextK,NextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)  
             # Mise à jour de l'initialisation
             Kinit = nextK
@@ -766,7 +611,6 @@ class Autocoherent_III(Model):
         self.type_inclusion = 0 # Sphères
         self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
-        self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.name = "Generalised self-consistent"
   
     def compute_behavior(self, Cm, inclusion_behaviors):
@@ -822,8 +666,7 @@ class Autocoherent_IV(Model):
         """
         self.type_inclusion = 0 # Sphères
         self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
-        self.interphase = True # Vrai si le modèle fonctionne sur des inclusions avec interphase
+        self.n_inclusions = 2 # Nombre d'inclusions de natures différentes 
         self.R_inclusion = R_inclusion
         self.name = "4-phases self-consistent"
 
@@ -941,14 +784,6 @@ def young_to_bulk(E, nu):
     G = E/(2*(1+nu))
     return K, G   
 
-def bulk_to_shear(K, E):
-    """
-    Transforme les modules K et E en modules G et nu
-    """
-    G = 3*K*E/(9*K-E)
-    nu = (3*K-E)/(6*K)
-    return G, nu
-
 def complete_behavior(behavior):
     """
     Si le comportement en entrée est isotrope, le complète avec E et nu ou K et G.
@@ -982,11 +817,6 @@ def complete_behavior(behavior):
         E, nu = behavior['E'], behavior['nu']        
         K, G = young_to_bulk(E, nu)
         result['K'], result['G'] = K, G
-    # Isotrope K et E
-    elif parameters[:2]==['K', 'E'] or parameters[:2]==['E', 'K']:
-        K, E = behavior['K'], behavior['E']        
-        G, nu = bulk_to_shear(K, E)
-        result['G'], result['nu'] = G, nu
     # Anisotrope
     elif parameters[0]=='C':
         C = behavior['C']
@@ -1015,12 +845,21 @@ dict_behaviors_visco = {'Elastic isotropic (K & G)': ['K', 'G'],
                         'Elastic isotropic (E & nu)': ['E', 'nu'],
                         'Visco-elastic 1': ['K', "G'", "G''"],
                         'Visco-elastic 2': ["K'", "K''", "G'", "G''"],
-                        'Visco-elastic 3': ["E'", "E''", 'K']}
+                        'Visco-elastic 3': ["E'", "E''", 'nu']}
 dict_behaviors = {'Isotropic (K & G)': ['K', 'G'],
                   'Isotropic (E & nu)': ['E', 'nu'],
-                  'Anisotropic (Compliance)': ['S'],
-                  'Anisotropic (Stifness)': ['C']}
+                  'Anisotropic (stifness)': ['S'],
+                  'Anisotropic (compliance)': ['C']}
 dict_types = {0: 'Spheres', 1: 'Ellipsoids'}
+    
+#%% Tests
+inclusion = Inclusion(0,{'E':1000,'nu':0.5})
+f = 0.06
+micro = Microstructure({'E':200,'nu':0.5},{inclusion:f})
+model = Autocoherent_Hill()
+print(model.compute_h_behavior(micro))
+    
+    
     
     
     
