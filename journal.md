@@ -20,8 +20,7 @@
     
 ### Programme de la semaine
 - Mori-Tanaka ellipsoïdes
-- Reprendre calculs automatisés
-- Notice modèle et changement behavior acceptable
+- Notice
 - Présentation
 
 ---
