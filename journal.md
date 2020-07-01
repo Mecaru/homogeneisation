@@ -22,6 +22,7 @@
 - Reprendre la résolution inverse avec classes_v2
 - Valider différentiel
 - Organiser les dossier d'entrées et sorties (un dossier input, puis un dossier par type d'input, idem pour les outputs)
+- Mori-Tanaka ellipsoïdes
 - Reprendre calculs automatisés
 - Notice modèle et changement behavior acceptable
 - Présentation
@@ -179,3 +180,4 @@
 
 ### 01/07/2020
 - Fusion des cellules résolution inverse et correction d'un bug mineur
+- Ajout des infos inclusions et de la suppression d'inclusions en résolution inverse
