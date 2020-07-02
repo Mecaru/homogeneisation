@@ -701,11 +701,12 @@ class Autocoherent_Hill(Model):
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.name = "Self-consistent"
-        self.precision = 10**-3
+        self.precision = 10**-8
         self.n_point_fixe = 100
     
     def Reccurence(Module,f):
         K,G,Km,Gm,Kf,Gf = Module
+        nu = (3*K - 2*G)/(6*K + 2*G)
         alpha = (7-5*nu)/15/(1-nu)
         beta = (4-5*nu)/15/(1-nu)
         ##Calcul de Kn+1
@@ -714,7 +715,7 @@ class Autocoherent_Hill(Model):
         nextK = Km + numerator/denominator
         ##Calcul de Gn+1
         numerator = f*G*(Gf-Gm)
-        denominator = G + beta*(gf-g)       
+        denominator = G + beta*(Gf-G)       
         nextG = Gm + numerator/denominator
         return nextK,nextG
     
@@ -740,6 +741,127 @@ class Autocoherent_Hill(Model):
             precision = self.precision
             nextK,nextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)
             while abs((nextK-K)/K) > precision or abs((nextG-G)/G) > precision : 
+                K,G=nextK,nextG
+                nextK,NextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)  
+            # Mise à jour de l'initialisation
+            Kinit = nextK
+            Ginit = nextG
+        return {'K': nextK, 'G': nextG}
+    
+class Autocoherent_Hill2(Model):
+    """
+    Modèle autocohérent de Hill.
+    """
+    def __init__(self):
+        """
+        Définition des hypothèses du modèle.
+        """
+        self.type_inclusion = 0 # Sphères
+        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
+        self.name = "Self-consistent"
+        self.precision = 10**-8
+        self.n_point_fixe = 100
+    
+    def Reccurence(Module,f):
+        K,G,Km,Gm,Kf,Gf = Module
+        nu = (3*K - 2*G)/(6*K + 2*G)
+        alpha = (7-5*nu)/15/(1-nu)
+        beta = (4-5*nu)/15/(1-nu)
+        ##Calcul de Kn+1
+        numerator = f*(Kf-Km)*(3*K+4*G)
+        denominator =3*Kf + 4*G
+        nextK = Km + numerator/denominator
+        ##Calcul de Gn+1
+        numerator = 5*f*G*(Gf-Gm)*(3*K+4*G)
+        denominator = 3*K*(3*G+2*Gf) + 4*G*(3*Gf+2*G)    
+        nextG = Gm + numerator/denominator
+        return nextK,nextG
+    
+  
+    def compute_behavior(self, Cm, inclusion_behaviors):
+        # Récupération du comportement de la matrice
+        Km = Cm['K']
+        Gm = Cm['G']
+        # Récupération du comportement de l'inclusion
+        Cf, f, ratio = inclusion_behaviors[0]
+        Kf = Cf['K']
+        Gf = Cf['G']
+        F = np.linspace(0,f,self.n_point_fixe)
+        
+        Kinit = Km
+        Ginit = Gm
+        for i in range(len(F)) : 
+            fi = F[i]
+            # Initialisation du point fixe
+            K = Kinit
+            G = Ginit
+            # Algorithme du point fixe
+            precision = self.precision
+            nextK,nextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)
+            while abs((nextK-K)/K) > precision or abs((nextG-G)/G) > precision : 
+                K,G=nextK,nextG
+                nextK,NextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)  
+            # Mise à jour de l'initialisation
+            Kinit = nextK
+            Ginit = nextG
+        return {'K': nextK, 'G': nextG}
+    
+    
+    
+    
+class Autocoherent_Hill3(Model):
+    
+    def __init__(self):
+        """
+        Définition des hypothèses du modèle.
+        """
+        self.type_inclusion = 0 # Sphères
+        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
+        self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
+        self.name = "Self-consistent"
+        self.precision = 10**-8
+        self.n_point_fixe = 100
+    
+    
+    def Reccurence(Module,f):
+        K,G,Km,Gm,Kf,Gf=Module
+        ##Calcul de Kn+1
+        numerator = f*(Kf-Km)*(3*K+4*G)
+        denominator = 3*Kf+4*G
+        nextK = Km + numerator/denominator
+        ##Calcul de Gn+1
+        numerator = 5*f*G*(Gf-Gm)*(3*K+4*G)
+        denominator = 3*K*(3*G+2*Gf)+4*G*(3*Gf+2*G)        
+        nextG = Gm + numerator/denominator
+        return nextK,nextG
+    
+  
+    def compute_behavior(self,Cm, inclusion_behaviors):
+        """
+        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
+        TODO : compléter avec le calcul complet (K et G)
+        """             
+        # Récupération du comportement de la matrice
+        Km = Cm['K']
+        Gm = Cm['G']
+        # Récupération du comportement de l'inclusion
+        Cf, f, ratio = inclusion_behaviors[0]
+        Kf = Cf['K']
+        Gf = Cf['G']
+        F = np.linspace(0,f,self.n_point_fixe)
+        
+        for i in range(len(F)) : 
+            fi = F[i]
+            # Initialisation du point fixe
+            K = Kinit
+            G = Ginit
+            # Algorithme du point fixe
+            precision = self.precision
+            nextK,nextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)
+            while abs(nextK-K) > precision or abs(nextG-G) > precision : 
                 K,G=nextK,nextG
                 nextK,NextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)  
             # Mise à jour de l'initialisation

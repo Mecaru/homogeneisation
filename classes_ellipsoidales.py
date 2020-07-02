@@ -33,7 +33,7 @@ def Comp3333_to_66 (G) :
     return F
 
 def Comp66_to_3333(F) : 
-    ' Returns a matrix F 6x6 from a behaviour tensor G 3x3x3x3'.'
+    ' Returns a matrix F 6x6 from a behaviour tensor G 3x3x3x3'
     G = np.zeros((3,3,3,3))
     for i in range(3) :
         for j in range(3) :
@@ -94,26 +94,6 @@ def Comp66_to_3333(F) :
     G[2,1,2,1]=F[3,3]
  
     return G 
-def Matrice_rotation(psi,phi,theta) : 
-    'Create a 3x3 rotation matrix from  three euler angles taken such as orientation are evenly distributed'
-    Q = np.zeros((3,3))
-    
-    Q[0,0]=cos(psi)*cos(theta)-cos(phi)*sin(theta)*sin(psi)
-    Q[0,1]=sin(theta)*cos(psi)+cos(phi)*sin(psi)*cos(theta)
-    Q[0,2]=sin(phi)*sin(psi)
-    Q[1,0]=-sin(psi)*cos(theta)-sin(theta)*cos(phi)*cos(psi)
-    Q[1,1]=cos(psi)*cos(phi)*cos(theta)-sin(theta)*sin(psi)
-    Q[1,2]=cos(psi)*sin(phi)
-    Q[2,0]=sin(phi)*sin(theta)
-    Q[2,1]=-sin(phi)*cos(theta)
-    Q[2,2]=cos(phi)
-    
-    for i in range(3) : 
-        for j in range(3):
-            if (abs(Q[i,j]) < 10**-6 ) :
-                Q[i,j] = 0
-            
-    return Q
 
 def Rotation_matrices(n) : 
     'Create a matrix nx3x3 composed of n rotation matrix with  three euler angles taken such as orientation are evenly distributed '
