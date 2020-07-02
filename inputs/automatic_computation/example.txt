@@ -1,4 +1,4 @@
-*homogeneisation
+*homogenisation
 Mori-Tanaka
 K:150,G:150
 0,K:200,G:200,0.1

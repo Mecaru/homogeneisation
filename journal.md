@@ -183,3 +183,4 @@
 ### 02/07/2020
 - Traduction de la section Intro et Calcul de comportement homogénéisé en anglais
 - Traduction de la comparaison de modèles en anglais
+- Traduction de la section de calcul automatiques depuis des fichiers texte
