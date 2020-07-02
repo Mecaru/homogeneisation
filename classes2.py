@@ -700,7 +700,7 @@ class Autocoherent_Hill:
             # Algorithme du point fixe
             precision = self.precision
             nextK,nextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)
-            while abs(nextK-K) > precision or abs(nextG-G) > precision : 
+            while abs(nextK-K)/K > precision or abs(nextG-G)/G > precision : 
                 K,G=nextK,nextG
                 nextK,NextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)  
             # Mise à jour de l'initialisation
