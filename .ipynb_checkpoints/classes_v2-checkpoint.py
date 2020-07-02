@@ -687,6 +687,7 @@ class Differential_Scheme(Model):
         # Renvoi du résultat
         return {'K': Kh1+1j*Kh2, 'G': Gh1+1j*Gh2}
 
+
 class Autocoherent_Hill(Model):
     """
     Modèle autocohérent de Hill.
@@ -700,18 +701,20 @@ class Autocoherent_Hill(Model):
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.name = "Self-consistent"
-        self.precision = 10**-12
+        self.precision = 10**-3
         self.n_point_fixe = 100
     
     def Reccurence(Module,f):
         K,G,Km,Gm,Kf,Gf = Module
+        alpha = (7-5*nu)/15/(1-nu)
+        beta = (4-5*nu)/15/(1-nu)
         ##Calcul de Kn+1
-        numerator = f*(Kf-Km)*(3*K+4*G)
-        denominator = 3*Kf+4*G
+        numerator = f*(Kf-Km)*K
+        denominator = K + alpha*(Kf-K)
         nextK = Km + numerator/denominator
         ##Calcul de Gn+1
-        numerator = 5*f*G*(Gf-Gm)*(3*K+4*G)
-        denominator = 3*K*(3*G+2*Gf)+4*G*(3*Gf+2*G)        
+        numerator = f*G*(Gf-Gm)
+        denominator = G + beta*(gf-g)       
         nextG = Gm + numerator/denominator
         return nextK,nextG
     

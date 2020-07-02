@@ -1,681 +1,319 @@
-"""
-Homogeneisation - classes.py
-
-Définition des classes utilisées.
-
-Les items à modifier/améliorer/ajouter sont marqués en commentaires précédés de la mention "TODO".
-
-Authors : Karim AÏT AMMAR, Enguerrand LUCAS
-
-27/04/2020
-"""
-
 import numpy as np
-from scipy import *
-from scipy.integrate import odeint
-import matplotlib.pyplot as plt
-from math import *
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from numpy import pi,cos,sin,arccos,arcsin
+from numpy.random import random_sample
+from numpy.linalg import inv
+from numpy import dot
+from scipy.spatial.transform import Rotation as Rot
 
 
-class Inclusion:
-    """
-    Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
-    """
-    
-    def __init__(self, type_inclusion, behavior, aspect_ratio=1, name=None):
-        """
-        TODO : Prise en compte de l'orientation
-        type_inclusion : (int), 0 pour des inclusions sphériques. Voir la liste list_types (en bas du fichier) pour les autres types.
-        radius : (float), valeur du rayon des inclusions sphériques. TODO : À remplacer par un paramètre plus général pour des inclusions de types différents. 
-        behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
-        """
-        self.type_inclusion = type_inclusion
-        self.aspect_ratio = aspect_ratio
-        self.behavior = complete_behavior(behavior)
-        self.name = name
-    
-    def type_to_str(self):
-        """
-        Transforme un entier "type_inclusion" en la chaîne de caractères correspondante (exemple : 0 --> "spheres") 
-        TODO : synchroniser cette fonction avec le main à l'aide d'un dictionnaire pour faciliter l'ajout de types d'inclusions
-        """
-        type_inclusion = self.type_inclusion
-        try:
-            result = dict_types[type_inclusion]
-        except KeyError:
-            # Le type spécifié n'est pas répertorié dans le dictionnaire
-            result = None
-        return result
-    
-    def __str__(self):
-        """
-        Présentation de l'instance.
-        """
-        str_type_inclusion = self.type_to_str()
-        string = "{}, {}".format(self.name, str_type_inclusion)
-        if self.type_inclusion != 0:
-            string += " (c={})".format(self.aspect_ratio)
-        for parameter, value in self.behavior.items():
-            string += ", {}: {:.2f}".format(parameter, value)
-        return string
-
-    def __repr__(self):
-        return str(self)
-
-    def change_parameter(self, parameter, new_value):
-        """
-        Change the value of the parameter if it exists. Updates the behavior with the function "complete_behavior".
-        """
-        try:
-            self.behavior[parameter] = new_value
-            self.behavior = complete_behavior(self.behavior)
-        except:
-            None
-
-    
-class Microstructure:
-    """
-    Contient des informations sur la microstructure (comportement de la matrice, inclusions, etc..). TODO : à modifier pour prendre en compte la présence ou non d'une interphase, et d'autres paramètres de modèles plus avancés.
-    Contient une fonction qui renvoie les bornes de Hashin-Shtrickman pour la microstructure en question 
-    TODO : Généraliser ces bornes à n phases (et pas 2 comme c'est le cas ici)
-    """
-    
-    def __init__(self, matrix_behavior, dict_inclusions=dict()):
-        """
-        list_inclusions : (dict), sous la forme {inclusion: f_i} avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion.
-        matrix_behavior : (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment, K (bulk modulus) et G (shear modulus). TODO :  À modifier pour représenter des comportements non isotropes.
-        """
-        self.dict_inclusions = dict_inclusions
-        self.matrix_behavior = complete_behavior(matrix_behavior)
-        # Calcul de la fraction volumique de matrice f_m
-        self.f_matrix = self.compute_fm()
-        
-    def __str__(self):
-        string = "Microstructure\nf_m = {:.2f}, matrix".format(self.f_matrix, self.matrix_behavior)
-        for parameter, value in self.matrix_behavior.items():
-            string += ", {}: {:.2f}".format(parameter, value) # TODO : transformer cette ligne en fonction print_behavior et l'appeler lors de l'affichage du comportement homogénéisé et des bornes de hashin
-        dict_inclusions = self.dict_inclusions
-        # Présentation de toutes les inclusions contenues dans la microstructure
-        for inclusion in dict_inclusions.keys():
-            fi = dict_inclusions[inclusion]
-            string += "\nf_i = {}, ".format(fi) + str(inclusion)
-        return string
-
-    def compute_fm(self):
-        """
-        1/ Vérifie si la liste des inclusions donnée est cohérente (i.e : la somme des fractions volumiques des inclusions est inférieure à 1). Si ce n'est pas le cas, génère une erreur.
-        2/ Si aucune erreur n'est générée, calcule la fraction volumique de matrice.
-        """
-        total_fi = 0 # Total des fractions volumiques d'inclusions
-        dict_inclusions = self.dict_inclusions
-        for inclusion in dict_inclusions.keys():
-            fi = dict_inclusions[inclusion]
-            total_fi += fi
-        if total_fi >= 1:
-            raise NameError("The total volumic fractions of the inclusions exceed 1")
-        else :
-            f_m = 1 - total_fi
-            return f_m
-
-    def change_fi(self, inclusion, new_f):
-        """
-        Met à jour la fraction volumique de l'inclusion ou l'ajoute au dictionnaire si celle-ci n'y était pas présente.
-        Met à jour la fraction volumique de matrice.
-        """
-        self.dict_inclusions[inclusion] = new_f
-        self.f_matrix = self.compute_fm()
-    
-    def change_parameter(self, parameter, new_value):
-        """
-        Change the value of the parameter if it exists. Updates the behavior with the function "complete_behavior".
-        """
-        try:
-            self.matrix_behavior[parameter] = new_value
-            self.matrix_behavior = complete_behavior(self.matrix_behavior)
-        except:
-            None
-
-    def draw(self):
-        """
-        Méthode qui permet de dessiner la microstructure. Pour le moment, fonctionne uniquement avec une seule inclusion, sphérique, oblate ou prolate.
-        """
-        inclusions = list(self.dict_inclusions.keys())
-        if len(inclusions) == 1:
-            inclusion = inclusions[0]
-            fi = self.dict_inclusions[inclusion]
-            # Calcul du rayon pour un VER de taille 10X10X10
-            ratio = inclusion.aspect_ratio
-            a = (1000*fi/(4/3*pi*ratio))**(1/3)
-            b = ratio*a
+def Comp3333_to_66 (G) : 
+    "Returns from a behaviour tensor G 3x3x3 to a behaviour matrix F 6x6"
+    F=np.zeros((6,6))
+    for i in range(3):
+        for j in range(3):
+            F[i,j] = G[i,i,j,j]
             
-            fig = plt.figure(figsize=plt.figaspect(1))  # Square figure
-            ax = fig.add_subplot(111, projection='3d')
+        F[i,5]=(G[i,i,0,1]+G[i,i,1,0])/2.
+        F[i,3]=(G[i,i,1,2]+G[i,i,2,1])/2. 
+        F[i,4]=(G[i,i,2,0]+G[i,i,0,2])/2. 
+        F[3,i]=(G[1,2,i,i]+G[2,1,i,i])/2. 
+        F[4,i]=(G[0,2,i,i]+G[2,0,i,i])/2.
+        F[5,i]=(G[0,1,i,i]+G[1,0,i,i])/2.
 
-            # Radii:
-            rx, ry, rz = np.array([b, a, a])
+    F[4,4]=(G[0,2,0,2]+G[2,0,0,2]+G[0,2,2,0]+G[2,0,2,0])/4. 
+    F[3,3]=(G[1,2,1,2]+G[2,1,1,2]+G[1,2,2,1]+G[2,1,2,1])/4.  
+    F[5,5]=(G[0,1,0,1]+G[1,0,0,1]+G[0,1,1,0]+G[1,0,1,0])/4.  
+    F[4,3]=(G[0,2,1,2]+G[2,0,1,2]+G[0,2,2,1]+G[2,0,2,1])/4.  
+    F[4,5]=(G[0,2,1,0]+G[2,0,1,0]+G[0,2,0,1]+G[2,0,0,1])/4.  
+    F[3,4]=(G[1,2,0,2]+G[2,1,0,2]+G[1,2,2,0]+G[2,1,2,0])/4.  
+    F[5,4]=(G[0,1,0,2]+G[1,0,0,2]+G[0,1,2,0]+G[1,0,2,0])/4.  
+    F[3,5]=(G[1,2,1,0]+G[2,1,1,0]+G[1,2,0,1]+G[2,1,0,1])/4.   
+    F[5,3]=(G[0,1,1,2]+G[1,0,1,2]+G[0,1,2,1]+G[1,0,2,1])/4. 
+    
+    return F
 
-            # Set of all spherical angles:
-            u = np.linspace(0, 2 * np.pi, 100)
-            v = np.linspace(0, np.pi, 100)
+def Comp66_to_3333(F) : 
+    ' Returns a matrix F 6x6 from a behaviour tensor G 3x3x3x3'.'
+    G = np.zeros((3,3,3,3))
+    for i in range(3) :
+        for j in range(3) :
+            G[i,i,j,j]=F[i,j]
+       
+        G[i,i,0,1]=F[i,5]
+        G[i,i,1,2]=F[i,3]
+        G[i,i,2,0]=F[i,4]
+        G[0,2,i,i]=F[4,i]
+        G[1,2,i,i]=F[3,i]
+        G[0,1,i,i]=F[5,i]
+        G[i,i,1,0]=F[i,5]
+        G[i,i,2,1]=F[i,3]
+        G[i,i,0,2]=F[i,4]
+        G[2,0,i,i]=F[4,i]
+        G[2,1,i,i]=F[3,i]
+        G[1,0,i,i]=F[5,i]
+        
+    G[0,1,0,1]=F[5,5]
+    G[0,1,0,2]=F[5,4]
+    G[0,1,1,0]=F[5,5]
+    G[0,1,1,2]=F[5,3] 
+    G[0,1,2,0]=F[5,4]
+    G[0,1,2,1]=F[5,3]
 
-            # Cartesian coordinates that correspond to the spherical angles:
-            # (this is the equation of an ellipsoid):
-            x = rx * np.outer(np.cos(u), np.sin(v))
-            y = ry * np.outer(np.sin(u), np.sin(v))
-            z = rz * np.outer(np.ones_like(u), np.cos(v))
+    G[0,2,0,1]=F[4,5]
+    G[0,2,0,2]=F[4,4]
+    G[0,2,1,0]=F[4,5]
+    G[0,2,1,2]=F[4,3] 
+    G[0,2,2,0]=F[4,4]
+    G[0,2,2,1]=F[4,3]
 
-            # Plot:
-            ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='b')
+    G[1,0,0,1]=F[5,5]
+    G[1,0,0,2]=F[5,4]
+    G[1,0,1,0]=F[5,5]
+    G[1,0,1,2]=F[5,3] 
+    G[1,0,2,0]=F[5,4]
+    G[1,0,2,1]=F[5,3]
 
-            # Adjustment of the axes, so that they all have the same span:
-            max_radius = 5
-            for axis in 'xyz':
-                getattr(ax, 'set_{}lim'.format(axis))((-max_radius, max_radius))
+    G[1,2,0,2]=F[3,4]
+    G[1,2,1,0]=F[3,5]
+    G[1,2,1,2]=F[3,3] 
+    G[1,2,2,0]=F[3,4]
+    G[1,2,2,1]=F[3,3]
 
-            # Cube 
-            points = 5*np.array([[-1, -1, -1],
-                                  [1, -1, -1 ],
-                                  [1, 1, -1],
-                                  [-1, 1, -1],
-                                  [-1, -1, 1],
-                                  [1, -1, 1 ],
-                                  [1, 1, 1],
-                                  [-1, 1, 1]])
+    G[2,0,0,1]=F[4,5]
+    G[2,0,0,2]=F[4,4]
+    G[2,0,1,0]=F[4,5]
+    G[2,0,1,2]=F[4,3] 
+    G[2,0,2,0]=F[4,4]
+    G[2,0,2,1]=F[4,3]
 
-            r = [-5,5]
-            X, Y = np.meshgrid(r, r)
-            one = 5*np.ones(4).reshape(2, 2)
-            ax.plot_wireframe(X,Y,one, alpha=0.5)
-            ax.plot_wireframe(X,Y,-one, alpha=0.5)
-            ax.plot_wireframe(X,-one,Y, alpha=0.5)
-            ax.plot_wireframe(X,one,Y, alpha=0.5)
-            ax.plot_wireframe(one,X,Y, alpha=0.5)
-            ax.plot_wireframe(-one,X,Y, alpha=0.5)
-            ax.scatter3D(points[:, 0], points[:, 1], points[:, 2])
-
-            plt.show()
+    G[2,1,0,1]=F[3,5]
+    G[2,1,0,2]=F[3,4]
+    G[2,1,1,0]=F[3,5]
+    G[2,1,1,2]=F[3,3] 
+    G[2,1,2,0]=F[3,4]
+    G[2,1,2,1]=F[3,3]
+ 
+    return G 
+def Matrice_rotation(psi,phi,theta) : 
+    'Create a 3x3 rotation matrix from  three euler angles taken such as orientation are evenly distributed'
+    Q = np.zeros((3,3))
+    
+    Q[0,0]=cos(psi)*cos(theta)-cos(phi)*sin(theta)*sin(psi)
+    Q[0,1]=sin(theta)*cos(psi)+cos(phi)*sin(psi)*cos(theta)
+    Q[0,2]=sin(phi)*sin(psi)
+    Q[1,0]=-sin(psi)*cos(theta)-sin(theta)*cos(phi)*cos(psi)
+    Q[1,1]=cos(psi)*cos(phi)*cos(theta)-sin(theta)*sin(psi)
+    Q[1,2]=cos(psi)*sin(phi)
+    Q[2,0]=sin(phi)*sin(theta)
+    Q[2,1]=-sin(phi)*cos(theta)
+    Q[2,2]=cos(phi)
+    
+    for i in range(3) : 
+        for j in range(3):
+            if (abs(Q[i,j]) < 10**-6 ) :
+                Q[i,j] = 0
             
-     ## CALCUL DES BORNES DE HASHIN-SHTRICKMAN ##########  
+    return Q
+
+def Rotation_matrices(n) : 
+    'Create a matrix nx3x3 composed of n rotation matrix with  three euler angles taken such as orientation are evenly distributed '
+    Q = np.zeros((n,3,3))
+    for i in range(n) : 
+        theta,phi,psi = Rot.random().as_euler('zxy', degrees=False)
+        Q[i,0,0]=cos(psi)*cos(theta)-cos(phi)*sin(theta)*sin(psi)
+        Q[i,0,1]=sin(theta)*cos(psi)+cos(phi)*sin(psi)*cos(theta)
+        Q[i,0,2]=sin(phi)*sin(psi)
+        Q[i,1,0]=-sin(psi)*cos(theta)-sin(theta)*cos(phi)*cos(psi)
+        Q[i,1,1]=cos(psi)*cos(phi)*cos(theta)-sin(theta)*sin(psi)
+        Q[i,1,2]=cos(psi)*sin(phi)
+        Q[i,2,0]=sin(phi)*sin(theta)
+        Q[i,2,1]=-sin(phi)*cos(theta)
+        Q[i,2,2]=cos(phi)
     
-    def khs(k1, g1, c1, k2, g2, c2):
-        numerator = c2*(k2-k1)
-        denominator = 1+3*c1*(k2-k1)/(4*g1+3*k1)
-        return k1+numerator/denominator
-    
-    def ghs(k1, g1, c1, k2, g2, c2):
-        numerator = c2*(g2-g1)
-        denominator = 1+6*c1*(g2-g1)*(k1+2*g1)/((3*k1+4*g1)*5*g1)
-        return g1+numerator/denominator
-        
-    def Hashin_bounds(self):
-        """
-        Donne les bornes de Hashin-Shtrikman pour 1 seule phase, isotrope
-        TODO : ajouter le cas des inclusion multiples
-        """
-        fm=self.f_matrix
-        f=1-fm
-        km,gm=self.matrix_behavior["K"],self.matrix_behavior["G"]
-        
-        for inclusion in self.dict_inclusions.keys():
-            kf,gf=inclusion.behavior["K"],inclusion.behavior["G"]
-        
-        ksup=max(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
-        kinf=min(Microstructure.khs(km,gm,fm,kf,gf,f),Microstructure.khs(kf,gf,f,km,gm,fm))
-        gsup=max(Microstructure.ghs(km,gm,fm,kf,gf,f),Microstructure.ghs(kf,gf,f,km,gm,fm))
-        ginf=min(Microstructure.ghs(km,gm,fm,kf,gf,f),Microstructure.ghs(kf,gf,f,km,gm,fm))
+        for j in range(3) : 
+            for k in range(3):
+                if (abs(Q[i,j,k]) < 10**-6 ) :
+                    Q[i,j,k] = 0
             
-        
-        return { 'Ginf' : ginf, 'Gsup' : gsup, 'Kinf' : kinf, 'Ksup' : ksup }
+    return Q
+
+def Rotation_operator(n_renforts) : 
+    'Create a n*3**8 matrix which contains the product necessary to execute Rotation_tensor'
+    B = np.zeros((n_renforts,3,3,3,3,3,3,3,3))
+    R = np.zeros((n_renforts,3,3))
+    for z in range(n_renforts) :
+        theta,phi,psi = Rot.random().as_euler('zxy', degrees=False)
+        R[z,0,0]=cos(psi)*cos(theta)-cos(phi)*sin(theta)*sin(psi)
+        R[z,0,1]=sin(theta)*cos(psi)+cos(phi)*sin(psi)*cos(theta)
+        R[z,0,2]=sin(phi)*sin(psi)
+        R[z,1,0]=-sin(psi)*cos(theta)-sin(theta)*cos(phi)*cos(psi)
+        R[z,1,1]=cos(psi)*cos(phi)*cos(theta)-sin(theta)*sin(psi)
+        R[z,1,2]=cos(psi)*sin(phi)
+        R[z,2,0]=sin(phi)*sin(theta)
+        R[z,2,1]=-sin(phi)*cos(theta)
+        R[z,2,2]=cos(phi)
+        for  i in range(3) : 
+            for  j in range(i+1):
+                for  k in range(3):
+                    for  l in range(k+1):
+                        for  m in range(3):
+                            for  n in range(3):
+                                for  ll in range(3):
+                                    for  kk in range(3):
+                                        B[z,i,j,k,l,m,n,ll,kk] = R[z,i,m]*R[z,j,n]*R[z,k,ll]*R[z,l,kk]
+    return B
 
 
-    
-class Mori_Tanaka:
-    """
-    TODO : vérifier si le modèle s'applique aussi à d'autres types d'inclusion, pour le moment seules des inclusions sphériques isotropes sont prises en compte pour tester le code.
-    Modèle de Mori-Tanaka. Contient :
-    - Une fonction qui vérifie si le modèle est appliquable à une microstructure.
-    - Une fonction de description du modèle (TODO : écrire une fonction qui renvoie une description du modèle sous forme de str et qui pourrait être appelée dans le main)
-    - Un fonction qui renvoie le comportement homogénéisé de la microstructure.
-    - Des fonctions qui calculent une caractéristique particulière (fraction volumique d'une inclusion, rayon d'une inclusion, comportement d'une inclusion, etc..) à partir d'un comportement homogénéisé cible (TODO)
-    """
-    
-    def __init__(self):
-        """
-        Définition des hypothèses du modèle.
-        """
-        self.type_inclusion = 0 # Sphères
-        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
-        self.name = "Mori-Tanaka"
-        
-    def __str__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return "Modèle de Mori-Tanaka"
-    
-    def __repr__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return str(self)
-    
-    def check_hypothesis(self, microstructure):
-        """
-        Vérifies si la microstructure vérifie les hypothèses du modèle, renvoie un boolées. 
-        TODO : Éventuellement généraliser cette fonction en l'incorporant dans une classe mère Model pour qu'elle s'applique à tous les modèles.
-        """
-        dict_inclusions = microstructure.dict_inclusions
-        inclusions = dict_inclusions.keys()
-        n_inclusions = len(inclusions)
-        # vérification du nombre d'inclusions
-        if n_inclusions != self.n_inclusions:
-            # Le modèle ne peut pas traiter de microstructures avec autant d'inclusions de natures différentes
-             #raise NameError("Wrong number of inclusion")
-             return False
-        for inclusion in dict_inclusions.keys():
-            # Vérification du type d'inclusion
-            if inclusion.type_inclusion != self.type_inclusion:
-                #raise NameError("Wrong type of inclusion or microstructure")
-                return False
-            # vérification du comportement des inclusions
-            behavior = inclusion.behavior
-            if set(behavior.keys()) != self.behavior_condition:
-                #print (list(behavior.keys()) , self.behavior_condition)
-                #raise NameError("Inclusion and microstructure behavior incompatible")
-                return False
-        # Vérification su comportement de la matrice
-        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
-            raise NameError("Inclusion and microstructure behavior incompatible")
-            return False
-        # À ce stade, toutes les conditions ont été vérifiées
-        return True
-    
-    def compute_h_behavior(self, microstructure):
-        """
-        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
-        TODO : compléter avec le calcul complet (K et G)
-        """
-        compatible = self.check_hypothesis(microstructure)
-        if not compatible:
-            raise NameError("The microstructure does not match the model hypothesis")
-        Cm = microstructure.matrix_behavior
-        dict_inclusions = microstructure.dict_inclusions
-        inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
-        Cf = inclusion.behavior
-        Gm, Km = Cm['G'], Cm['K']
-        Gf, Kf = Cf['G'], Cf['K']
-        f = dict_inclusions[inclusion]
-        
-        denominator = 5*Gm*(3*Km+4*Gm)+6*(1-f)*(Gf-Gm)*(Km+2*Gm)
-        numerator = 5*f*Gm*(Gf-Gm)*(3*Km+4*Gm)
-        Gh = Gm + numerator/denominator
-        
-        denominator = 3*Kf+4*Gm+3*(1-f)*(Kf-Km)
-        numerator = f*(Kf-Km)*(3*Km+4*Gm)
-        Kh = Km + numerator/denominator
-        return complete_behavior({'K' : Kh, 'G' : Gh}) 
-    
 
+def Rotation_tensor(S,Operator,z,B) : 
+    ' Returns the rotation of the tensor S through the 3 Euler angles taken randomly '
     
-    def check_bounds(self,microstructure):
-        Behavior_h=self.compute_h_behavior(microstructure)
-        print(Behavior_h)
-        Gh = Behavior_h['G']
-        Kh = Behavior_h['K']
-        Bounds=microstructure.Hashin_bounds()
-        Gsup = Bounds['Gsup']
-        Ginf = Bounds['Ginf']
-        Ksup = Bounds['Ksup']
-        Kinf = Bounds['Kinf']
-        if Gh < Ginf or Gh > Gsup : 
-            raise NameError("G out of Hashin-Shtrikman bounds")
-            return False
-        if Kh < Kinf or Kh > Ksup :
-            raise NameError("K out of Hashin-Shtrikman bounds")
-            return False
-        return True
-    
-class Eshelby_Approximation:
-    """
-    TODO : vérifier si le modèle s'applique aussi à d'autres types d'inclusion, pour le moment seules des inclusions sphériques isotropes sont prises en compte pour tester le code.
-    Modèle de Mori-Tanaka. Contient :
-    - Une fonction qui vérifie si le modèle est appliquable à une microstructure.
-    - Une fonction de description du modèle (TODO : écrire une fonction qui renvoie une description du modèle sous forme de str et qui pourrait être appelée dans le main)
-    - Un fonction qui renvoie le comportement homogénéisé de la microstructure.
-    - Des fonctions qui calculent une caractéristique particulière (fraction volumique d'une inclusion, rayon d'une inclusion, comportement d'une inclusion, etc..) à partir d'un comportement homogénéisé cible (TODO)
-    """
-    
-    def __init__(self):
-        """
-        Définition des hypothèses du modèle.
-        """
-        self.type_inclusion = 0
-        self.behavior_condition = set(['K', 'G','E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
-        self.name = "Eshelby"
-        
-    def __str__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return "Modèle d'Eshelby'"
-    
-    def __repr__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return str(self)
-    
-    def check_hypothesis(self, microstructure):
-        """
-        Vérifies si la microstructure vérifie les hypothèses du modèle, renvoie un boolées. 
-        TODO : Éventuellement généraliser cette fonction en l'incorporant dans une classe mère Model pour qu'elle s'applique à tous les modèles.
-        """
-        dict_inclusions = microstructure.dict_inclusions
-        inclusions = dict_inclusions.keys()
-        n_inclusions = len(inclusions)
-        # vérification du nombre d'inclusions
-        if n_inclusions != self.n_inclusions:
-            # Le modèle ne peut pas traiter de microstructures avec autant d'inclusions de natures différentes
-             #raise NameError("Wrong number of inclusion")
-             return False
-        for inclusion in dict_inclusions.keys():
-            # Vérification du type d'inclusion
-            if inclusion.type_inclusion != self.type_inclusion:
-                #raise NameError("Wrong type of inclusion or microstructure")
-                return False
-            # vérification du comportement des inclusions
-            behavior = inclusion.behavior
-
-            if set(behavior.keys()) != self.behavior_condition:
-                return False
-        # Vérification su comportement de la matrice
-        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
-            return False
-        # À ce stade, toutes les conditions ont été vérifiées
-        return True
-    
-    def compute_h_behavior(self, microstructure):
-        """
-        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
-        TODO : compléter avec le calcul complet (K et G)
-        """
-        compatible = self.check_hypothesis(microstructure)
-        if not compatible:
-            raise NameError("The microstructure does not match the model hypothesis")
-        Cm = microstructure.matrix_behavior
-        dict_inclusions = microstructure.dict_inclusions
-        inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
-        Cf = inclusion.behavior
-        Gm, Km = Cm['G'], Cm['K']
-        Gf, Kf = Cf['G'], Cf['K']
-        f = dict_inclusions[inclusion]
-        
-        denominator = 3*Km*(3*Gm+2*Gf) + 4*Gm*(2*Gm+3*Gf)
-        numerator = 5*f*Gm*(Gf-Gm)*(3*Km+4*Gm)
-        Gh = Gm + numerator/denominator
-
-        
-        denominator = 3*Kf+4*Gm
-        numerator = f*(Kf-Km)*(3*Km+4*Gm)
-        Kh = Km + numerator/denominator
-        
-        return complete_behavior({'K' : Kh, 'G' : Gh}) 
-    
-
-    
-    def check_bounds(self,microstructure):
-        Behavior_h=self.compute_h_behavior(microstructure)
-        print(Behavior_h)
-        Gh = Behavior_h['G']
-        Kh = Behavior_h['K']
-        Bounds=microstructure.Hashin_bounds()
-        Gsup = Bounds['Gsup']
-        Ginf = Bounds['Ginf']
-        Ksup = Bounds['Ksup']
-        Kinf = Bounds['Kinf']
-        if Gh < Ginf or Gh > Gsup : 
-            raise NameError("G out of Hashin-Shtrikman bounds")
-            return False
-        if Kh < Kinf or Kh > Ksup :
-            raise NameError("K out of Hashin-Shtrikman bounds")
-            return False
-        return True
-    
-
-class Differential_Scheme:
-    """
-    TODO : 
-    vérifier si le modèle s'applique aussi à d'autres types d'inclusion, pour le moment seules des inclusions sphériques isotropes sont prises en compte pour tester le code. 
-    Modèle différentiel. Contient :
-    - Une fonction qui vérifie si le modèle est appliquable à une microstructure.
-    - Une fonction de description du modèle (TODO : écrire une fonction qui renvoie une description du modèle sous forme de str et qui pourrait être appelée dans le main)
-    - Un fonction qui renvoie le comportement homogénéisé de la microstructure.
-    - Une fonction qui vérifie que le comportement homogénéisé se trouve dans les bornes de Hashin-Shtrickman.
-    """
-    
-    def __init__(self):
-        """
-        Définition des hypothèses du modèle.
-        """
-        self.type_inclusion = 0
-        self.behavior_condition = set(['K', 'G','E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
-        self.name = "Differential"
-        
-    def __str__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return "Modèle différentiel"
-    
-    def __repr__(self):
-        """
-        Description textuelle du modèle.
-        """
-        return str(self)
-    
-    def check_hypothesis(self, microstructure):
-        """
-        Vérifies si la microstructure vérifie les hypothèses du modèle, renvoie un boolées. 
-        TODO : Éventuellement généraliser cette fonction en l'incorporant dans une classe mère Model pour qu'elle s'applique à tous les modèles.
-        """
-        dict_inclusions = microstructure.dict_inclusions
-        inclusions = dict_inclusions.keys()
-        n_inclusions = len(inclusions)
-        # vérification du nombre d'inclusions
-        if n_inclusions != self.n_inclusions:
-            # Le modèle ne peut pas traiter de microstructures avec autant d'inclusions de natures différentes
-             #raise NameError("Wrong number of inclusion")
-             return False
-        for inclusion in dict_inclusions.keys():
-            # Vérification du type d'inclusion
-            if inclusion.type_inclusion != self.type_inclusion:
-                #raise NameError("Wrong type of inclusion or microstructure")
-                return False
-            # vérification du comportement des inclusions
-            behavior = inclusion.behavior
-            if set(behavior.keys()) != self.behavior_condition:
-                print (list(behavior.keys()) , self.behavior_condition)
-                #raise NameError("Inclusion and microstructure behavior incompatible")
-                return False
-        # Vérification su comportement de la matrice
-        if set(microstructure.matrix_behavior.keys()) != self.behavior_condition:
-            #raise NameError("Inclusion and microstructure behavior incompatible")
-            return False
-        # À ce stade, toutes les conditions ont été vérifiées
-        return True
-    
-    ## Fonctions utiles au calcul du comportement homogénéisé
-    
-    def deriv(Module,f):
-        K,G,Kf,Gf=Module[0],Module[1],Module[2],Module[3]
-        mu=(3*K-2*G)/(6*K+2*G)
-        
-        numerator=K-Kf
-        denominator=(1-f)*(1+(Kf-K)/(K+4*G/3))
-        dK=-numerator/denominator
-        
-        numerator=15*(1-mu)*(G-Gf)
-        denominator=(1-f)*(7-5*mu+2*(4-5*mu)*Gf/G)
-        dG=-numerator/denominator
-        
-        return np.array([dK,dG,0,0])
-    
-    def khs(k1, g1, c1, k2, g2, c2):
-        numerator = c2*(k2-k1)
-        denominator = 1+3*c1*(k2-k1)/(4*g1+3*k1)
-        return k1+numerator/denominator
-    
-    def ghs(k1, g1, c1, k2, g2, c2):
-        numerator = c2*(g2-g1)
-        denominator = 1+6*c1*(g2-g1)*(k1+2*g1)/((3*k1+4*g1)*5*g1)
-        return g1+numerator/denominator
-    
-    def compute_h_behavior(self, microstructure):
-        """
-        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
-        TODO : compléter avec le calcul complet (K et G)
-        """
-        compatible = self.check_hypothesis(microstructure)
-        if not compatible:
-            raise NameError("The microstructure does not match the model hypothesis")
-        Cm = microstructure.matrix_behavior
-        dict_inclusions = microstructure.dict_inclusions
-        inclusion = list(dict_inclusions.keys())[0] #Inclusion unique ici
-        Cf = inclusion.behavior
-        Gm, Km = Cm['G'], Cm['K']
-        Gf, Kf = Cf['G'], Cf['K']
-        f_finale = dict_inclusions[inclusion]
-        
-        npoints=100
-        f=np.linspace(0,f_finale,npoints)
-        Module_Initial=np.array([Km,Gm,Kf,Gf])
-        Module=odeint(Differential_Scheme.deriv,Module_Initial,f)
-        
-        Module_final=Module[npoints-1]
-        Kh,Gh,Kf,Gf=Module_final   
-        
-        ## ajout des bornes de Hashin
-        Khs=np.vectorize(Differential_Scheme.khs)
-        Ghs=np.vectorize(Differential_Scheme.ghs)
-        KINF=Khs(Km,Gm,1-f,Kf,Gf,f)
-        GINF=Ghs(Km,Gm,1-f,Kf,Gf,f)
-        KSUP=Khs(Kf,Gf,f,Km,Gm,1-f)
-        GSUP=Ghs(Kf,Gf,f,Km,Gm,1-f)
-        ## affichage des graphes pour K et G
-        
-        #plt.subplot(211)
-        #plt.plot(f,Module[:,0],label="Kh")        
-        #plt.plot(f,Module[:,2],label="Kf")
-        #plt.plot(f,KSUP,label="Ksup")
-        #plt.plot(f,KINF,label="Kinf")
-        #plt.title("Kh en fonction de f ")
-        #plt.legend()
-        #plt.xlabel("fraction volumique")
-        #plt.ylabel("Modules")
-        
-        #plt.subplot(212)
-        #plt.title("Gh en fonction de f ")
-        #plt.plot(f,Module[:,1],label="Gh")
-        #plt.plot(f,Module[:,3],label="Gf")
-        #plt.plot(f,GSUP,label="Gsup")
-        #plt.plot(f,GINF,label="Ginf")
-        #plt.legend()
-        #plt.xlabel("fraction volumique")
-        #plt.ylabel("Modules")
-        #plt.show()
-        return complete_behavior({'K' : Kh, 'G' : Gh}) 
-    
-
-    
-    def check_bounds(self,microstructure):
-        Behavior_h=self.compute_h_behavior(microstructure)
-        Gh = Behavior_h['G']
-        Kh = Behavior_h['K']
-        Bounds=microstructure.Hashin_bounds()
-        Gsup = Bounds['Gsup']
-        Ginf = Bounds['Ginf']
-        Ksup = Bounds['Ksup']
-        Kinf = Bounds['Kinf']
-        if Gh < Ginf or Gh > Gsup : 
-            raise NameError("G out of Hashin-Shtrikman bounds")
-            return False
-        if Kh < Kinf or Kh > Ksup :
-            raise NameError("K out of Hashin-Shtrikman bounds")
-            return False
-        return True
-
-################ Tests 
-
-#inclusion1 = Inclusion(0, {"K":30, "G":150}, 1)
-#inclusion2 = Inclusion(0, {"K":90, "G":150}, 1)
-#inclusion3 = Inclusion(0, {"K":150, "G":150}, 1)
-#inclusion4 = Inclusion(0, {"K":230, "G":150}, 1)
-#inclusion5 = Inclusion(0, {"K":300, "G":150}, 1)
-#Incl=[inclusion1,inclusion2,inclusion3,inclusion4,inclusion5]
-#for i in range(1):
-#    inclusion=inclusion5
-#    f=0.999
-#    microstructure = Microstructure({"K":30, "G":15}, {inclusion:f})
-#    #print("Hashin Bounds : ", microstructure.Hashin_bounds())
-#    model = Differential_Scheme()
-#    Ch=model.compute_h_behavior(microstructure)
-    #print("Comportement homogénéisé : ", model.compute_h_behavior(microstructure))
-    #print ("Dans les bornes de Hashin : ", model.check_bounds(microstructure))
-#    print(inclusion.behavior['K'],inclusion.behavior['G'],inclusion.radius,f,microstructure.matrix_behavior['K'],microstructure.matrix_behavior['G'],microstructure.Hashin_bounds()['Kinf'],microstructure.Hashin_bounds()['Ksup'],microstructure.Hashin_bounds()['Ginf'],microstructure.Hashin_bounds()['Gsup'],Ch['K'],1,Ch['G'])
+    for  i in range(3) : 
+        for  j in range(3):
+            for  k in range(3):
+                for  l in range(3):
+                    B[i,j,k,l] = 0
+                    
+    for  i in range(3) : 
+        for  j in range(i+1):
+            for  k in range(3):
+                for  l in range(k+1):
+                    for  m in range(3):
+                        for  n in range(3):
+                            for  ll in range(3):
+                                for  kk in range(3):
+                                    B[i,j,k,l] += Operator[z,i,j,k,l,m,n,ll,kk]*S[m,n,ll,kk]                                    
+  
+                    B[i,j,l,k] = B[i,j,k,l]
+                    B[j,i,k,l] = B[i,j,k,l]
+                    B[j,i,l,k] = B[i,j,k,l]
+    return B
 
 
-def bulk_to_young(K, G):
-    """
-    Transforme des modules K et G en modules E et nu.
-    """
-    E = 9*K*G/(3*K+G)
-    nu = (3*K-2*G)/(2*(3*K+G))
-    return E, nu
-   
-def young_to_bulk(E, nu):
-    """
-    Transforme des modules E et nu en modules K et G
-    """
-    K = E/(3*(1-2*nu))
-    G = E/(2*(1+nu))
-    return K, G
-    
-def complete_behavior(behavior):
-    """
-    Si le comportement en entrée est isotrope, le complète avec E et nu ou K et G. Sinon, le renvoie tel quel.
-    """
-    parameters = list(behavior.keys())
-    result = behavior
-    if parameters[:2] == ['K', 'G']:
-        K, G = behavior['K'], behavior['G']
-        E, nu = bulk_to_young(K, G)
-        result['E'], result['nu'] = E, nu
-    elif parameters[:2] == ['E', 'nu']:
-        E, nu = behavior['E'], behavior['nu']
-        K, G = young_to_bulk(E, nu)
-        result['K'], result['G'] = K, G
-    return result
-    
-list_models = [Mori_Tanaka, Eshelby_Approximation, Differential_Scheme] # Liste des modèles implémentés, à incrémenter à chaque ajout d'un nouveau modèle
-dict_behaviors = {'Isotropic (K & G)': ['K', 'G'], 'Isotropic (E & nu)': ['E', 'nu']}
-dict_types = {0: 'Spheres', 1: 'Oblate', 2: 'Prolate'} # Types de géométries admissibles et leur identifiant
+def Matrice_Souplesse_Isotrope(E,nu) :
+    'Returns the compliance matrix of an isotropic material'
+    S = np.zeros((6,6))
+    S[0,0]=1./E
+    S[1,1]=1./E
+    S[2,2]=1./E
 
-# Tests
-# inclusion1 = Inclusion(1, {"E":300, "nu":0.3})
-#print(inclusion1)
-#inclusion1 = Inclusion(0, {"K":300, "G":0.3})
-#print(inclusion1)
-#inclusion2 = Inclusion(0, {"K":300, "G":150})
-# microstructure = Microstructure({"E":10, "nu":0.1}, {inclusion1:0.6})
-#model = Mori_Tanaka()
-# print(microstructure)
-#print(model.check_hypothesis(microstructure))
-#print(model.compute_h_behavior(microstructure))
-# microstructure.change_fi(inclusion1, 0.3)
-# print(microstructure)
-#microstructure.draw()
+    S[3,3]=2.*(1+nu)/E
+    S[4,4]=2.*(1+nu)/E
+    S[5,5]=2.*(1+nu)/E
+
+    S[0,1]=-nu/E
+    S[0,2]=-nu/E
+    S[1,2]=-nu/E
+    S[1,0]=-nu/E
+    S[2,1]=-nu/E
+    S[2,0]=-nu/E
+    
+    return S
+    
+
+def Young_isotrope(S) : 
+    return 1/3 * (1/S[0,0]+1/S[1,1]+1/S[2,2])
+
+def nu_isotrope(S) : 
+    E = Young_isotrope(S)
+    return - 1/6 * E * (S[0,1] + S[0,2] + S[1,2] + S[1,0] + S[2,0] + S[2,1])
+
+def Young_isotropeC(C) : 
+    nu = nu_isotropeC(C)
+    return 2 * (1+nu) * 1/3 *(C[3,3]+C[4,4]+C[5,5])
+
+def nu_isotropeC(C) : 
+    x = 2 * (C[0,0]+C[1,1]+C[2,2]) / (C[0,1]+C[0,2]+C[1,2]+C[1,0]+C[2,0]+C[2,1])
+    return 1/(1+x)
+
+    
+def Young_anisotrope(S) : 
+    return 1/S[0,0],1/S[1,1],1/S[2,2]
+
+
+
+def clear_matrix3 (C,k) : 
+    n = C.shape[0]
+    for i in range(n) : 
+        for j in range(n) :
+            if C[i,j,k]<10**-8 : 
+                C[i,j,k] = 0
+                
+def clear_matrix2 (C) : 
+    n = C.shape[0]
+    for i in range(n) : 
+        for j in range(n) :
+            if C[i,j]<10**-5 : 
+                C[i,j] = 0
+                
+
+def Eshelby_tensor(Axis,Em,nu) : 
+    
+    Sm = Matrice_Souplesse_Isotrope(Em,nu)
+    Cm = inv(Sm)
+    Cm3 = Comp66_to_3333(Cm)
+    a0,a1,a2 = Axis
+    IJV = np.array([[0,0],[1,1],[2,2],[1,2],[0,2],[0,1]])
+    Nit = 40
+    Ntop = Nit
+    Mtop = Nit
+    dphi = pi/(Ntop-1)
+    dtheta = pi/(Ntop-1)
+    A = np.zeros((6,6))
+    B = np.zeros((6,6,Mtop))
+    G = np.zeros((6,6,Ntop))
+    E = np.zeros((6,6))
+    
+    # Integration de la fonction de green sur la demi ellipsoïde
+    for m in range(Mtop) : 
+        phi = m*dphi
+        for n in range(Ntop) : 
+            theta = n*dtheta
+            X = np.array([sin(theta)*cos(phi)/a0 , sin(theta)*sin(phi)/a1 , cos(theta)/a2])
+            CXX = np.zeros((3,3))
+            for i in range(3) :
+                for j in range(3) :
+                    for k in range(3) : 
+                        for l in range(3) :
+                            CXX[i,k] += Cm3[i,j,k,l]*X[j]*X[l]
+            CXX = inv(CXX)
+            for i in range(6) :
+                for j in range(6) :                     
+                    I1 = IJV[i,0]
+                    J1 = IJV[j,0]
+                    I2 = IJV[i,1]
+                    J2 = IJV[j,1]
+                    G[i,j,n] = 0.5 * sin(theta) * (CXX[I1,J1]*X[I2]*X[J2] + CXX[I2,J1]*X[I1]*X[J2] + CXX[I1,J2]*X[I2]*X[J1] + CXX[I2,J2]*X[I1]*X[J1])
+        
+        
+        B[:,:,m] = 0.5 * dtheta * (G[:,:,0]+G[:,:,Ntop-1])
+        for i in range(1,Ntop-1) : 
+            B[:,:,m] +=  dtheta * G[:,:,i]
+
+    A = 0.5*(B[:,:,0]+B[:,:,Ntop-1])* dphi/(4*pi)
+    for i in range(1,Ntop-1) : 
+         A += B[:,:,i]* dphi/(4*pi)  
+    
+    for i in range(6) : 
+        for j in range(6) : 
+            E[i,j]=A[i,0]*Cm[0,j]+A[i,1]*Cm[1,j]+A[i,2]*Cm[2,j] + 4* (A[i,3]*Cm[3,j]+A[i,4]*Cm[4,j]+A[i,5]*Cm[5,j]) 
+    
+    return E
+
+def Matrix_to_vecteur(A) : 
+    L = np.zeros(81)
+    for i in range(3) : 
+        for j in range(3) : 
+            for k in range(3):
+                for l in range(3) : 
+                    L[27*i + 9*j + 3*k + l] = A[i,j,k,l]
+    return L
+
+def Vecteur_to_matrix(L) : 
+    A = np.zeros((3,3,3,3))
+    for i in range(3) : 
+        for j in range(3) : 
+            for k in range(3):
+                for l in range(3) : 
+                    A[i,j,k,l] = L[27*i + 9*j + 3*k + l]
+    return A

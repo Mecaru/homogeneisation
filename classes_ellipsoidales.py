@@ -7,7 +7,7 @@ from scipy.spatial.transform import Rotation as Rot
 
 
 def Comp3333_to_66 (G) : 
-    "Passe d'un tenseur de comportement  G 3x3x3x3 a une matrice de comportement F 6x6"
+    "Returns from a behaviour tensor G 3x3x3 to a behaviour matrix F 6x6"
     F=np.zeros((6,6))
     for i in range(3):
         for j in range(3):
@@ -33,7 +33,7 @@ def Comp3333_to_66 (G) :
     return F
 
 def Comp66_to_3333(F) : 
-    'Passe d une matrice F 6x6 à un tenseur G 3x3x3x3'
+    ' Returns a matrix F 6x6 from a behaviour tensor G 3x3x3x3'.'
     G = np.zeros((3,3,3,3))
     for i in range(3) :
         for j in range(3) :
@@ -95,7 +95,7 @@ def Comp66_to_3333(F) :
  
     return G 
 def Matrice_rotation(psi,phi,theta) : 
-    'Crée une matrice de rotation 3x3 à partir des trois angles d euler'
+    'Create a 3x3 rotation matrix from  three euler angles taken such as orientation are evenly distributed'
     Q = np.zeros((3,3))
     
     Q[0,0]=cos(psi)*cos(theta)-cos(phi)*sin(theta)*sin(psi)
@@ -115,8 +115,8 @@ def Matrice_rotation(psi,phi,theta) :
             
     return Q
 
-def Matrices_rotation(n) : 
-    'Crée une matrice de rotation 3x3 à partir des trois angles d euler'
+def Rotation_matrices(n) : 
+    'Create a matrix nx3x3 composed of n rotation matrix with  three euler angles taken such as orientation are evenly distributed '
     Q = np.zeros((n,3,3))
     for i in range(n) : 
         theta,phi,psi = Rot.random().as_euler('zxy', degrees=False)
@@ -138,6 +138,7 @@ def Matrices_rotation(n) :
     return Q
 
 def Rotation_operator(n_renforts) : 
+    'Create a n*3**8 matrix which contains the product necessary to execute Rotation_tensor'
     B = np.zeros((n_renforts,3,3,3,3,3,3,3,3))
     R = np.zeros((n_renforts,3,3))
     for z in range(n_renforts) :
@@ -164,8 +165,8 @@ def Rotation_operator(n_renforts) :
 
 
 
-def Rotation_tenseur(S,Operator,z,B) : 
-    ' Renvoie la rotation du tenseur S par les 3 angles d Euler '
+def Rotation_tensor(S,Operator,z,B) : 
+    ' Returns the rotation of the tensor S through the 3 Euler angles taken randomly '
     
     for  i in range(3) : 
         for  j in range(3):
@@ -190,7 +191,7 @@ def Rotation_tenseur(S,Operator,z,B) :
 
 
 def Matrice_Souplesse_Isotrope(E,nu) :
-    'Renvoie la matrice de souplesse d un matériau isotrope'
+    'Returns the compliance matrix of an isotropic material'
     S = np.zeros((6,6))
     S[0,0]=1./E
     S[1,1]=1./E
@@ -230,43 +231,6 @@ def Young_anisotrope(S) :
     return 1/S[0,0],1/S[1,1],1/S[2,2]
 
 
-def Compute_with_permutation(a,I,II,nu) : 
-    S = np.zeros((3,3,3,3))
-    
-    for i in range(3) :
-        S[i,i,i,i] = 3*a[i]**2*II[i][i] / (8*pi*(1-nu)) + I[i] * (1-2*nu)/(8*pi*(1-nu))
-        j = (i+1)%3
-        S[i,i,j,j] = a[j]**2*II[i][j]/(8*pi*(1-nu)) -  I[i] * (1-2*nu)/(8*pi*(1-nu))
-        S[i,j,i,j] = (a[i]**2+a[j]**2)*II[i][j]/(16*pi*(1-nu)) + (1-2*nu)/(16*pi*(1-nu))*(I[i]+I[j])
-        k = (i+2)%3
-        S[i,i,k,k] = a[k]**2*II[i][k]/(8*pi*(1-nu)) -  I[i] * (1-2*nu)/(8*pi*(1-nu))
-        S[i,k,i,k] = (a[i]**2+a[k]**2)*II[i][k]/(16*pi*(1-nu)) + (1-2*nu)/(16*pi*(1-nu))*(I[i]+I[k])
-        
-    return S
-
-def Cyclic_permutation(S) : 
-    for i in range(3) : 
-        for j in range(3) :
-            for k in range(3) : 
-                for l in range(3) : 
-                    val = non_zeros(S,i,j,k,l)
-                    S[i,j,k,l] = val
-                    S[i,j,l,k] = val
-                    S[j,i,k,l] = val
-                    S[j,i,l,k] = val
-    return S
-                    
-
-def non_zeros(S,i,j,k,l) : 
-    if S[i,j,k,l] != 0 : 
-        return S[i,j,k,l]
-    if S[i,j,l,k] != 0 : 
-        return S[i,j,l,k]
-    if S[j,i,k,l] != 0 : 
-        return S[j,i,k,l]
-    if S[j,i,l,k] != 0 : 
-        return S[j,i,l,k]
-    return 0
 
 def clear_matrix3 (C,k) : 
     n = C.shape[0]
