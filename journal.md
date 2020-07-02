@@ -179,3 +179,6 @@
 - Ajout des infos inclusions et de la suppression d'inclusions en résolution inverse
 - Tests de validation différentiel en visco
 - Réorganisation des dossiers inputs et outputs
+
+### 02/07/2020
+- Traduction de la section Intro et Calcul de comportement homogénéisé en anglais
