@@ -452,6 +452,11 @@ class Model:
         """
         Vérifies si la microstructure vérifie les hypothèses du modèle, renvoie un booléen. 
         """
+        # Behavior condition
+        if self.behavior_condition=='isotropic'
+            behavior_condition = set(['K', 'G', 'E', 'nu'])
+        elif self.behavior_condition=='anisotropic':
+            behavior_condition = set(['C', 'S'])
         # Récupération des inclusions de la microstructure
         dict_inclusions = microstructure.dict_inclusions
         instances = list(dict_inclusions.keys())
@@ -478,7 +483,7 @@ class Model:
                 result = False
         # Vérification du comportement des inclusions et de la matrice
         for element in inclusions + [microstructure]:
-            if not set(element.behavior.keys()).issubset(self.behavior_condition):
+            if not set(element.behavior.keys()).issubset(behavior_condition):
                 result = False
         # Renvoi du résultat
         return result
@@ -551,7 +556,7 @@ class Mori_Tanaka(Model):
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = set(['K', 'G', 'E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = 'isotropic'  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes
         self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.name = "Mori-Tanaka"
@@ -590,7 +595,7 @@ class Differential_Scheme(Model):
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0
-        self.behavior_condition = set(['K', 'G', 'E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = 'isotropic' # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes  
         self.interphase = False
         self.name = "Differential"
@@ -659,7 +664,7 @@ class Autocoherent_Hill(Model):
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = 'isotropic'  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.name = "Self-consistent"
@@ -727,7 +732,7 @@ class Autocoherent_III(Model):
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = 'isotropic'  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.name = "Generalized self-consistent (3 phases)"
@@ -784,7 +789,7 @@ class Autocoherent_IV(Model):
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = 'isotropic'  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.interphase = True # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.R_inclusion = R_inclusion

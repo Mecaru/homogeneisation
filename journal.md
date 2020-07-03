@@ -20,8 +20,8 @@
     
 ### Programme de la semaine
 - Mori-Tanaka ellipsoïdes
-- Notice
 - Présentation
+- Notice générale
 
 ---
 ## Suivi
@@ -194,3 +194,4 @@
 - 'Generalised self-consistent' --> 'Generalized self-consistent (3 phases)' et suppression du modèle d'Eshelby
 - 'Hashin bounds Ksup' --> 'HS upper/lower bound K', idem pour G 
 - Changement du nom de la partie optimisation
+- Notice modèle
