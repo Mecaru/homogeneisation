@@ -23,13 +23,13 @@ from mpl_toolkits.mplot3d import Axes3D
 #%% Classes microstructure
 class Inclusion:
     """
-    Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
+    Contains info of the inclusion (type, behavior, shape).
     """
     
     def __init__(self, type_inclusion, behavior, aspect_ratio=[1.,1.], name=None, frequency=[], abscissa="frequency"):
         """
-        TODO: Prise en compte de l'orientation
-        type_inclusion: (int), 0 pour des inclusions sphériques, 1 pour des inclusions ellipsoïdales
+    
+        type_inclusion: (int), 0 for spherical inclusion, 1 for ellipsoids
         aspect_ratio: (tuple), tuple de deux flottants représentant les rapports des longueurs des axes 2 et 3 de l'ellipsoïde sur la longueur de l'axe 1
         behavior: (dict), contient les valeurs des paramètres de la matrice de comportement, voir dict_behavior dans la dernière section du script
         frequency: (list), liste des fréquences/températures associées aux paramètres visco-élastiques
