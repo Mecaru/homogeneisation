@@ -188,7 +188,7 @@ class Microstructure:
             # Inclusions simples
             else:
                 total_fi += fi
-        if total_fi >= 1:
+        if total_fi > 1:
             raise NameError("The total volumic fractions of the inclusions exceed 1")
         else :
             f_m = 1 - total_fi
@@ -575,7 +575,7 @@ class Mori_Tanaka(Model):
         numerator = 5*f*Gm*(Gf-Gm)*(3*Km+4*Gm)
         Gh = Gm + numerator/denominator
         # Calcul de Kh
-        denominator = 3*Kf+4*Gm+3*(1-f)*(Kf-Km)
+        denominator = 3*Km+4*Gm+3*(1-f)*(Kf-Km)
         numerator = f*(Kf-Km)*(3*Km+4*Gm)
         Kh = Km + numerator/denominator
         return {'K': Kh, 'G': Gh}    
