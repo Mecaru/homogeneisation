@@ -191,3 +191,4 @@
 - Remplacement de 'instance' (nom des inclusions+interphase) par 'microstructure'
 - Remplacement du 'nu' par la lettre grecque en comparaison de modèles
 - Remplacement de 'volumic fraction' par 'volume fraction'
+- 'Generalised self-consistent' --> 'Generalized self-consistent (3 phases)' et suppression du modèle d'Eshelby
