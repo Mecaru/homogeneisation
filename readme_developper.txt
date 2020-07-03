@@ -15,7 +15,7 @@ class YourModel(Model):
         # You may add other useful parameters here
         
     def compute_behavior(self, Cm, inclusion_behaviors):
-        # Cm is a 'behavior dictionnary' containing the matrix parameters (exemple: {'K': 200, 'G': 150} for an isotropic behavior, {'C': array} for an anisotropic behavior).
+        # Cm is a 'behavior dictionnary' containing the matrix parameters (exemple: {'K': 200, 'G': 150, 'E':..., 'nu':...} for an isotropic behavior, {'C': array, 'S': array} for an anisotropic behavior).
         # If the matrix is isotropic, you can recover its bulk, shear, Young and Poisson modulus with:
         Km, Gm, Em, num = Cm['K'], Cm['G'], Cm['E'], Cm['nu']
         # If the matrix is anisotropic, you can revover its compliance and stifness matrices (arrays) with:
