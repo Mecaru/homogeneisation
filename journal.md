@@ -192,3 +192,4 @@
 - Remplacement du 'nu' par la lettre grecque en comparaison de modèles
 - Remplacement de 'volumic fraction' par 'volume fraction'
 - 'Generalised self-consistent' --> 'Generalized self-consistent (3 phases)' et suppression du modèle d'Eshelby
+- 'Hashin bounds Ksup' --> 'HS upper/lower bound K', idem pour G 
