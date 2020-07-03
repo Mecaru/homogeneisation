@@ -189,3 +189,4 @@
 
 ### 03/07/2020
 - Remplacement de 'instance' (nom des inclusions+interphase) par 'microstructure'
+- Remplacement du 'nu' par la lettre grecque en comparaison de modèles
