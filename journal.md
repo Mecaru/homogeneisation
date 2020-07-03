@@ -186,3 +186,6 @@
 - Traduction de la section de calcul automatiques depuis des fichiers texte
 - Traduction de la section description de modèles
 - Traduction de la section résolution inverse
+
+### 03/07/2020
+- Remplacement de 'instance' (nom des inclusions+interphase) par 'microstructure'
