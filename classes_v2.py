@@ -452,6 +452,11 @@ class Model:
         """
         Vérifies si la microstructure vérifie les hypothèses du modèle, renvoie un booléen. 
         """
+        # Behavior condition
+        if self.behavior_condition=='isotropic'
+            behavior_condition = set(['K', 'G', 'E', 'nu'])
+        elif self.behavior_condition=='anisotropic':
+            behavior_condition = set(['C', 'S'])
         # Récupération des inclusions de la microstructure
         dict_inclusions = microstructure.dict_inclusions
         instances = list(dict_inclusions.keys())
@@ -478,7 +483,7 @@ class Model:
                 result = False
         # Vérification du comportement des inclusions et de la matrice
         for element in inclusions + [microstructure]:
-            if not set(element.behavior.keys()).issubset(self.behavior_condition):
+            if not set(element.behavior.keys()).issubset(behavior_condition):
                 result = False
         # Renvoi du résultat
         return result
@@ -551,7 +556,7 @@ class Mori_Tanaka(Model):
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = set(['K', 'G', 'E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = 'isotropic'  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes
         self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.name = "Mori-Tanaka"
@@ -580,43 +585,6 @@ class Mori_Tanaka(Model):
         Kh = Km + numerator/denominator
         return {'K': Kh, 'G': Gh}    
 
-class Eshelby_Approximation(Model):
-    """
-    Modèle d'Eshelby.
-    """
-    
-    def __init__(self):
-        """
-        Définition des hypothèses du modèle.
-        """
-        self.type_inclusion = 0
-        self.behavior_condition = set(['K', 'G', 'E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
-        self.interphase = False
-        self.name = "Eshelby"
-   
-    def compute_behavior(self, Cm, inclusion_behaviors):
-        """
-        Calcule le comportement homogénéisé équivalent de la microstructure.
-        """
-        # Récupération du comportement de la matrice
-        Km = Cm['K']
-        Gm = Cm['G']
-        # Récupération du comportement de l'inclusion
-        Cf, f, ratio = inclusion_behaviors[0]
-        Kf = Cf['K']
-        Gf = Cf['G']
-        # Calcul de Gh
-        denominator = 3*Km*(3*Gm+2*Gf) + 4*Gm*(2*Gm+3*Gf)
-        numerator = 5*f*Gm*(Gf-Gm)*(3*Km+4*Gm)
-        Gh = Gm + numerator/denominator
-        # Calcul de Kh
-        denominator = 3*Kf+4*Gm
-        numerator = f*(Kf-Km)*(3*Km+4*Gm)
-        Kh = Km + numerator/denominator
-        # Renvoi du résultat
-        return {'K': Kh, 'G': Gh}
-
 class Differential_Scheme(Model):
     """
     Modèle différentiel.
@@ -627,7 +595,7 @@ class Differential_Scheme(Model):
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0
-        self.behavior_condition = set(['K', 'G', 'E', 'nu']) # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = 'isotropic' # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes  
         self.interphase = False
         self.name = "Differential"
@@ -696,7 +664,7 @@ class Autocoherent_Hill(Model):
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = 'isotropic'  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.name = "Self-consistent"
@@ -764,10 +732,10 @@ class Autocoherent_III(Model):
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = 'isotropic'  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
-        self.name = "Generalised self-consistent"
+        self.name = "Generalized self-consistent (3 phases)"
   
     def compute_behavior(self, Cm, inclusion_behaviors):
         """
@@ -821,7 +789,7 @@ class Autocoherent_IV(Model):
         Définition des hypothèses du modèle.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = set(['K', 'G','E', 'nu'])  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = 'isotropic'  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
         self.interphase = True # Vrai si le modèle fonctionne sur des inclusions avec interphase
         self.R_inclusion = R_inclusion
@@ -1010,7 +978,7 @@ def complete_behavior(behavior):
 
 
 #%% Définition des modèles, comportements et géométries d'inclusions 
-list_models = [Mori_Tanaka, Eshelby_Approximation, Differential_Scheme, Autocoherent_Hill, Autocoherent_III, Autocoherent_IV]
+list_models = [Mori_Tanaka, Differential_Scheme, Autocoherent_Hill, Autocoherent_III, Autocoherent_IV]
 dict_behaviors_visco = {'Elastic isotropic (K & G)': ['K', 'G'],
                         'Elastic isotropic (E & nu)': ['E', 'nu'],
                         'Visco-elastic 1': ['K', "G'", "G''"],

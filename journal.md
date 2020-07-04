@@ -20,8 +20,8 @@
     
 ### Programme de la semaine
 - Mori-Tanaka ellipsoïdes
-- Notice
 - Présentation
+- Notice générale
 
 ---
 ## Suivi
@@ -179,3 +179,19 @@
 - Ajout des infos inclusions et de la suppression d'inclusions en résolution inverse
 - Tests de validation différentiel en visco
 - Réorganisation des dossiers inputs et outputs
+
+### 02/07/2020
+- Traduction de la section Intro et Calcul de comportement homogénéisé en anglais
+- Traduction de la comparaison de modèles en anglais
+- Traduction de la section de calcul automatiques depuis des fichiers texte
+- Traduction de la section description de modèles
+- Traduction de la section résolution inverse
+
+### 03/07/2020
+- Remplacement de 'instance' (nom des inclusions+interphase) par 'microstructure'
+- Remplacement du 'nu' par la lettre grecque en comparaison de modèles
+- Remplacement de 'volumic fraction' par 'volume fraction'
+- 'Generalised self-consistent' --> 'Generalized self-consistent (3 phases)' et suppression du modèle d'Eshelby
+- 'Hashin bounds Ksup' --> 'HS upper/lower bound K', idem pour G 
+- Changement du nom de la partie optimisation
+- Notice modèle
