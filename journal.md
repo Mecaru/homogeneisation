@@ -19,9 +19,13 @@
 - Résolution inverse en visco et avec une interphase
     
 ### Programme de la semaine
-- Mori-Tanaka ellipsoïdes
-- Présentation
+- FloatSliders --> FloatText
+- Pb E et nu
+- graph interaction
+- Modèles ellipsoïdes
+- Description de modèles maj + bug affichage et barres bleus
 - Notice générale
+
 
 ---
 ## Suivi
@@ -195,3 +199,6 @@
 - 'Hashin bounds Ksup' --> 'HS upper/lower bound K', idem pour G 
 - Changement du nom de la partie optimisation
 - Notice modèle
+
+### 07/07/2020
+- Remplacement des FloatSliders par des champs textuels - main 
