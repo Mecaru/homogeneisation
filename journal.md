@@ -202,3 +202,4 @@
 
 ### 07/07/2020
 - Remplacement des FloatSliders par des champs textuels - main 
+- Remplacement des FloatSliders par des champs textuels - visco et correction d'une erreur permettant des raports d'aspect de 0
