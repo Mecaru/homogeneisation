@@ -427,6 +427,39 @@ class Microstructure:
             
         
         return { 'Ginf': ginf, 'Gsup': gsup, 'Kinf': kinf, 'Ksup': ksup }
+    
+    def Voigt_Bound(self) : 
+        
+        fm = self.f_matrix
+        f = 1-fm
+        km,gm = self.behavior["K"], self.behavior["G"]
+        
+        for inclusion in self.dict_inclusions.keys():
+            try:
+                kf,gf=inclusion.behavior["K"],inclusion.behavior["G"]
+            except:
+                return None
+        K_voigt = Km*fm + Kf*f
+        G_voigt = Gm*gm + Gf*f
+        
+        return complete_behavior({'G':G_voigt , 'K':K_voigt})
+    
+    def Reuss_Bound(self) : 
+        
+        fm = self.f_matrix
+        f = 1-fm
+        km,gm = self.behavior["K"], self.behavior["G"]
+        
+        for inclusion in self.dict_inclusions.keys():
+            try:
+                kf,gf=inclusion.behavior["K"],inclusion.behavior["G"]
+            except:
+                return None
+        K_reuss = 1/(fm/Km + f/Kf )
+        G_reuss = 1/(fm/Gm + f/Gf )
+        
+        return complete_behavior({'G':G_reuss , 'K':K_reuss})
+        
 
 #%% Classes model
 class Model:
