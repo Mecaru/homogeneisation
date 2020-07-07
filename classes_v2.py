@@ -453,7 +453,7 @@ class Model:
         Vérifies si la microstructure vérifie les hypothèses du modèle, renvoie un booléen. 
         """
         # Behavior condition
-        if self.behavior_condition=='isotropic'
+        if self.behavior_condition=='isotropic':
             behavior_condition = set(['K', 'G', 'E', 'nu'])
         elif self.behavior_condition=='anisotropic':
             behavior_condition = set(['C', 'S'])
@@ -580,7 +580,7 @@ class Mori_Tanaka(Model):
         numerator = 5*f*Gm*(Gf-Gm)*(3*Km+4*Gm)
         Gh = Gm + numerator/denominator
         # Calcul de Kh
-        denominator = 3*Kf+4*Gm+3*(1-f)*(Kf-Km)
+        denominator = 3*Km+4*Gm+3*(1-f)*(Kf-Km)
         numerator = f*(Kf-Km)*(3*Km+4*Gm)
         Kh = Km + numerator/denominator
         return {'K': Kh, 'G': Gh}    
