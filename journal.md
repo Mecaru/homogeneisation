@@ -19,9 +19,6 @@
 - Résolution inverse en visco et avec une interphase
     
 ### Programme de la semaine
-- FloatSliders --> FloatText
-- Pb E et nu
-- graph interaction
 - Modèles ellipsoïdes
 - Description de modèles maj + bug affichage et barres bleus
 - Notice générale
@@ -203,3 +200,4 @@
 ### 07/07/2020
 - Remplacement des FloatSliders par des champs textuels - main 
 - Remplacement des FloatSliders par des champs textuels - visco et correction d'une erreur permettant des raports d'aspect de 0
+- Installation de ipywidgets en local
