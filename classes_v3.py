@@ -2,7 +2,7 @@
 """
 Homogeneisation - classes.py
 
-Définition des classes utilisées. Version 2 de classes, avec une définition simplifiée des modèles et prise en compte de la visco-élasticité.
+Définition des classes utilisées. Version 3 de classes, avec inclusion de modèles ellipsïdes et anisotropes.
 
 Les items à modifier/améliorer/ajouter sont marqués en commentaires précédés de la mention "TODO".
 
@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from math import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from ellipsoids_functions import *
 
 #%% Microstructure classes
 class Inclusion:
@@ -425,10 +426,11 @@ class Model:
          Checks if the microstructure verifies the hypothesis of the model, returns a boolean.
         """
         # Recovery of microstructure inclusions
-        if self.behavior_condition=='isotropic':
-            behavior_condition = set(['K', 'G', 'E', 'nu'])
-        elif self.behavior_condition=='anisotropic':
-            behavior_condition = set(['C', 'S'])
+        behavior_condition = []
+        if 'isotropic' in self.behavior_condition:
+            behavior_condition.append(set(['K', 'G', 'E', 'nu']))
+        if 'anisotropic' in self.behavior_condition:
+            behavior_condition.append(set(['C', 'S']))
         # Récupération des inclusions de la microstructure
         dict_inclusions = microstructure.dict_inclusions
         instances = list(dict_inclusions.keys())
@@ -436,7 +438,7 @@ class Model:
         # Initialisation of result
         result = True
         # Checking the number of inclusions
-        if n_instances != self.n_inclusions:
+        if n_instances > self.n_inclusions:
              result = False
         # Checking the presence or absence of an interphase
         for instance in instances:
@@ -451,11 +453,15 @@ class Model:
                 inclusions.append(instance)
         # Checking the type of inclusion
         for inclusion in inclusions:
-            if inclusion.type_inclusion != self.type_inclusion:
+            if inclusion.type_inclusion > self.type_inclusion:
                 result = False
-        # Checking the behaviour of inclusions and matrix
+        # Checking the behavior of inclusions and matrix
         for element in inclusions + [microstructure]:
-            if not set(element.behavior.keys()).issubset(behavior_condition):
+            behav = False
+            for behavior_condition0 in behavior_condition:
+                if set(element.behavior.keys()).issubset(behavior_condition0):
+                    behav = True
+            if not behav:    
                 result = False
         # Returns result
         return result
@@ -480,15 +486,37 @@ class Model:
                 inclusions[instance.interphase] = f[1]
             else:
                 inclusions[instance] = f
-        # Cas élastique
+        # Elastic case
         if not list(frequency):
             Cm = microstructure.behavior
             # Retrieving inclusion behavior in the format : [(inclusion.behavior, f, aspect_ratio)]
             inclusion_behaviors = [(inclusion.behavior, f, inclusion.aspect_ratio) for (inclusion,f) in inclusions.items()]
-            # Calculation of homogenized behaviour
-            h_behavior0 = self.compute_behavior(Cm, inclusion_behaviors)
-            h_behavior = {parameter: value.real for (parameter,value) in h_behavior0.items()} # Conversion of possibly complex values into real values
-            h_behavior = complete_behavior(h_behavior)
+            ### Calculation of homogenized behaviour
+            # Single isotropic sphere inclusion
+            if len(inclusion_behaviors)==1 and inclusion_behaviors[0][2]==[1,1] and 'K' in inclusion_behaviors[0][0].keys() and 'K' in Cm.keys():
+                h_behavior0 = self.compute_behavior(Cm, inclusion_behaviors)
+                h_behavior = {parameter: value.real for (parameter,value) in h_behavior0.items()} # Conversion of possibly complex values into real values
+                h_behavior = complete_behavior(h_behavior)
+            else:
+                # Isotropic behaviors to matrices - inclusions
+                inclusion_behaviors1 = []
+                for inclusion in inclusion_behaviors:
+                    behavior = inclusion[0]
+                    if 'C' in behavior:
+                        inclusion_behaviors1.append(inclusion)
+                    else:
+                        E, nu = behavior['E'], behavior['nu']
+                        S = Matrice_Souplesse_Isotrope(E, nu)
+                        C = inv(S)
+                        f, ratio = inclusion[1], inclusion[2]
+                        inclusion_behaviors1.append(({'C': C, 'S': S}, f, ratio))
+                # Isotropic behaviors to matrices - matrix
+                if 'K' in Cm.keys():
+                    E, nu = Cm['E'], Cm['nu']
+                    S = Matrice_Souplesse_Isotrope(E, nu)
+                    C = inv(S)
+                    Cm = {'C': C, 'S': S}
+                h_behavior = self.compute_behavior_ellipsoids(Cm, inclusion_behaviors1)
         # Visco-elastic case
         else:
             # Initialisation of result
@@ -527,9 +555,9 @@ class Mori_Tanaka(Model):
         """
         Definition of model hypotheses.
         """
-        self.type_inclusion = 0 # Spheres
-        self.behavior_condition = 'isotropic'  # The model is applied to microstructures whose inclusions and matrix are isotropic.
-        self.n_inclusions = 1 # Number of different types of inclusions
+        self.type_inclusion = 1 # Ellipsoids
+        self.behavior_condition = ['anisotropic', 'isotropic']  # The model is applied to microstructures whose inclusions and matrix are isotropic.
+        self.n_inclusions = 5 # Number of different types of inclusions
         self.interphase = False # True if the model works on inclusions with interphase
         self.name = "Mori-Tanaka"
     
@@ -556,6 +584,60 @@ class Mori_Tanaka(Model):
         numerator = f*(Kf-Km)*(3*Km+4*Gm)
         Kh = Km + numerator/denominator
         return {'K': Kh, 'G': Gh}    
+    
+    def compute_behavior_ellipsoids(self, Cm, inclusion_behaviors):
+    
+        """
+        Calcule le comportement élastique homogène équivalent. 
+        Renvoie un dict de comportement.
+        Cm: (dict), dictionnaire du comportement de la matrice
+        inclusion_behaviors(list), format [(Cf, f, aspect_ratio)] avec Cf les dictionnaires de comportement des inclusions et aspect_ratio un tuple contenant les deux valeurs de rapports de forme
+        Ch = (Somme(fi*Ci*Ai)+(1-f)*Cm) * (Somme(fi*Ai)+(1-f)*I)**-1  avec Ai = (I+Esh*Sm*(Ci-Cm))**-1
+        """
+        
+        n_renforts = 100     # paramètre non physique qui permet de forcer l'isotropie
+        
+        Sm = Cm['S']
+        Cm = Cm['C']
+        Id = np.identity(6) 
+        
+        # Calcul de fm
+        fm = 1
+        for i in range(len(inclusion_behaviors)) :   
+            fm -= inclusion_behaviors[i][1]
+
+        # Création des matrices de rotations
+        Rotation_Operator = Rotation_operator(n_renforts)
+        B = np.zeros((3,3,3,3))
+        
+        T = fm*Id
+        
+        W = np.zeros((6,6)) # Matrice f*C1:A1 des contributions de l'inclusion dans Ch
+        
+        for i in range(len(inclusion_behaviors)) :   
+            Sfi = inclusion_behaviors[i][0]['S']
+            Cfi = inclusion_behaviors[i][0]['C']
+            fi = inclusion_behaviors[i][1]
+            Ai = (1,inclusion_behaviors[i][2][0],inclusion_behaviors[i][2][0])
+        
+            fi_1_renfort = fi/n_renforts 
+            Esh = Eshelby_tensor(Ai,Cm,Sm)
+            Aeshi = inv(Id + np.matmul(Esh,np.matmul(Sm,Cfi-Cm)))
+            T += fi*Aeshi
+            V6i = np.matmul(Cfi,Aeshi)
+            clear_matrix2(V6i)
+            # Ajout des contribution de chaque renfort en fonction de son orientation
+            
+            V3 = Comp66_to_3333(V6i)
+            for j in range(n_renforts) :                 
+                V3R = Rotation_tensor(V3,Rotation_Operator,j,B)
+                V = Comp3333_to_66(V3R)
+                W += fi_1_renfort * V
+
+        Ch = np.matmul( (W + fm*Cm) , inv(T))
+        Sh = inv(Ch)
+        
+        return {'C' : Ch, 'S' : Sh}
 
 
 
@@ -569,7 +651,7 @@ class Differential_Scheme(Model):
         Definition of model hypotheses.
         """
         self.type_inclusion = 0
-        self.behavior_condition = 'isotropic' 
+        self.behavior_condition = ['isotropic'] 
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes  
         self.interphase = False
         self.name = "Differential"
@@ -637,7 +719,7 @@ class Autocoherent_Hill(Model):
         Definition of model hypotheses.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = 'isotropic'  
+        self.behavior_condition = ['isotropic']  
         self.n_inclusions = 1 
         self.interphase = False 
         self.name = "Self-consistent"
@@ -703,7 +785,7 @@ class Autocoherent_III(Model):
         Definition of model hypotheses.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = 'isotropic'  
+        self.behavior_condition = ['isotropic']  
         self.n_inclusions = 1 
         self.interphase = False 
         self.name = "Generalised self-consistent"
@@ -760,7 +842,7 @@ class Autocoherent_IV(Model):
        Definition of model hypotheses.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = 'isotropic'  
+        self.behavior_condition = ['isotropic']  
         self.n_inclusions = 1 
         self.interphase = True 
         self.R_inclusion = R_inclusion
@@ -961,8 +1043,16 @@ dict_behaviors = {'Isotropic (K & G)': ['K', 'G'],
                   'Anisotropic (Stifness)': ['C']}
 dict_types = {0: 'Spheres', 1: 'Ellipsoids'}
     
-    
-    
-    
+# # #%% Tests
+# C = np.eye(6,6)
+# behavior = {'K':200, 'G':200}
+# # behavior = {'C':C}
+# inclusion = Inclusion(0, behavior, aspect_ratio=[1.,1.])
+# inclusion1 = Inclusion(0, behavior, aspect_ratio=[1.,1.])
+# microstructure = Microstructure(behavior, {inclusion:0.3})
+# model = Mori_Tanaka()
+# print(model.check_hypothesis(microstructure))
+# print(model.compute_h_behavior(microstructure))
+
     
     
