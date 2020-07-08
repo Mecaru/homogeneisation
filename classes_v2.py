@@ -11,7 +11,7 @@ Authors : Karim AÏT AMMAR, Enguerrand LUCAS
 11/06/2020
 """
 
-#%% Importation des modules
+#%% Useful packages
 import numpy as np
 from scipy import *
 from scipy.integrate import odeint
@@ -20,21 +20,21 @@ from math import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-#%% Classes microstructure
+#%% Microstructure classes
 class Inclusion:
     """
-    Contient les informations propres à une inclusion (type, géométrie, comportement, etc...).
+    Contains info of the inclusion (type, behavior, shape).
     """
     
     def __init__(self, type_inclusion, behavior, aspect_ratio=[1.,1.], name=None, frequency=[], abscissa="frequency"):
         """
-        TODO: Prise en compte de l'orientation
-        type_inclusion: (int), 0 pour des inclusions sphériques, 1 pour des inclusions ellipsoïdales
-        aspect_ratio: (tuple), tuple de deux flottants représentant les rapports des longueurs des axes 2 et 3 de l'ellipsoïde sur la longueur de l'axe 1
-        behavior: (dict), contient les valeurs des paramètres de la matrice de comportement, voir dict_behavior dans la dernière section du script
-        frequency: (list), liste des fréquences/températures associées aux paramètres visco-élastiques
-        abscissa: (str), vaut "frequency" ou "temperature", indique la nature physique des valeurs de la liste frequency
-        inc_and_int: ([InclusionAndInterphase,int]), None par défaut, renvoie vers l'instance de classe InclusionAndInterphase à laquelle appartient l'inclusion, si celle-ci existe, et un entier, 0 pour l'inclusion, 1 pour l'interphase
+    
+        type_inclusion: (int), 0 for spherical inclusion, 1 for ellipsoids
+        aspect_ratio: (tuple), tuple of two floats representing the length ratio of axis 2 and 3 of the ellipsoid to the length of the axis 1 
+        behavior: (dict), contains values of matrix behavior : E,K,G and nu in the isotropic case, compliance and stiffness matrix in the anisotropic
+        frequency: (list), list of frequencies/temperatures associated with visco-elastic parameters
+        abscissa: (str),  "frequency" or "temperature", it indicates the physical nature of the values in the frequency list
+        inc_and_int: ([InclusionAndInterphase,int]), None by default, linked to the InclusionAndInterphase class instance to which the inclusion belongs if it exists, and an integer, 0 for the inclusion, 1 for the interphase
         """
         self.type_inclusion = type_inclusion
         self.aspect_ratio = aspect_ratio
@@ -46,8 +46,8 @@ class Inclusion:
     
     def type_to_str(self):
         """
-        Transforme un entier "type_inclusion" en la chaîne de caractères correspondante (exemple : 0 --> "spheres") 
-        TODO : synchroniser cette fonction avec le main à l'aide d'un dictionnaire pour faciliter l'ajout de types d'inclusions
+        Transforms an integer "type_inclusion" into the corresponding string (example: 0 --> "spheres") 
+        TODO: synchronize this function with the main using a dictionary to make it easier to add inclusion types
         """
         type_inclusion = self.type_inclusion
         try:
@@ -59,7 +59,7 @@ class Inclusion:
     
     def __str__(self):
         """
-        Présentation de l'instance.
+        Presentation of the instance.
         """
         str_type_inclusion = self.type_to_str()
         string = "{}, {}".format(self.name, str_type_inclusion)
@@ -77,7 +77,7 @@ class Inclusion:
 
     def change_parameter(self, parameter, new_value):
         """
-        Change the value of the parameter if it exists. Updates the behavior with the function "complete_behavior".
+        Changes the value of the parameter if it exists. Updates the behavior with the function "complete_behavior".
         """
         try:
             self.behavior[parameter] = new_value
@@ -87,7 +87,7 @@ class Inclusion:
 
     def graph_parameter(self):
         """
-        Trace le graphe d'évolution des paramètres visco-élastiques si ceux-ci existent.
+       Plots the graph of the evolution of the visco-elastic parameters, if they exist
         """
         if self.frequency == []:
             None # L'inclusion ne contient pas de paramètres visco-élastiques
@@ -112,14 +112,14 @@ class Inclusion:
 
 class InclusionAndInterphase:
     """
-    Instance représentant une inclusion et l'interphase associée.
+    Instance representing an inclusion and the associated interphase.
     """            
     
     def __init__(self, inclusion, interphase, name=None):
         """
-        inclusion: Instance de classe inclusion
-        interphase: Instance de classe inclusion, représente l'interphase associée à l'inclusion
-        L'interphase et l'inclusion doivent être du même type (sphères ou ellipsoïdes avec les mêmes rapports d'aspect)
+        Inclusion: Inclusion Class Instance
+        interphase: Inclusion class instance, represents the interphase associated with inclusion.
+        The interphase and the inclusion must be of the same type (spheres or ellipsoids with the same aspect ratios).
         """
         assert inclusion.aspect_ratio==interphase.aspect_ratio
         self.inclusion = inclusion
@@ -141,16 +141,16 @@ class InclusionAndInterphase:
 
 class Microstructure:
     """
-    Contient des informations sur la microstructure (comportement de la matrice, inclusions, etc..).
-    Contient une fonction qui renvoie les bornes de Hashin-Shtrickman pour la microstructure en question 
-    TODO: Généraliser ces bornes à n phases (et pas 2 comme c'est le cas ici)
+    Contains information on the microstructure (matrix behaviour and inclusions)
+    Contains a function that returns the Hashin-Shtrickman bounds for the microstructure in question. 
+    TODO: Generalize these terminals to n phases (and not 2 as is the case here).
     """
     
     def __init__(self, behavior, dict_inclusions=dict(), frequency=[], abscissa="frequency"):
         """
-        list_inclusions: (dict), sous la forme {inclusion: f_i} avec inclusion une instance de classe Inclusion et f_i la fraction volumique de ce type d'inclusion. inclusion peut aussi être une instance de classe InclusionAndInterphase, dans ce cas, f_i est un tuple de flottants
-        behavior: (dict), contient les valeurs des paramètres de la matrice de comportement, pour le moment
-        frequency: liste des fréquences associées aux paramètres visco-élastiques
+       list_inclusions: (dictionnary such as {inclusion: f_i} with inclusion as an instance of class Inclusion and f_i as the volume fraction of this type of inclusion. inclusion can also be an instance of class InclusionAndInterphase, in this case, f_i is a tuple of floaters
+        behavior: (dict), contains the values of the parameters of the behavior matrix
+        frequency: list of frequencies associated with viscoelastic parameters
         """
         self.dict_inclusions = dict_inclusions
         self.behavior = complete_behavior(behavior)
@@ -167,7 +167,7 @@ class Microstructure:
             else:
                 string += ", {}: list".format(parameter)
         dict_inclusions = self.dict_inclusions
-        # Présentation de toutes les inclusions contenues dans la microstructure
+        # Display of all inclusion in microstructure
         for inclusion in dict_inclusions.keys():
             fi = dict_inclusions[inclusion]
             string += "\nf_i = {}, ".format(fi) + str(inclusion)
@@ -175,17 +175,17 @@ class Microstructure:
 
     def compute_fm(self):
         """
-        1/ Vérifie si la liste des inclusions donnée est cohérente (i.e : la somme des fractions volumiques des inclusions est inférieure à 1). Si ce n'est pas le cas, génère une erreur.
-        2/ Si aucune erreur n'est générée, calcule la fraction volumique de matrice.
+        1/ Checks if the given list of inclusions is consistent (i.e. the sum of  volume fractions inclusions is less  than 1). Else, generates an error.
+        2/ If no error is generated, calculates the matrix volume fraction.
         """
-        total_fi = 0 # Total des fractions volumiques d'inclusions
+        total_fi = 0 # Total of volumic fractions of inclusions
         dict_inclusions = self.dict_inclusions
         for inclusion in dict_inclusions.keys():
             fi = dict_inclusions[inclusion]
-            # Cas des inclusions + interphase
+            # Case  inclusions + interphase
             if type(fi)==list:
                 total_fi += fi[0] + fi[1]
-            # Inclusions simples
+            # Case simple inclusions
             else:
                 total_fi += fi
         if total_fi >= 1:
@@ -196,8 +196,8 @@ class Microstructure:
 
     def change_fi(self, inclusion, new_f):
         """
-        Met à jour la fraction volumique de l'inclusion ou l'ajoute au dictionnaire si celle-ci n'y était pas présente.
-        Met à jour la fraction volumique de matrice.
+        Updates the volume fraction of the inclusion or adds it to the dictionary if it was not present.
+        Updates the volume fraction of the matrix.
         """
         self.dict_inclusions[inclusion] = new_f
         self.f_matrix = self.compute_fm()
@@ -214,10 +214,10 @@ class Microstructure:
 
     def graph_parameter(self):
         """
-        Trace le graphe d'évolution des paramètres visco-élastiques si ceux-ci existent.
+        Plots the graph of the evolution of the visco-elastic parameters if they exist.
         """
         if self.frequency == []:
-            None # L'inclusion ne contient pas de paramètres visco-élastiques
+            None # Inclusion is not visco-elastic
         else:
             plt.figure()
             # for parameter, values in self.behavior.items():
@@ -237,70 +237,9 @@ class Microstructure:
                 plt.xlim(min(self.frequency), max(self.frequency))
             plt.show()
 
-    # def draw(self):
-    #     """
-    #     Méthode qui permet de dessiner la microstructure.
-    #     """
-    #     inclusions = list(self.dict_inclusions.keys())
-    #     if len(inclusions) == 1:
-    #         inclusion = inclusions[0]
-    #         fi = self.dict_inclusions[inclusion]
-    #         # Calcul du rayon pour un VER de taille 10X10X10
-    #         c1, c2 = inclusion.aspect_ratio
-    #         a = (1000*fi/(4/3*pi*c1*c2))**(1/3)
-    #         b = c1*a
-    #         c = c2*a
-            
-    #         fig = plt.figure(figsize=plt.figaspect(1))  # Square figure
-    #         ax = fig.add_subplot(111, projection='3d')
-
-    #         # Radii:
-    #         rx, ry, rz = np.array([a, b, c])
-
-    #         # Set of all spherical angles:
-    #         u = np.linspace(0, 2 * np.pi, 100)
-    #         v = np.linspace(0, np.pi, 100)
-
-    #         # Cartesian coordinates that correspond to the spherical angles:
-    #         # (this is the equation of an ellipsoid):
-    #         x = rx * np.outer(np.cos(u), np.sin(v))
-    #         y = ry * np.outer(np.sin(u), np.sin(v))
-    #         z = rz * np.outer(np.ones_like(u), np.cos(v))
-
-    #         # Plot:
-    #         ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='b')
-
-    #         # Adjustment of the axes, so that they all have the same span:
-    #         max_radius = 5
-    #         for axis in 'xyz':
-    #             getattr(ax, 'set_{}lim'.format(axis))((-max_radius, max_radius))
-
-    #         # Cube 
-    #         points = 5*np.array([[-1, -1, -1],
-    #                               [1, -1, -1 ],
-    #                               [1, 1, -1],
-    #                               [-1, 1, -1],
-    #                               [-1, -1, 1],
-    #                               [1, -1, 1 ],
-    #                               [1, 1, 1],
-    #                               [-1, 1, 1]])
-
-    #         r = [-5,5]
-    #         X, Y = np.meshgrid(r, r)
-    #         one = 5*np.ones(4).reshape(2, 2)
-    #         ax.plot_wireframe(X,Y,one, alpha=0.5)
-    #         ax.plot_wireframe(X,Y,-one, alpha=0.5)
-    #         ax.plot_wireframe(X,-one,Y, alpha=0.5)
-    #         ax.plot_wireframe(X,one,Y, alpha=0.5)
-    #         ax.plot_wireframe(one,X,Y, alpha=0.5)
-    #         ax.plot_wireframe(-one,X,Y, alpha=0.5)
-    #         ax.scatter3D(points[:, 0], points[:, 1], points[:, 2])
-
-    #         plt.show()
-            
     def draw(self):
         """
-        Méthode qui permet de dessiner la microstructure.
+         Method for drawing the microstructure.
         """
         inclusions = list(self.dict_inclusions.keys())
         n_fig = len(inclusions)
@@ -320,9 +259,9 @@ class Microstructure:
                 f_inc = fi[0]
                 f_int = fi[1]
                 
-            ### Tracé inclusion
+            ### Draw inclusion
             ax = fig.add_subplot(1, n_fig, index+1, projection='3d')
-            # Calcul du rayon pour un VER de taille 10X10X10
+            # compute radius for a 10X10X10-sized VER
             c1, c2 = inclusion.aspect_ratio
             a = (1000*f_inc/(4/3*pi*c1*c2))**(1/3)
             b = c1*a
@@ -344,7 +283,7 @@ class Microstructure:
             # Plot:
             ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='b')
             
-            ### Tracé interphase
+            ### Draw interphase
             if interphase!=None:
                 a = (1000*(f_inc+f_int)/(4/3*pi*c1*c2))**(1/3)
                 b = c1*a
@@ -366,7 +305,7 @@ class Microstructure:
                 # Plot:
                 ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='r')
             
-            ### Tracé bords VER
+            ### Draw edges of VER
             # Adjustment of the axes, so that they all have the same span:
             max_radius = 5
             for axis in 'xyz':
@@ -394,7 +333,7 @@ class Microstructure:
             ax.scatter3D(points[:, 0], points[:, 1], points[:, 2])
         plt.show()
             
-     ## CALCUL DES BORNES DE HASHIN-SHTRICKMAN ##########  
+     ## Compute HASHIN-SHTRICKMAN bounds ##########  
     
     def khs(k1, g1, c1, k2, g2, c2):
         numerator = c2*(k2-k1)
@@ -408,8 +347,8 @@ class Microstructure:
         
     def Hashin_bounds(self):
         """
-        Donne les bornes de Hashin-Shtrikman pour 1 seule phase, isotrope
-        TODO : ajouter le cas des inclusion multiples
+        Gives the Hashin-Shtrikman bounds for single phase, isotropic...
+        TODO: add the case of multiple inclusions
         """
         fm = self.f_matrix
         f = 1-fm
@@ -428,31 +367,64 @@ class Microstructure:
             
         
         return { 'Ginf': ginf, 'Gsup': gsup, 'Kinf': kinf, 'Ksup': ksup }
+    
+    def Voigt_Bound(self) : 
+        
+        fm = self.f_matrix
+        f = 1-fm
+        km,gm = self.behavior["K"], self.behavior["G"]
+        
+        for inclusion in self.dict_inclusions.keys():
+            try:
+                kf,gf=inclusion.behavior["K"],inclusion.behavior["G"]
+            except:
+                return None
+        K_voigt = Km*fm + Kf*f
+        G_voigt = Gm*gm + Gf*f
+        
+        return complete_behavior({'G':G_voigt , 'K':K_voigt})
+    
+    def Reuss_Bound(self) : 
+        
+        fm = self.f_matrix
+        f = 1-fm
+        km,gm = self.behavior["K"], self.behavior["G"]
+        
+        for inclusion in self.dict_inclusions.keys():
+            try:
+                kf,gf=inclusion.behavior["K"],inclusion.behavior["G"]
+            except:
+                return None
+        K_reuss = 1/(fm/Km + f/Kf )
+        G_reuss = 1/(fm/Gm + f/Gf )
+        
+        return complete_behavior({'G':G_reuss , 'K':K_reuss})
+        
 
-#%% Classes modèles
+#%% Models classes
 class Model:
     """
-    Classe générique mère de toutes les classes modèles. 
-    Contient la méthode permettant de vérifier les hypothèses du modèle sur une microstructure, ainsi que la méthode appelée lors du calcul du comportement homogénéisé.
+   Generic parent class of all model classes. 
+    Contains the method for verifying the model's assumptions about a microstructure, as well as the method called when calculating the homogenized behavior.
     """
     
     def __str__(self):
         """
-        Description textuelle du modèle.
+         Textual description of the model.
         """
         return self.name + " model"
     
     def __repr__(self):
         """
-        Description textuelle du modèle.
+         Textual description of the model.
         """
         return str(self)
     
     def check_hypothesis(self, microstructure):
         """
-        Vérifies si la microstructure vérifie les hypothèses du modèle, renvoie un booléen. 
+         Checks if the microstructure verifies the hypothesis of the model, returns a boolean.
         """
-        # Behavior condition
+        # Recovery of microstructure inclusions
         if self.behavior_condition=='isotropic':
             behavior_condition = set(['K', 'G', 'E', 'nu'])
         elif self.behavior_condition=='anisotropic':
@@ -461,46 +433,46 @@ class Model:
         dict_inclusions = microstructure.dict_inclusions
         instances = list(dict_inclusions.keys())
         n_instances = len(instances)
-        # Initialisation du résultat
+        # Initialisation of result
         result = True
-        # Vérification du nombre d'inclusions
+        # Checking the number of inclusions
         if n_instances != self.n_inclusions:
              result = False
-        # Vérification de la présence ou de l'absence d'interphase
+        # Checking the presence or absence of an interphase
         for instance in instances:
             if (type(instance)==InclusionAndInterphase)!=self.interphase:
                 result = False
-        # Construction d'une liste d'inclusions sans interphase
+        # Creation of a list of inclusions without interphase
         inclusions = []
         for instance in instances:
             if type(instance)==InclusionAndInterphase:
                 inclusions += [instance.inclusion, instance.interphase]
             else:
                 inclusions.append(instance)
-        # Vérification du type d'inclusion
+        # Checking the type of inclusion
         for inclusion in inclusions:
             if inclusion.type_inclusion != self.type_inclusion:
                 result = False
-        # Vérification du comportement des inclusions et de la matrice
+        # Checking the behaviour of inclusions and matrix
         for element in inclusions + [microstructure]:
             if not set(element.behavior.keys()).issubset(behavior_condition):
                 result = False
-        # Renvoi du résultat
+        # Returns result
         return result
     
     def compute_h_behavior(self, microstructure):
         """
-        Calcule le comportement homogénéisé de la microstructure avec le modèle.
-        Vérifies que le modèle s'applique bien sur la microstructure entrée.
-        Si les éléments en entrée ne sont pas visco-élastiques (i.e: si la liste frequency de la microstructure est vide), renvoie un dictionnaire de paramètres réels sous la forme {"parameter": value(float)}. Dans le cas isotrope, calcule aussi les paramètres manquants (mu et E, ou K et G).
-        Sinon, réalise une boucle sur les valeurs de fréquence, puis renvoie un dictionnaire de comportement complet (avec valeurs des paramètres manquants) de la forme {"parameter": [values(complex)]}.
+        Computes the homogenized behavior of the microstructure with the chosen model.
+        Verifies that the model fits the input microstructure.
+        If the input elements are not viscoelastic (i.e. if the frequency list of the microstructure is empty), returns a dictionary of real parameters in the form {"parameter": value(float)}. In the isotropic case, also calculates the missing parameters (mu and E, or K and G).
+        Otherwise, performs a loop on the frequency values, then returns a complete behaviour dictionary (with missing parameter values) of the form {"parameter": values(complex)]}.
         """
-        # Vérification des conditions d'application
+        # Verification of the conditions of application
         compatible = self.check_hypothesis(microstructure)
         if not compatible:
             raise NameError("The microstructure does not match the model hypothesis")
         frequency = microstructure.frequency
-        # Création du dictionnaire contenant uniquement des instances de classe Inclusion
+        # Creation of the dictionary containing only Inclusions
         inclusions = {}
         for instance, f in microstructure.dict_inclusions.items():
             if type(instance)==InclusionAndInterphase:
@@ -511,116 +483,118 @@ class Model:
         # Cas élastique
         if not list(frequency):
             Cm = microstructure.behavior
-            # Récupération du comportement des inclusions, format [(inclusion.behavior, f, aspect_ratio)]
+            # Retrieving inclusion behavior in the format : [(inclusion.behavior, f, aspect_ratio)]
             inclusion_behaviors = [(inclusion.behavior, f, inclusion.aspect_ratio) for (inclusion,f) in inclusions.items()]
-            # Calcul du comportement homogénéisé
+            # Calculation of homogenized behaviour
             h_behavior = self.compute_behavior(Cm, inclusion_behaviors)
-            h_behavior = {parameter: value.real for (parameter,value) in h_behavior.items()} # Conversion des valeurs éventuellement complexes en valeurs réelles
+            h_behavior = {parameter: value.real for (parameter,value) in h_behavior.items()} # Conversion of possibly complex values into real values
             h_behavior = complete_behavior(h_behavior)
-        # Cas visco-élastique
+        # Visco-elastic case
         else:
-            # Initialisation du résultat
+            # Initialisation of result
             h_behavior = {}
-            # Calcul du comportement en fonction de la fréquence
+            # Calculation of the behavior as a function of frequency
             for i in range(len(frequency)):
-                # Récupération du comportement de la matrice à la fréquence i
+                # Recovery of matrix behavior at frequency i
                 Cm = {parameter: values[i] for (parameter,values) in microstructure.behavior.items()}
-                # Récupération des comportements des inclusions à la fréquence i
+                # Retrieving inclusion behavior at frequency i
                 inclusion_behaviors = [] # Initialisation
                 for inclusion, f in inclusions.items():
                     inclusion_behavior = {parameter: values[i] for (parameter, values) in inclusion.behavior.items()}
                     inclusion_behaviors.append((inclusion_behavior, f, inclusion.aspect_ratio))
-                # Calcul du comportement homogénéisé à la fréquence i
+                # Calculation of the homogenized behavior at frequency i
                 h_behavior_i = self.compute_behavior(Cm, inclusion_behaviors)
                 h_behavior_i = complete_behavior(h_behavior_i)
-                # Ajout à la liste des comportements
+                # Adds it to the list of behaviors
                 for parameter, value in h_behavior_i.items():
                     try:
                         h_behavior[parameter].append(value)
                     except KeyError:
-                        # Création de l'entrée associée au paramètre
+                        # Creation of the input associated with the parameter
                         h_behavior[parameter] = [value]
-        # Renvoi du résultat
+        # Return of the result
         return h_behavior
                     
         
 class Mori_Tanaka(Model):
     """
-    Modèle de Mori-Tanaka. Contient:
-    - Une fonction de description du modèle
-    - Un fonction qui renvoie le comportement homogénéisé de la microstructure.
+   Mori-Tanaka model. Contains:
+    - A description function of the model
+    - A function that returns the homogenized behavior of the microstructure.
     """
     
     def __init__(self):
         """
-        Définition des hypothèses du modèle.
+        Definition of model hypotheses.
         """
-        self.type_inclusion = 0 # Sphères
-        self.behavior_condition = 'isotropic'  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes
-        self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
+        self.type_inclusion = 0 # Spheres
+        self.behavior_condition = 'isotropic'  # The model is applied to microstructures whose inclusions and matrix are isotropic.
+        self.n_inclusions = 1 # Number of different types of inclusions
+        self.interphase = False # True if the model works on inclusions with interphase
         self.name = "Mori-Tanaka"
     
     def compute_behavior(self, Cm, inclusion_behaviors):
         """
-        Calcule le comportement élastique homogène équivalent. 
-        Renvoie un dict de comportement.
-        Cm: (dict), dictionnaire du comportement de la matrice
-        inclusion_behaviors(list), format [(Cf, f, aspect_ratio)] avec Cf les dictionnaires de comportement des inclusions et aspect_ratio un tuple contenant les deux valeurs de rapports de forme
+        Calculates the equivalent homogeneous elastic behaviour. 
+        Returns a dictionnary of behavior.
+        Cm: (dict), dictionary of matrix behavior
+        inclusion_behaviors(list), format [(Cf, f, aspect_ratio)] with Cf the dictionaries of inclusion behaviour, and aspect_ratio (a tuple with the two shape ratio values)
         """
-        # Récupération du comportement de la matrice
+        # Retrieving matrix behavior
         Km = Cm['K']
         Gm = Cm['G']
-        # Récupération du comportement de l'inclusion
+        # Retrieving inclusion behavior
         Cf, f, ratio = inclusion_behaviors[0]
         Kf = Cf['K']
         Gf = Cf['G']
-        # Calcul de Gh
+        # Computation of Gh
         denominator = 5*Gm*(3*Km+4*Gm)+6*(1-f)*(Gf-Gm)*(Km+2*Gm)
         numerator = 5*f*Gm*(Gf-Gm)*(3*Km+4*Gm)
         Gh = Gm + numerator/denominator
-        # Calcul de Kh
+        # Computation of Kh
         denominator = 3*Km+4*Gm+3*(1-f)*(Kf-Km)
         numerator = f*(Kf-Km)*(3*Km+4*Gm)
         Kh = Km + numerator/denominator
         return {'K': Kh, 'G': Gh}    
 
+
+
 class Differential_Scheme(Model):
     """
-    Modèle différentiel.
+    Differential scheme
     """
     
     def __init__(self):
         """
-        Définition des hypothèses du modèle.
+        Definition of model hypotheses.
         """
         self.type_inclusion = 0
-        self.behavior_condition = 'isotropic' # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
+        self.behavior_condition = 'isotropic' 
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes  
         self.interphase = False
         self.name = "Differential"
     
-    ## Fonctions utiles au calcul du comportement homogénéisé
+    ## Useful functions to compute homogenized behavior
     
     def deriv(module, f):
         """
-        Fonction qui calcule les dérivée des paramètres K et G par rapport à la fraction volumique d'inclusion. Conçue pour être appelée par la fonction odeint lors de l'intégration numérique.
-        module: list, contient les valeurs réelles et imaginaires des paramètres K, G courants ainsi que Kf et Gf propres à l'inclusion.
-        f: float, fraction volumique d'inclusion courante.
+        Function that computes the derivatives of the parameters K and G in relation to the volume fraction of inclusion. Designed to be called by the odeint function during numerical integration.
+        module: list, contains the real and imaginary values of the current K, G parameters as well as Kf and Gf specific to the inclusion.
+        f: float, current inclusion volume fraction.
         """
         K1, K2, G1, G2, Kf1, Kf2, Gf1, Gf2 = module
-        # Construction des paramètres complexes
+        # Creation of complex parameters
         K = K1 + K2*1j
         G = G1 + G2*1j
         Kf = Kf1 + Kf2*1j
         Gf = Gf1 + Gf2*1j
         nu = (3*K-2*G)/(6*K+2*G)
-        # Calcul de dK
+        # Computation of dK
         numerator = K-Kf
         denominator = (1-f)*(1+(Kf-K)/(K+4*G/3))
         dK = -numerator/denominator
         dK1, dK2 = dK.real, dK.imag
-        # Calcul de dG
+        # Computation of dG
         numerator = 15*(1-nu)*(G-Gf)
         denominator = (1-f)*(7-5*nu+2*(4-5*nu)*Gf/G)
         dG = -numerator/denominator
@@ -630,54 +604,53 @@ class Differential_Scheme(Model):
     
     def compute_behavior(self, Cm, inclusion_behaviors):
         """
-        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés.
+        Computes the equivalent homogenized behavior of the microstructure. Returns a dict with the calculated parameters.
         """
-        # Récupération du comportement de la matrice
-        # Récupération du comportement de la matrice
+        # Retrieving matrix behavior
         Km = Cm['K']
         Gm = Cm['G']
-        # Récupération du comportement de l'inclusion
+        # Retrieving inclusion behavior
         Cf, f_finale, ratio = inclusion_behaviors[0]
         Kf = Cf['K']
         Gf = Cf['G']
-        # Initialisation des paramètres d'intégration
-        npoints = 100 # Nombre de points d'intégration
-        f = np.linspace(0, f_finale, npoints) # Liste des fractions volumiques diluées
+        # Initialisation of integration parameters
+        npoints = 100 # Number of integration points
+        f = np.linspace(0, f_finale, npoints) # List of dilute volumic fractions
         initial_module = []
         for parameter in [Km, Gm, Kf, Gf]:
             initial_module += [parameter.real, parameter.imag]
         initial_module = np.array(initial_module)
-        # Intégration de l'équation différentielle
+        # Integration of differential equation
         module = odeint(Differential_Scheme.deriv, initial_module, f)
-        # Récupération du résultat final
+        # Retrieving final result
         final_module = module[-1]
         Kh1, Kh2, Gh1, Gh2 = final_module[:4]  
-        # Renvoi du résultat
+        # Return result
         return {'K': Kh1+1j*Kh2, 'G': Gh1+1j*Gh2}
 
 class Autocoherent_Hill(Model):
     """
-    Modèle autocohérent de Hill.
+    Self-Consistent Model
     """
     def __init__(self):
         """
-        Définition des hypothèses du modèle.
+        Definition of model hypotheses.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = 'isotropic'  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
-        self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
+        self.behavior_condition = 'isotropic'  
+        self.n_inclusions = 1 
+        self.interphase = False 
         self.name = "Self-consistent"
-        self.precision = 10**-12
-        self.n_point_fixe = 100
+        self.precision = 10**-12 ## Criterium of convergence of fixed-point algorithm
+        self.n_point_fixe = 100 # Number of steps to reach final volumic fraction
     
     def Reccurence(Module,f):
         K,G,Km,Gm,Kf,Gf = Module
-        ##Calcul de Kn+1
+        ## Compute Kn+1
         numerator = f*(Kf-Km)*(3*K+4*G)
         denominator = 3*Kf+4*G
         nextK = Km + numerator/denominator
-        ##Calcul de Gn+1
+        ## Compute Gn+1
         numerator = 5*f*G*(Gf-Gm)*(3*K+4*G)
         denominator = 3*K*(3*G+2*Gf)+4*G*(3*Gf+2*G)        
         nextG = Gm + numerator/denominator
@@ -685,10 +658,10 @@ class Autocoherent_Hill(Model):
     
   
     def compute_behavior(self, Cm, inclusion_behaviors):
-        # Récupération du comportement de la matrice
+        # Retrieving matrix behavior
         Km = Cm['K']
         Gm = Cm['G']
-        # Récupération du comportement de l'inclusion
+        # Retrieving inclusion behavior
         Cf, f, ratio = inclusion_behaviors[0]
         Kf = Cf['K']
         Gf = Cf['G']
@@ -698,56 +671,54 @@ class Autocoherent_Hill(Model):
         Ginit = Gm
         for i in range(len(F)) : 
             fi = F[i]
-            # Initialisation du point fixe
+            # Initialisation of fixed-point algorithm
             K = Kinit
             G = Ginit
-            # Algorithme du point fixe
+            # Fixed-point algorithm
             precision = self.precision
             nextK,nextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)
             while abs((nextK-K)/K) > precision or abs((nextG-G)/G) > precision : 
                 K,G=nextK,nextG
                 nextK,NextG=Autocoherent_Hill.Reccurence([K,G,Km,Gm,Kf,Gf],fi)  
-            # Mise à jour de l'initialisation
+            # Updating initialisation
             Kinit = nextK
             Ginit = nextG
         return {'K': nextK, 'G': nextG}
     
 class Autocoherent_III(Model):
     """
-    Hypothèses : 
-    -isotrope
-    -renforts sphériques (TO DO : PASSER AUX ELLIPSOÏDES)
-    -déformations elastiques ??? (A vérifier)
-    TODO : 
-    -déterminer précisément les toutes les microstructures admises
-    Modèle des autocohérent. Contient :
-    - Une fonction qui vérifie si le modèle est appliquable à une microstructure.
-    - Une fonction de description du modèle (TODO : écrire une fonction qui renvoie une description du modèle sous forme de str et qui pourrait être appelée dans le main)
-    - Un fonction qui renvoie le comportement homogénéisé de la microstructure.
-    - Des fonctions qui calculent une caractéristique particulière (fraction volumique d'une inclusion, rayon d'une inclusion, comportement d'une inclusion, etc..) à partir d'un comportement homogénéisé cible (TODO)
+    Hypotheses : 
+    -isotropic
+    -spherical reinforcements 
+    -elastic deformations 
+    Self-coherent model. Contains :
+    - A function that checks if the model is applicable to a given structure.
+    - A model description function (TODO: write a function that returns a description of the model as a str and that could be called in the main)
+    - A function that returns the homogenized behavior of the microstructure.
+    - Functions that compute a particular characteristic (volume fraction of an inclusion, radius of an inclusion, behavior of an inclusion, etc.) from a target homogenized behavior (TODO).
     """
     
     def __init__(self):
         """
-        Définition des hypothèses du modèle.
+        Definition of model hypotheses.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = 'isotropic'  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
-        self.interphase = False # Vrai si le modèle fonctionne sur des inclusions avec interphase
-        self.name = "Generalized self-consistent (3 phases)"
+        self.behavior_condition = 'isotropic'  
+        self.n_inclusions = 1 
+        self.interphase = False 
+        self.name = "Generalised self-consistent"
   
     def compute_behavior(self, Cm, inclusion_behaviors):
         """
-        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés.
+        Computes the equivalent homogenized behavior of the microstructure. Returns a dict with the calculated parameters.
         """
-        # Récupération du comportement de la matrice
+        # Retrieving matrix behavior
         Km, Gm, num = Cm['K'], Cm['G'], Cm['nu']
-        # Récupération du comportement de l'inclusion
+        # Retrieving inclusion behavior
         Cf, f, ratio = inclusion_behaviors[0]
         Kf, Gf, nuf = Cf['K'], Cf['G'], Cf['nu']
 
-        ##Quelques constantes utiles au calcul de G         
+        ## Useful constant to compute G         
         dm=(Gf/Gm)-1 
         eta1=dm*(49-50*nuf*num)+35*(dm+1)*(nuf-2*num)+35*(2*nuf-num) 
         eta2=5*nuf*(dm-7)+7*(dm+5) 
@@ -757,7 +728,7 @@ class Autocoherent_III(Model):
         B=-4*dm*(1-5*num)*eta1*f**(10/3)+4*(63*dm*eta2+2*eta1*eta3)*f**(7/3)-504*dm*eta2*f**(5/3)+150*dm*(3-num)*num*eta2*f+3*(15*num-7)*eta2*eta3 
         D=4*dm*(5*num-7)*eta1*f**(10/3)-2*f**(7/3)*(63*dm*eta2+2*eta1*eta3)+252*dm*eta2*f**(5/3)+25*dm*(num**2-7)*eta2*f-(7+5*num)*eta2*eta3 
         
-        ## Calcul de G
+        ## Computation of G
         delta=B*B-4*D*A 
         sol1=(-B - delta**(1/2))/(2*A) 
         sol2=(-B + delta**(1/2))/(2*A) 
@@ -772,35 +743,35 @@ class Autocoherent_III(Model):
 
 class Autocoherent_IV(Model):
     """
-    Hypothèses : 
-    -isotrope
-    -renforts sphériques (TO DO : PASSER AUX ELLIPSOÏDES)
-    -déformations elastiques ??? (A vérifier)
-    TODO : 
-    -déterminer précisément les toutes les microstructures admises
-    Modèle des autocohérent. Contient :
-    - Une fonction qui vérifie si le modèle est appliquable à une microstructure.
-    - Une fonction de description du modèle (TODO : écrire une fonction qui renvoie une description du modèle sous forme de str et qui pourrait être appelée dans le main)
-    - Un fonction qui renvoie le comportement homogénéisé de la microstructure.
-    - Des fonctions qui calculent une caractéristique particulière (fraction volumique d'une inclusion, rayon d'une inclusion, comportement d'une inclusion, etc..) à partir d'un comportement homogénéisé cible (TODO)
+    Hypotheses : 
+    Assumptions: 
+    -isotropic
+    -Spherical reinforcements 
+    -elastic deformations 
+
+    Self-consistent model. Contains :
+    - A function that checks if the model is applicable to a microstructure.
+    - A model description function 
+    - A function that returns the homogenized behavior of the microstructure.
+    - Functions that computes a particular characteristic (volume fraction of an inclusion, radius of an inclusion, behavior of an inclusion, etc.) from a target homogenized behavior 
     """
     def __init__(self, R_inclusion=1):
         """
-        Définition des hypothèses du modèle.
+       Definition of model hypotheses.
         """
         self.type_inclusion = 0 # Sphères
-        self.behavior_condition = 'isotropic'  # Le modèle s'applique sur des microstructures dont les inclusions et la matrice sont isotropes
-        self.n_inclusions = 1 # Nombre d'inclusions de natures différentes 
-        self.interphase = True # Vrai si le modèle fonctionne sur des inclusions avec interphase
+        self.behavior_condition = 'isotropic'  
+        self.n_inclusions = 1 
+        self.interphase = True 
         self.R_inclusion = R_inclusion
         self.name = "4-phases self-consistent"
 
     def compute_behavior(self, Cm, inclusion_behaviors):
         """
-        Calcule le comportement homogénéisé équivalent de la microstructure. Renvoie un dict avec les paramètres calculés. Pour le moment, ne calcul que le module de cisaillement.
-        TODO : compléter avec le calcul complet (K et G)
+        Calculates the equivalent homogenized behavior of the microstructure. Returns a dict with the calculated parameters. Currently, only calculates the shear modulus.
+        TODO: complete with the complete calculation (K and G)
         """
-        # Récupération des paramètres matériaux
+        # Retrieving materials parameters
         Cf, f, ratio0 = inclusion_behaviors[0]
         Cv, cf, ratio1 = inclusion_behaviors[1]
         Km,Gm,num = Cm['K'], Cm['G'], Cm['nu']
@@ -892,10 +863,10 @@ class Autocoherent_IV(Model):
     
      
  
-#%% Fonctions utiles
+#%% Useful functions
 def bulk_to_young(K, G):
     """
-    Transforme des modules K et G en modules E et nu.
+    Transforms  K and G modulus into E and nu
     """
     E = 9*K*G/(3*K+G)
     nu = (3*K-2*G)/(2*(3*K+G))
@@ -903,7 +874,7 @@ def bulk_to_young(K, G):
    
 def young_to_bulk(E, nu):
     """
-    Transforme des modules E et nu en modules K et G
+    Transforms E and nu modulus into K and G 
     """
     K = E/(3*(1-2*nu))
     G = E/(2*(1+nu))
@@ -911,7 +882,7 @@ def young_to_bulk(E, nu):
 
 def bulk_to_shear(K, E):
     """
-    Transforme les modules K et E en modules G et nu
+    Transforms  K and E modulus into G and nu
     """
     G = 3*K*E/(9*K-E)
     nu = (3*K-E)/(6*K)
@@ -919,49 +890,49 @@ def bulk_to_shear(K, E):
 
 def complete_behavior(behavior):
     """
-    Si le comportement en entrée est isotrope, le complète avec E et nu ou K et G.
-    Sinon, le complète avec C ou S si la matrice entrée est inversible.
+    If the input behaviour is isotropic, completes it with E and nu or K and G.
+    Otherwise, completes it with C or S if the input matrix is invertible.
     """
     parameters = list(behavior.keys())
     result = behavior
     nu_max = 0.4999999
-    # Cas de paramètres nuls (milieux poreux) et cas incompressible (nu=0.5)
+    # Case of null (porous media) and incompressible (nu=0.5) media
     for parameter, values in result.items():
-        # Comportements isotropes élastiques
+        # Isotropic elastic behavior
         if type(values) in [float, int]:
             if values==0:
                 result[parameter] = 10**(-12)
             elif values==0.5 and parameter=='nu':
                 result[parameter] = nu_max
-        # Comportements isotropes visco-élastiques
+        # Isotropic visco-elastic behavior
         elif type(values)==np.ndarray and type(values[0])!=np.ndarray:
             for i, value in enumerate(values):
                 if value==0:
                     result[parameter][i] = 10**(-12)
                 elif value==0.5 and parameter=='nu':
                     result[parameter][i] = nu_max
-    # Isotrope K et G
+    # Isotropic K and G
     if parameters[:2]==['K', 'G'] or parameters[:2]==['G', 'K']:
         K, G = behavior['K'], behavior['G']
         E, nu = bulk_to_young(K, G)
         result['E'], result['nu'] = E, nu
-    # Isotrope E et nu
+    # Isotropic E and nu
     elif parameters[:2]==['E', 'nu'] or parameters[:2]==['nu', 'E']:
         E, nu = behavior['E'], behavior['nu']        
         K, G = young_to_bulk(E, nu)
         result['K'], result['G'] = K, G
-    # Isotrope K et E
+    # Isotropic K and E
     elif parameters[:2]==['K', 'E'] or parameters[:2]==['E', 'K']:
         K, E = behavior['K'], behavior['E']        
         G, nu = bulk_to_shear(K, E)
         result['G'], result['nu'] = G, nu
-    # Anisotrope
+    # Anisotropic
     elif parameters[0]=='C':
         C = behavior['C']
         try:
             S = np.linalg.inv(C)
         except:
-            # C non inversible
+            # C non invertible
             S = None
         result['S'] = S
     elif parameters[0]=='S':
@@ -969,15 +940,15 @@ def complete_behavior(behavior):
         try:
             C = np.linalg.inv(S)
         except:
-            # C non inversible
+            # S non invertible
             C = None
         result['C'] = C
     
-    # Renvoi du résultat
+    # Return result
     return result
 
 
-#%% Définition des modèles, comportements et géométries d'inclusions 
+#%% Definition of model, behaviors et inclusion shape 
 list_models = [Mori_Tanaka, Differential_Scheme, Autocoherent_Hill, Autocoherent_III, Autocoherent_IV]
 dict_behaviors_visco = {'Elastic isotropic (K & G)': ['K', 'G'],
                         'Elastic isotropic (E & nu)': ['E', 'nu'],

@@ -201,3 +201,6 @@
 - Remplacement des FloatSliders par des champs textuels - main 
 - Remplacement des FloatSliders par des champs textuels - visco et correction d'une erreur permettant des raports d'aspect de 0
 - Installation de ipywidgets en local
+
+### 08/07/2020
+- Traduction de classes_v2.py en anglais
