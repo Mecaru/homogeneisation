@@ -11,7 +11,7 @@ Authors : Karim AÏT AMMAR, Enguerrand LUCAS
 11/06/2020
 """
 
-#%% Useful packages
+#%% Import packages
 import numpy as np
 from scipy import *
 from scipy.integrate import odeint
@@ -709,6 +709,8 @@ class Differential_Scheme(Model):
         Kh1, Kh2, Gh1, Gh2 = final_module[:4]  
         # Return result
         return {'K': Kh1+1j*Kh2, 'G': Gh1+1j*Gh2}
+    
+    
 
 class Autocoherent_Hill(Model):
     """
@@ -718,9 +720,9 @@ class Autocoherent_Hill(Model):
         """
         Definition of model hypotheses.
         """
-        self.type_inclusion = 0 # Sphères
-        self.behavior_condition = ['isotropic']  
-        self.n_inclusions = 1 
+        self.type_inclusion = 1 # Sphères
+        self.behavior_condition = ['isotropic', 'anisotropic']  
+        self.n_inclusions = 5 
         self.interphase = False 
         self.name = "Self-consistent"
         self.precision = 10**-12 ## Criterium of convergence of fixed-point algorithm
@@ -766,6 +768,83 @@ class Autocoherent_Hill(Model):
             Kinit = nextK
             Ginit = nextG
         return {'K': nextK, 'G': nextG}
+    
+    def compute_behavior_ellipsoids(self, Cm, inclusion_behaviors):
+        # Paramètres internes du modèles         
+        n_renforts = 1     # paramètre non physique qui permet de forcer l'isotropie
+        n_points_fixe = 10   # précise le nombre de pas de dilution (pour l'initialisation du point fixe)
+        precision = 10**-2  # précision désirée dans l'algorithme du point fixe
+        seuil_divergence = 100 # Nombre d'itération au bout duquel on considère le modèle comme divergent
+        Sm = Cm['S']
+        Cm = Cm['C']
+        Id = np.identity(6) 
+        n_inclusions = len(inclusion_behaviors)
+    
+        # Création des matrices de rotations
+        Rotation_Operator = Rotation_operator(n_renforts)
+        B = np.zeros((3,3,3,3))
+    
+        #Initialisation du point fixe
+        Cp = Cm
+        Sp = Sm
+    
+        # Boucle d'incrémentation de la fraction volumique
+        for i in range(n_points_fixe+1) :
+            
+            # Algorithme du point fixe : Ch=f(Ch) pour f fixé
+            convergence = 2
+            n_boucles = 0
+            Eh = Young_isotrope(Sp)
+            nuh = nu_isotrope(Sp)
+            #print(i," pas sur ",n_points_fixe)
+            while convergence>precision : 
+                
+                # Comptage du nombre de boucle pour l'arrêter en cas de divergence
+                n_boucles += 1   
+                if n_boucles >seuil_divergence : 
+                    raise NameError('Self-Consistent model diverge for the values prescribed from the step '+str(i))
+                    
+                    
+                W = np.zeros((6,6))           # Matrice des contributions de l'inclusion dans Ch
+    
+                # Boucle sur les différentes formes d'inclusions
+                for j in range(n_inclusions) : 
+                    Cf = inclusion_behaviors[j][0]['C']
+                    fi_pas = inclusion_behaviors[j][1]*i/n_points_fixe
+                    fi_1_renfort = fi_pas/n_renforts 
+                    a2,a3 = inclusion_behaviors[j][2]
+                    A = 1,a2,a3
+                    
+                    Esh = Eshelby_tensor(A,Eh,nuh)
+                    Aesh = inv(Id + np.matmul(Esh,np.matmul(Sp,Cf-Cp)))
+                    
+                    V6 = np.dot(Cf-Cm,Aesh)
+                    V3 = Comp66_to_3333(V6)
+    
+                    # Ajout des contribution de chaque renfort en fonction de son orientation
+                    V3 = Comp66_to_3333(V6i)
+                    for j in range(n_renforts) :                 
+                        V3R = Rotation_tensor(V3,Rotation_Operator,j,B)
+                        V = Comp3333_to_66(V3R)
+                        W += fi_1_renfort * V
+                Ch = Cm + W
+    
+                # Actualisation du matériau homogénéisé
+                Cp = Ch
+    
+                # Test de sortie
+                E = Young_isotropeC(Cp)
+                nu = nu_isotropeC(Cp)
+                convergence = abs((E-Eh)/Eh)+abs((nu-nuh)/nuh)
+                
+                Eh = E
+                nuh = nu           
+    
+                # Forçage de la matrice en matrice isotrope
+                Sp = Matrice_Souplesse_Isotrope(Eh,nuh)
+                Cp = inv(Sp)
+    
+        return {'C' : Cp, 'S' : Sp}
     
 class Autocoherent_III(Model):
     """
