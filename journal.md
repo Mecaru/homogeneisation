@@ -206,3 +206,6 @@
 ### 08/07/2020
 - Traduction de classes_v2.py en anglais
 - Création de classes_v3 pour l'ajout de modèles ellipsïdes et ajout de Mori-Tanaka en ellispoides anisotropes
+
+### 09/07/2020
+- Correction du bug dû à l'ordre d'apparition des onglets des widgets tab
