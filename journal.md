@@ -207,3 +207,6 @@
 
 ### 09/07/2020
 - Correction du bug dû à l'ordre d'apparition des onglets des widgets tab
+
+### 10/07/2020
+- Affichage propre des matrices de comportement

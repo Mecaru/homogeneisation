@@ -720,9 +720,9 @@ class Autocoherent_Hill(Model):
         """
         Definition of model hypotheses.
         """
-        self.type_inclusion = 1 # Sphères
-        self.behavior_condition = ['isotropic', 'anisotropic']  
-        self.n_inclusions = 5 
+        self.type_inclusion = 0 # Sphères
+        self.behavior_condition = ['isotropic']
+        self.n_inclusions = 1
         self.interphase = False 
         self.name = "Self-consistent"
         self.precision = 10**-12 ## Criterium of convergence of fixed-point algorithm
@@ -1108,6 +1108,27 @@ def complete_behavior(behavior):
     # Return result
     return result
 
+def display_behavior(behavior):
+    """
+    Input: behavior dict
+    Returns a string with a clean presentation of the behavior.
+    """
+    result = str() # Initialisation
+    for parameter, value in behavior.items():
+        # Simple values
+        if type(value)==float:
+            result += "{}: {:.2f}\n".format(parameter, value)
+        # Matrices
+        elif type(value)==np.ndarray and np.shape(value)==(6,6):
+            result += "{}: \n".format(parameter)
+            for i in range(6):
+                for j in range(6):
+                    result += "{:5.2f}  ".format(value[i,j])
+                result += "\n"
+        # Visco-elastic lists
+        else:
+            result += "{}: Visco-elastic\n".format(parameter)
+    return result
 
 #%% Definition of model, behaviors et inclusion shape 
 list_models = [Mori_Tanaka, Differential_Scheme, Autocoherent_Hill, Autocoherent_III, Autocoherent_IV]
