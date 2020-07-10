@@ -190,7 +190,7 @@ class Microstructure:
             else:
                 total_fi += fi
         if total_fi >= 1:
-            raise NameError("The total volumic fractions of the inclusions exceed 1")
+            raise NameError("The total volume fractions of the inclusions exceed 1")
         else :
             f_m = 1 - total_fi
             return f_m
@@ -354,7 +354,8 @@ class Microstructure:
         fm = self.f_matrix
         f = 1-fm
         km,gm = self.behavior["K"], self.behavior["G"]
-        
+        if len(list(self.dict_inclusions.keys))>1:
+            return None
         for inclusion in self.dict_inclusions.keys():
             try:
                 kf,gf=inclusion.behavior["K"],inclusion.behavior["G"]
