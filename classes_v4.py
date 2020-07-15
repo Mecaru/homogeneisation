@@ -390,6 +390,7 @@ class Model:
    Generic parent class of all model classes. 
     Contains the method for verifying the model's assumptions about a microstructure, as well as the method called when calculating the homogenized behavior.
     """
+    self.n_renfort = 500
     
     def __str__(self):
         """
@@ -660,8 +661,6 @@ class Mori_Tanaka(Model):
         Ch = (Somme(fi*Ci*Ai)+(1-f)*Cm) * (Somme(fi*Ai)+(1-f)*I)**-1  avec Ai = (I+Esh*Sm*(Ci-Cm))**-1
         """
         
-        n_renforts = 100     # paramètre non physique qui permet de forcer l'isotropie
-        
         Sm = Cm['S']
         Cm = Cm['C']
         Id = np.identity(6) 
@@ -672,7 +671,7 @@ class Mori_Tanaka(Model):
             fm -= inclusion_behaviors[i][1]
 
         # Création des matrices de rotations
-        Rotation_Matrix = Rotation_matrices(n_renforts)
+        Rotation_Matrix = Rotation_matrices(self.n_renforts)
         
         T = fm*Id
         
@@ -684,7 +683,7 @@ class Mori_Tanaka(Model):
             fi = inclusion_behaviors[i][1]
             Ai = (1,inclusion_behaviors[i][2][0],inclusion_behaviors[i][2][0])
         
-            fi_1_renfort = fi/n_renforts 
+            fi_1_renfort = fi/self.n_renforts 
             Esh = Fast_Eshelby_tensor(Ai,Cm,Sm)
             Aeshi = inv(Id + np.matmul(Esh,np.matmul(Sm,Cfi-Cm)))
             T += fi*Aeshi
@@ -693,7 +692,7 @@ class Mori_Tanaka(Model):
             # Ajout des contribution de chaque renfort en fonction de son orientation
             V3 = Comp66_to_3333(V6i)
             V3L = Matrix_to_vecteur(V3)
-            for j in range(n_renforts) :                 
+            for j in range(self.n_renforts) :                 
                 V3RL = fast_tensor_rotation(V3L,Rotation_Matrix[j])
                 V3R = Vecteur_to_matrix(V3RL)
                 V = Comp3333_to_66(V3R)
@@ -784,8 +783,6 @@ class Differential_Scheme(Model):
         inclusion_behaviors(list), format [(Cf, f, aspect_ratio)] avec Cf les dictionnaires de comportement des inclusions et aspect_ratio un tuple contenant les deux valeurs de rapports de forme
         Ch (f+df) = Ch(f) + 1/fm * Somme sur i (dfi*(Ci-Ch)*Aeshi)  avec Aeshi = (I+Esh*Sm*(Ci-Cm))**-1
         """
-        
-        n_renforts = 1     # paramètre non physique qui permet de forcer lisotropie
         n_pas = 100
         
         Sm = Cm['S']
@@ -793,7 +790,7 @@ class Differential_Scheme(Model):
         Id = np.eye(6) 
 
         # Création des matrices de rotations
-        Rotation_Matrix = Rotation_matrices(n_renforts)
+        Rotation_Matrix = Rotation_matrices(self.n_renforts)
         
         # Initialisation de la solution diluée : 
         Ch = Cm
@@ -826,11 +823,11 @@ class Differential_Scheme(Model):
                 DCi3 = Comp66_to_3333(DCi)
                 DCi3L = Matrix_to_vecteur(DCi3)
                 DCi3RL = np.zeros(81)
-                for j in range(n_renforts) :                                    
+                for j in range(self.n_renforts) :                                    
                     DCi3RL += fast_tensor_rotation(DCi3L,Rotation_Matrix[j])                  
                     DCi3R = Vecteur_to_matrix(DCi3RL)
                     DCi6 = Comp3333_to_66(DCi3R)
-                    RCi = df[i]/n_renforts * DCi6
+                    RCi = df[i]/self.n_renforts * DCi6
                     dCh += np.matmul(RCi,Aeshi)
 
             Ch = Ch + 1/fm_pas*dCh
@@ -857,7 +854,7 @@ class Autocoherent_Hill(Model):
         self.n_inclusions = 1
         self.interphase = False 
         self.name = "Self-consistent"
-        self.precision = 10**-2 ## Criterium of convergence of fixed-point algorithm
+        self.precision = 10**-12 ## Criterium of convergence of fixed-point algorithm
         self.n_point_fixe = 3 # Number of steps to reach final volumic fraction
         self.seuil_divergence = 100 # Number of loops in fixed-point algorithme before the model is considered divergent
     
@@ -912,7 +909,6 @@ class Autocoherent_Hill(Model):
     
     def compute_behavior_ellipsoids(self, Cm, inclusion_behaviors):
         # Paramètres internes du modèles         
-        n_renforts = 1     # paramètre non physique qui permet de forcer l'isotropie
         precision = 10**-2  # précision désirée dans l'algorithme du point fixe
         Sm = Cm['S']
         Cm = Cm['C']
@@ -920,7 +916,7 @@ class Autocoherent_Hill(Model):
         n_inclusions = len(inclusion_behaviors)
     
         # Création des matrices de rotations
-        Rotation_Matrix = Rotation_matrices(n_renforts)
+        Rotation_Matrix = Rotation_matrices(self.n_renforts)
     
         #Initialisation du point fixe
         Cp = Cm
@@ -948,7 +944,7 @@ class Autocoherent_Hill(Model):
                 for j in range(n_inclusions) : 
                     Cf = inclusion_behaviors[j][0]['C']
                     fi_pas = inclusion_behaviors[j][1]*i/self.n_point_fixe
-                    fi_1_renfort = fi_pas/n_renforts 
+                    fi_1_renfort = fi_pas/self.n_renforts 
                     a2,a3 = inclusion_behaviors[j][2]
                     A = 1,a2,a3
                     
@@ -960,7 +956,7 @@ class Autocoherent_Hill(Model):
                         
                     # Ajout des contribution de chaque renfort en fonction de son orientation
                     V3L = Matrix_to_vecteur(V3)
-                    for k in range(n_renforts) :                 
+                    for k in range(self.n_renforts) :                 
                         V3RL = fast_tensor_rotation(V3L,Rotation_Matrix[k])
                         V3R = Vecteur_to_matrix(V3RL)
                         V = Comp3333_to_66(V3R)
