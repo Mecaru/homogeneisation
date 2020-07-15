@@ -390,7 +390,6 @@ class Model:
    Generic parent class of all model classes. 
     Contains the method for verifying the model's assumptions about a microstructure, as well as the method called when calculating the homogenized behavior.
     """
-    self.n_renfort = 500
     
     def __str__(self):
         """
@@ -625,6 +624,7 @@ class Mori_Tanaka(Model):
         self.behavior_condition = ['anisotropic', 'isotropic']  # The model is applied to microstructures whose inclusions and matrix are isotropic.
         self.n_inclusions = 5 # Number of different types of inclusions
         self.interphase = False # True if the model works on inclusions with interphase
+        self.n_renforts = 100 # parameter to create isotropia, dividing reinforcments into N little ellipsoids randomly oriented
         self.name = "Mori-Tanaka"
     
     def compute_behavior(self, Cm, inclusion_behaviors):
@@ -718,6 +718,7 @@ class Differential_Scheme(Model):
         self.behavior_condition = ['isotropic'] 
         self.n_inclusions = 1 # Nombre d'inclusions de natures différentes  
         self.interphase = False
+        self.n_renforts = 100 # parameter to create isotropia, dividing every step of reinforcment into N little ellipsoids randomly oriented
         self.name = "Differential"
     
     ## Useful functions to compute homogenized behavior
@@ -855,8 +856,10 @@ class Autocoherent_Hill(Model):
         self.interphase = False 
         self.name = "Self-consistent"
         self.precision = 10**-12 ## Criterium of convergence of fixed-point algorithm
-        self.n_point_fixe = 3 # Number of steps to reach final volumic fraction
+        self.n_point_fixe = 100 # Number of steps to reach final volumic fraction
         self.seuil_divergence = 100 # Number of loops in fixed-point algorithme before the model is considered divergent
+        self.n_renforts = 100 # parameter to create isotropia, dividing every step of reinforcment into N little ellipsoids randomly oriented
+
     
     def Reccurence(Module,f):
         K,G,Km,Gm,Kf,Gf = Module
