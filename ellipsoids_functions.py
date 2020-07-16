@@ -6,6 +6,7 @@ from numpy import dot
 from scipy.spatial.transform import Rotation as Rot
 
 
+
 def Comp3333_to_66 (G) : 
     "Returns from a behaviour tensor G 3x3x3 to a behaviour matrix F 6x6"
     F=np.zeros((6,6))
@@ -170,7 +171,7 @@ def Rotation_tensor(S,Operator,z,B) :
     return B
 
 
-def Matrice_Souplesse_Isotrope(E,nu) :
+def Isotropic_Compliance_Matrix(E,nu) :
     'Returns the compliance matrix of an isotropic material'
     S = np.zeros((6,6))
     S[0,0]=1./E
@@ -191,20 +192,20 @@ def Matrice_Souplesse_Isotrope(E,nu) :
     return S
     
 
-def Young_isotrope(S) : 
+def isotropic_young(S) : 
     return 1/3 * (1/S[0,0]+1/S[1,1]+1/S[2,2])
 
-def nu_isotrope(S) : 
-    E = Young_isotrope(S)
-    return - 1/6 * E * (S[0,1] + S[0,2] + S[1,2] + S[1,0] + S[2,0] + S[2,1])
+def isotropic_nu(S) : 
+    E = isotropic_young(S)
+    return (min(- 1/6 * E * (S[0,1] + S[0,2] + S[1,2] + S[1,0] + S[2,0] + S[2,1]),0.499999999))
 
-def Young_isotropeC(C) : 
-    nu = nu_isotropeC(C)
+def isotropic_young_C(C) : 
+    nu = isotropic_nu_C(C)
     return 2 * (1+nu) * 1/3 *(C[3,3]+C[4,4]+C[5,5])
 
-def nu_isotropeC(C) : 
+def isotropic_nu_C(C) : 
     x = 2 * (C[0,0]+C[1,1]+C[2,2]) / (C[0,1]+C[0,2]+C[1,2]+C[1,0]+C[2,0]+C[2,1])
-    return 1/(1+x)
+    return (min(1/(1+x),0.499999999))
 
     
 def Young_anisotrope(S) : 
