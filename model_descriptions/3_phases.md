@@ -39,4 +39,4 @@ e_3=2(4-5\nu_m )g+15(1-\nu_m )\,.
 
 ## Model validation
 This model has been validated on data from [Christensen R.M., and Lo K.H.,  1979. SOLUTIONS FOR EFFECTIVE SHEAR PROPERTIES IN THREE PHASE SPHERE AND CYLINDER MODELS]. Fig 3 p12
-<img src="model_descriptions/model_validate/GSC_Christensen_G.png" alt="drawing" width="400">
+<img src="model_descriptions/model_validate/GSC_Christensen_G.png" alt="drawing" width="600">

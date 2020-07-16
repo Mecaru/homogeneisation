@@ -1,6 +1,15 @@
 # 4-phase model
-[Maurer, 1990. An interlayer model to describe the physical properties of particulate composites. In: Ishida H, editor, Controlled interphases in composite materials. Elsevier Science Publishing Co, pp. 491-504.]
+[E.H.J. Maurer, 1990. An interlayer model to describe the physical properties of particulate composites. In: Ishida H, editor, Controlled interphases in composite materials. Elsevier Science Publishing Co, 491-504]
 
+[E. Herve and A. Zaoui, 1993. n-Layered inclusion-based micromechanical modelling. Int. J. Engng Sci., 31, 1-10]
+
+Notation:
+$G$ shear modulus, 
+$K$ Bulk modulus, 
+$\nu$ Poisson's ratio, 
+$E$ Young modulus, 
+volume fraction of fillers $f$,
+index $f$ for filler, index $m$ for matrix, index $i$ for interphase and $\bar{X}$ for the homogeneous medium.
 ## Spherical isotropic inclusions ramdomly dispersed
 
 Account for an interphase of volume fraction and behavior
@@ -124,3 +133,9 @@ and the only elements of $[T]$ that differ from $[Z]$ are
       T(10,9)=b_g\,,\quad
       T(10,10)=c_g\,.
 \end{gather*}      
+
+## Model validation
+This model has been poorly validated on data from [Lipsinki P., Cherkaoui M., 2007. Four Phase Model: A New Formulation to Predict the Effective Elastic Moduli of Composites. Datas : Fig 3a p5
+
+<img src="model_descriptions/model_validate/4_Phases_Lipsinki_G1.png" alt="drawing" width="600">
+<img src="model_descriptions/model_validate/4_Phases_Lipsinki_K1.png" alt="drawing" width="600">

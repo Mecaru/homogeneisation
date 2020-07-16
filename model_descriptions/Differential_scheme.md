@@ -43,7 +43,9 @@ Note that the Eshelby tensor has been calculated with elliptic integrals that ma
 ## Model validation
 The model has been validated on data from : [Christensen,  R.M.,  1990.  A critical evaluation for a class of micromechanics models]. Equation (7) and (8) p5
 
-<img src="model_descriptions/model_validate/Differentiel_Christensen_G.png" alt="drawing" width="400">
-<img src="model_descriptions/model_validate/Differentiel_Christensen_K.png" alt="drawing" width="400">
+<img src="model_descriptions/model_validate/Differentiel_Christensen_G.png" alt="drawing" width="600">
+<img src="model_descriptions/model_validate/Differentiel_Christensen_K.png" alt="drawing" width="600">
 
-and [Jithender J.Timothy,Günther Meschke,2015. A cascade continuum micromechanics model for the effective elastic properties of porous materials]. Fig A15 p9
+and : [Jithender J.Timothy,Günther Meschke,2015. A cascade continuum micromechanics model for the effective elastic properties of porous materials]. Fig A15 p9
+
+<img src="model_descriptions/model_validate/Differential_Timothy_K1.png" alt="drawing" width="600">

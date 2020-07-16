@@ -137,5 +137,5 @@ and the only elements of $[T]$ that differ from $[Z]$ are
 ## Model validation
 This model has been poorly validated on data from [Lipsinki P., Cherkaoui M., 2007. Four Phase Model: A New Formulation to Predict the Effective Elastic Moduli of Composites. Datas : Fig 3a p5
 
-<img src="model_descriptions/model_validate/4_Phases_Lipsinki_G1.png" alt="drawing" width="400">
-<img src="model_descriptions/model_validate/4_Phases_Lipsinki_K1.png" alt="drawing" width="400">
+<img src="model_descriptions/model_validate/4_Phases_Lipsinki_G1.png" alt="drawing" width="600">
+<img src="model_descriptions/model_validate/4_Phases_Lipsinki_K1.png" alt="drawing" width="600">
