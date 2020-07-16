@@ -34,3 +34,7 @@ with $C_{f_i}$ and $A_i^{MT}$ the behavior of the filler and of the self-consist
 
 Note that the Eshelby tensor has been calculated with elliptic integrals that may diverge for anisotropic matrices.
 ## Model validation
+This model have been validated on data from [Christensen,  R.M.,  1990.  A critical evaluation for a class of micromechanics models]. Equation (64) p15 
+
+<img src="model_descriptions/model_validate/MT_Christensen_G1.png" alt="drawing" width="400">
+<img src="model_descriptions/model_validate/MT_Christensen_K1.png" alt="drawing" width="400">

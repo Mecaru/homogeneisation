@@ -674,7 +674,7 @@ class Mori_Tanaka(Model):
             fm -= inclusion_behaviors[i][1]
 
         # Computation and storage of every rotation matrices
-        Rotation_Operator = Rotation_operator(n_renforts)
+        Rotation_Operator = Rotation_operator(n_orientation)
         B = np.zeros((3,3,3,3))
         
         T = fm*Id       # T = [Sum(fi*Ai)+fm*I)]**-1 is calculated progressively in the loop, inversed in the end
@@ -800,7 +800,7 @@ class Differential_Scheme(Model):
         Id = np.eye(6) 
 
         # Création des matrices de rotations
-        Rotation_Operator = Rotation_operator(n_renforts)
+        Rotation_Operator = Rotation_operator(n_orientation)
         B = np.zeros((3,3,3,3))
         
         # Initialisation of dilute solution : Ch is the current concentration at a fixed step
@@ -841,8 +841,7 @@ class Differential_Scheme(Model):
                 
                 # The contribution of very orientation is added 
                 Pi3 = Comp66_to_3333(Pi)            # Pi3 = Pi transformed into 3x3x3x3 Behavior tensor
-                for j in range(n_orientation) :
-                for j in range(n_renforts) :                 
+                for j in range(n_orientation) :                 
                     Pi3R = Rotation_tensor(Pi3,Rotation_Operator,j,B)
                     Pi6 = Comp3333_to_66(Pi3R)
                     dCh += (f[i]/n_step)/n_orientation * Pi6   
@@ -944,7 +943,7 @@ class Self_Consistent_Hill(Model):
         n_inclusions = len(inclusion_behaviors)
     
         # Création des matrices de rotations
-        Rotation_Operator = Rotation_operator(n_renforts)
+        Rotation_Operator = Rotation_operator(n_orientation)
         B = np.zeros((3,3,3,3))
     
         # Initialisation of fixed-point algorithm

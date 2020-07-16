@@ -36,3 +36,7 @@ e_1=(49+35\nu_f-70\nu_m -50\nu_f\,\nu_m )g+105(\nu_f-\nu_m )\,,\\
 e_2=(7+5\nu_f)g+35(1-\nu_f)\,,\quad
 e_3=2(4-5\nu_m )g+15(1-\nu_m )\,.
 \end{gather*}
+
+## Model validation
+This model has been validated on data from [Christensen R.M., and Lo K.H.,  1979. SOLUTIONS FOR EFFECTIVE SHEAR PROPERTIES IN THREE PHASE SPHERE AND CYLINDER MODELS]. Fig 3 p12
+<img src="model_descriptions/model_validate/GSC_Christensen_G.png" alt="drawing" width="400">

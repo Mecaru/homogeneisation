@@ -37,3 +37,5 @@ with $C_{f_i}$ and $A_i^{SC}$ the behavior of the filler and of the self-consist
 
 Note that the Eshelby tensor has been calculated with elliptic integrals that may diverge for anisotropic matrices.
 ## Model validation
+The model has been validated on data from [V. Marcadon , E. Herve, A. Zaoui,  2007. Micromechanical modeling of packing and size effects in particulate composites]. Fig 3 p7
+<img src="model_descriptions/model_validate/SC_Marcadon_G.png" alt="drawing" width="400">

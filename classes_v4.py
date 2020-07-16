@@ -1280,17 +1280,11 @@ def complete_behavior(behavior):
     # Return result
     return result
 
-def Isotropic_Young(S) : 
-    return 1/3 * (1/S[0,0]+1/S[1,1]+1/S[2,2])
-
-def Isotropic_nu(S) : 
-    E = Isotropic_Young(S)
-    return - 1/6 * E * (S[0,1] + S[0,2] + S[1,2] + S[1,0] + S[2,0] + S[2,1])
 
 def Isotropic_behavior(behavior) : 
     S = behavior['S']
-    E = float(Isotropic_Young(S))
-    nu = float(Isotropic_nu(S))
+    E = float(isotropic_young(S))
+    nu = float(isotropic_nu(S))
     return complete_behavior({'E':E,'nu':nu})
 
 def display_behavior(behavior):
@@ -1303,14 +1297,14 @@ def display_behavior(behavior):
     for parameter, value in behavior.items():
         # Simple values
         if type(value)==float or type(value)==np.float64:
-            result += "{}: {:.2f}\n".format(parameter, value)
+            result += "{}: {:.3f}\n".format(parameter, value)
         # Matrices
         elif type(value)==np.ndarray and np.shape(value)==(6,6):
             matrix_behavior = True
             result += "{}: \n".format(parameter)
             for i in range(6):
                 for j in range(6):
-                    result += "{:5.2f}  ".format(value[i,j])
+                    result += "{:.4e}  ".format(value[i,j])
                 result += "\n"
         # Visco-elastic lists
         else:

@@ -41,7 +41,9 @@ with $C_{f_i}$ and $A_{n_i}^{D}$ the behavior of the filler and of the self-cons
 
 Note that the Eshelby tensor has been calculated with elliptic integrals that may diverge for anisotropic matrices.
 ## Model validation
-The model has been validated on data ...
+The model has been validated on data from : [Christensen,  R.M.,  1990.  A critical evaluation for a class of micromechanics models]. Equation (7) and (8) p5
 
-<img src="model_descriptions/model_validate/Diff_Christensen_G2.png" alt="drawing" width="400">
-<img src="model_descriptions/model_validate/Diff_Christensen_K2.png" alt="drawing" width="400">
+<img src="model_descriptions/model_validate/Differentiel_Christensen_G.png" alt="drawing" width="400">
+<img src="model_descriptions/model_validate/Differentiel_Christensen_K.png" alt="drawing" width="400">
+
+and [Jithender J.Timothy,Günther Meschke,2015. A cascade continuum micromechanics model for the effective elastic properties of porous materials]. Fig A15 p9
