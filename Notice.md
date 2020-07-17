@@ -71,3 +71,7 @@ Computes optimal microstructure parameters to reach a given target homogenized b
 
 The first needs a compilation of a fortran script with a numpy tool, f2py, whose use may be tricky on windows computer. It allows the import of a module containing fortran functions.
 The second compiles first fortran functions, and then the rest of the code, avoiding the use of f2py, but resulting in a huge notebooks. 
+
+- 'homogenization_main.ipynb' and 'homogenization_visco.ipynb'
+
+The first handle only elastic cases, whereas the second can compute visco-elastic homogenised behavior for **single spherical isotropic inclusion**.
