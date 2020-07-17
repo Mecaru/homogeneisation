@@ -52,7 +52,7 @@ class Inclusion:
         try:
             result = dict_types[type_inclusion]
         except KeyError:
-            # Le type spécifié n'est pas répertorié dans le dictionnaire
+            # Unspecified type in dictionnary
             result = None
         return result
     

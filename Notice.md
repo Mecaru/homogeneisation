@@ -1,7 +1,12 @@
 # User Read-me
 
 ## Installation
-Some sections of the code require you to have gfortran installed on your computer. Depending on your environnement, here are the steps you should follow when running the software for the fisrt time.
+Some sections of the code require you to have gfortran installed on your computer and available on your Path. Depending on your environnement, here are the steps you should follow when running the software for the fisrt time.
+
+### Issue with gfortran and windows Path : 
+Mac/windows : You may find a good gfortran compiler on this website http://mingw-w64.org/doku.php
+Linux : apt install gfortran
+If you have issue with adding gfortran with your Path on windows, this website may help https://davescience.wordpress.com/2012/03/21/gfortran-on-windows/. **Furthermore you should install mingw64 in C: problems occurs when your binaries are in a file with space in the name or too far from root.**
 
 ### Local with pip:
 - Install JupyterLab
@@ -32,7 +37,7 @@ https://notebooks.ai is a website that allows you to run a JupyterLab notebook o
 ---
 ## Using the software
 
-The software enables you to compute the homogenized behaviors of simple microstructures using models implemented with Python. The two notebooks 'homogenization_main.ipynb' and 'homogenization_visco.ipynb' contain a user-friendly friendly interface. On the former, the user will find multiple sections:
+The software enables you to compute the homogenized behaviors of simple microstructures using models implemented with Python. The three notebooks 'homogenization_main.ipynb','homogenization_main_II.ipynb', and 'homogenization_visco.ipynb' contain a user-friendly friendly interface. On the former, the user will find multiple sections:
 
 - Computation of the homogenized behavior of defined microstructures
 
@@ -54,3 +59,9 @@ Displays the description of the implemented models. The descriptions are Markdow
 
 Computes optimal microstructure parameters to reach a given target homogenized behavior. If the optimization problem admits multiple local minima, the program will only return one of them (not necessarily the best). Runs well for a few unknown parameters (volume fraction of an inclusion, or for a single unknown matrix behavior parameter), but can still be improved.
 
+## Differences :
+
+- 'homogenization_main.ipynb' and 'homogenization_main_II.ipynb'
+
+The first needs a compilation of a fortran script with a numpy tool, f2py, whose use may be tricky on windows computer. It allows the import of a module containing fortran functions.
+The second compiles first fortran functions, and then the rest of the code, avoiding the use of f2py, but resulting in a huge notebooks. 
