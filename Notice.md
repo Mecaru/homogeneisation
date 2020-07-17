@@ -31,6 +31,12 @@ If you have issue with adding gfortran with your Path on windows, this website m
     - jupyter lab build
 - Restart Anaconda and JupyterLab
 
+### Compiling locally Fortran functions with f2py
+- necessary tu use 'homogenization_main.ipynb'
+- Open a new terminal on JupyterLab, and run :
+    - f2py -c Fortran_tools.f -m fortran_tools
+- This step must be performed only the first time you use the softaware, it has no effect after
+
 ### Running the software online
 https://notebooks.ai is a website that allows you to run a JupyterLab notebook online freely.
 
